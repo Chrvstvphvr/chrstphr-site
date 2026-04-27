@@ -169,7 +169,8 @@ body::before {
   font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(80px, 18vw, 320px);
+  font-size: clamp(80px, 22vw, 400px);
+  width: 100%;
   line-height: 0.85;
   letter-spacing: -0.05em;
   text-transform: uppercase;

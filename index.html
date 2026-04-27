@@ -197,7 +197,7 @@
   .name-uniform {
     font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif;
     font-weight: 900;
-    font-size: clamp(80px, 15vw, 260px);
+    font-size: clamp(48px, 12vw, 240px);
     line-height: 0.9;
     letter-spacing: -0.04em;
     text-transform: uppercase;
@@ -608,11 +608,12 @@
   .cfn-col .cfn-label::before { content: "→ "; color: var(--accent); }
   .cfn-col h4 {
     font-family: "Arial Black", sans-serif;
-    font-size: clamp(20px, 2.2vw, 32px);
-    line-height: 1.1;
+    font-size: clamp(26px, 3vw, 44px);
+    line-height: 1.05;
     text-transform: uppercase;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
     margin-bottom: 14px;
+    font-weight: 900;
   }
   .cfn-col h4 em { color: var(--accent); font-style: italic; }
   .cfn-col p {
@@ -684,6 +685,43 @@
 .portrait-slider img.active {
   opacity: 1;
 }
+
+.clock-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+.clock-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--fg-dim);
+}
+.clock-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  color: var(--fg);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  padding: 10px 14px;
+  white-space: nowrap;
+  z-index: 200;
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.5;
+}
+.clock-wrap:hover .clock-tooltip { display: block; }
+
+.word-cycle-weird {
+  display: inline-block;
+}
 </style>
 </head>
 <body>
@@ -706,7 +744,11 @@
     <a href="how-i-work.html">How I Work</a>
     <a href="contact.html">Contact</a>
   </nav>
-  <div class="clock" id="clock">--:--:--</div>
+  <div class="clock-wrap">
+    <span class="clock-label">Time in my current location:</span>
+    <span class="clock" id="clock">--:--:--</span>
+    <div class="clock-tooltip">Time is updated based on the timezone of my digital activities, usually email or socials. Cool, huh?</div>
+  </div>
 </div>
 
 <main class="hero">
@@ -718,7 +760,6 @@
   <div class="name-frame" id="nameFrame">
     <span class="corner tl"><span class="accent">◢</span> 2026.04</span>
     <span class="corner tr">PORTFOLIO / V03 <span class="accent">◣</span></span>
-    <span class="corner bl"><span class="accent">◤</span> SCRUB ME</span>
     <span class="corner br">DESIGN · UX · UI · AI <span class="accent">◥</span></span>
     <h1 class="name-uniform" id="nameUniform">CHRSTPHR</h1>
   </div>
@@ -778,7 +819,7 @@
   </div>
   <div class="col">
     <span>Located</span>
-    <strong>Earth, mostly</strong>
+    <strong>TRP, North Carolina, mostly</strong>
   </div>
 </div>
 
@@ -825,7 +866,7 @@
 <section class="section-about">
   <div class="section-label">About / Who's This Guy</div>
   <h2 class="about-headline">
-    I make <em>weird useful things</em> with <span class="strike">computers</span> AI, opinions, and a lot of caffeine.
+    I make <em><span class="word-cycle-weird">weird</span> but useful things</em> with <span class="strike">computers</span> AI, opinions, and a lot of caffeine.
   </h2>
 
   <div class="about-grid">
@@ -863,7 +904,7 @@
     <div class="cfn-col">
       <div class="cfn-label">Formerly</div>
       <h4>Lead designer, freelance gun-for-hire, recovering <em>print purist</em>.</h4>
-      <p>Worked across SaaS, fintech, consumer apps, and at least one client who made cheese.</p>
+      <p>Worked in IT, SaaS, Enterprise Design, Consumer App &amp; Web, Food, Retail, and at least one client in the Emerald Industry.</p>
     </div>
     <div class="cfn-col">
       <div class="cfn-label">Never</div>
@@ -881,13 +922,13 @@
         <li>Brand systems with opinions</li>
         <li>Weird sites for clever people</li>
         <li>Identity that stops the scroll</li>
+        <li>Reports and data that 100% should be automated.</li>
       </ul>
     </div>
     <div class="mr-col refuse">
       <div class="mr-head">Things I refuse to make</div>
       <ul>
         <li>Beige corporate websites</li>
-        <li>Dashboards that look like dashboards</li>
         <li>Anything called "synergy"</li>
         <li>Logos shaped like infinity</li>
         <li>Generic SaaS purple gradients</li>
@@ -1078,6 +1119,36 @@
       imgs[current].classList.add('active');
     }, 3000);
   })();
+
+  // Cycle "weird" words
+  (function() {
+    const words = ['weird','fun','exciting','interesting','interactive','hilarious','cheeky','nice','awesome','techy','likable','energetic','enthusiastic','uncommon'];
+    let wi = 0;
+    const els = document.querySelectorAll('.word-cycle-weird');
+    setInterval(() => {
+      wi = (wi + 1) % words.length;
+      els.forEach(el => el.textContent = words[wi]);
+    }, 2000);
+  })();
+
+  // Scale footer mark to fill width
+  function scaleFooterMark() {
+    const mark = document.querySelector('.footer-mark');
+    if (!mark) return;
+    const parent = mark.parentElement;
+    let size = 100;
+    mark.style.fontSize = size + 'px';
+    while (mark.scrollWidth < parent.clientWidth * 0.97 && size < 600) {
+      size += 2;
+      mark.style.fontSize = size + 'px';
+    }
+    while (mark.scrollWidth > parent.clientWidth && size > 10) {
+      size -= 1;
+      mark.style.fontSize = size + 'px';
+    }
+  }
+  scaleFooterMark();
+  window.addEventListener('resize', scaleFooterMark);
 
 </script>
 
