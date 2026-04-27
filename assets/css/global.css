@@ -84,8 +84,16 @@ body::before {
   text-transform: uppercase;
   letter-spacing: 0.22em;
   z-index: 50;
-  mix-blend-mode: difference;
   color: var(--fg);
+
+  /* iOS Liquid Glass */
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(28px) saturate(160%) brightness(0.85);
+  -webkit-backdrop-filter: blur(28px) saturate(160%) brightness(0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 8px 32px rgba(0, 0, 0, 0.4);
 }
 .top-bar .logo { font-weight: 900; }
 .top-bar .logo .star {
