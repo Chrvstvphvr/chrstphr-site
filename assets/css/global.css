@@ -171,35 +171,35 @@ body::before {
   overflow: hidden;
 }
 
-/* Giant CHRSTPHR wordmark — fills the width */
+/* Giant CHRSTPHR wordmark — true edge-to-edge via SVG textLength */
 .footer-mark {
   display: block;
+  width: 100%;
+  height: auto;
+  padding: 30px 0 0;
+  user-select: none;
+  position: relative;
+}
+.footer-mark text {
   font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif;
   font-weight: 900;
   font-style: italic;
-  font-size: clamp(80px, 22vw, 400px);
-  width: 100%;
-  line-height: 0.85;
-  letter-spacing: -0.05em;
+  fill: var(--fg);
   text-transform: uppercase;
-  text-align: center;
-  color: var(--fg);
-  padding: 36px 4vw 16px;
-  white-space: nowrap;
-  position: relative;
-  user-select: none;
 }
-.footer-mark .dot {
-  color: var(--accent);
-  display: inline-block;
-  animation: spin 8s linear infinite;
+.footer-mark .footer-mark-dot {
+  fill: var(--accent);
   font-style: normal;
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: spin 8s linear infinite;
 }
-.footer-mark::after {
-  content: "";
-  position: absolute;
-  left: 4vw; right: 4vw; bottom: 0;
-  border-bottom: 1px solid var(--line);
+.footer-mark-rule {
+  display: block;
+  width: 92vw;
+  margin: 0 auto;
+  border: none;
+  border-top: 1px solid var(--line);
 }
 
 /* Marquee status strip (orange) */
