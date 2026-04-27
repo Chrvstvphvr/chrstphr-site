@@ -256,17 +256,18 @@ body::before {
 .footer-meta {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px 24px;
   padding: 18px 4vw 22px;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.22em;
   color: var(--fg-dim);
   font-weight: 700;
+  line-height: 1.8;
 }
-.footer-meta .group { display: flex; gap: 22px; flex-wrap: wrap; }
+.footer-meta .group { display: flex; flex-wrap: wrap; gap: 8px 18px; flex-direction: column; }
 .footer-meta .accent { color: var(--accent); }
 
 /* When the footer is on the page, give the body breathing room above it */

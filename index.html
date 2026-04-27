@@ -322,15 +322,16 @@
   .meta-row {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     margin-top: 24px;
     gap: 40px;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.22em;
     color: var(--fg-dim);
-    padding: 0 7vw 60px;
+    padding: 28px 7vw;
     z-index: 6;
+    background: #000;
     position: relative;
   }
   .meta-row .col { display: flex; flex-direction: column; gap: 6px; }
@@ -789,7 +790,7 @@
 
   <div class="sticker s1" data-cursor="DRAG">DRAG ME ↘</div>
   <div class="sticker s2" data-cursor="DRAG">UX · BRAND · AI</div>
-  <div class="sticker s3" data-cursor="DRAG">↳ LET'S MAKE A SCENE</div>
+  <a href="contact.html" class="sticker s3" data-cursor="DRAG">↳ LET'S MAKE A SCENE</a>
   <div class="sticker s4" data-cursor="DRAG">★ NEW WORK SOON</div>
 </main>
 
@@ -866,7 +867,7 @@
 <section class="section-about">
   <div class="section-label">About / Who's This Guy</div>
   <h2 class="about-headline">
-    I make <em><span class="word-cycle-weird">weird</span> but useful things</em> with <span class="strike">computers</span> AI, opinions, and a lot of caffeine.
+    I make <em><span class="word-cycle-weird">weird</span></em><br> but useful things with <span class="strike">computers</span> AI, opinions, and a lot of caffeine.
   </h2>
 
   <div class="about-grid">
@@ -922,13 +923,13 @@
         <li>Brand systems with opinions</li>
         <li>Weird sites for clever people</li>
         <li>Identity that stops the scroll</li>
-        <li>Reports and data that 100% should be automated.</li>
       </ul>
     </div>
     <div class="mr-col refuse">
       <div class="mr-head">Things I refuse to make</div>
       <ul>
         <li>Beige corporate websites</li>
+        <li>Reports and data that 100% should be automated.</li>
         <li>Anything called "synergy"</li>
         <li>Logos shaped like infinity</li>
         <li>Generic SaaS purple gradients</li>
@@ -1128,24 +1129,25 @@
     setInterval(() => {
       wi = (wi + 1) % words.length;
       els.forEach(el => el.textContent = words[wi]);
-    }, 2000);
+    }, 3000);
   })();
 
-  // Scale footer mark to fill width
+  // Scale footer mark to fill full window width
   function scaleFooterMark() {
     const mark = document.querySelector('.footer-mark');
     if (!mark) return;
-    const parent = mark.parentElement;
-    let size = 100;
-    mark.style.fontSize = size + 'px';
-    while (mark.scrollWidth < parent.clientWidth * 0.97 && size < 600) {
-      size += 2;
+    mark.style.fontSize = '100px';
+    mark.style.padding = '0';
+    mark.style.letterSpacing = '-0.05em';
+    const target = window.innerWidth;
+    let lo = 10, hi = 1200, size = 100;
+    for (let i = 0; i < 30; i++) {
+      size = Math.round((lo + hi) / 2);
       mark.style.fontSize = size + 'px';
+      if (mark.scrollWidth < target) lo = size;
+      else hi = size;
     }
-    while (mark.scrollWidth > parent.clientWidth && size > 10) {
-      size -= 1;
-      mark.style.fontSize = size + 'px';
-    }
+    mark.style.fontSize = lo + 'px';
   }
   scaleFooterMark();
   window.addEventListener('resize', scaleFooterMark);
@@ -1168,7 +1170,7 @@
     </div>
   </div>
   <div class="footer-cta">
-    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a href="contact.html"><span>Say hello</span><span class="arrow">→</span></a>
     <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
   </div>
   <div class="footer-meta">
