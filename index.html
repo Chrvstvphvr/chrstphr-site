@@ -415,7 +415,47 @@
     transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
     position: relative;
     overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    cursor: none;
   }
+  .work-card .arrow {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    font-size: 22px;
+    color: var(--accent);
+    transition: color 0.3s, transform 0.3s;
+    z-index: 2;
+  }
+  .work-card:hover .arrow { color: var(--bg); transform: translate(4px, -4px); }
+  .work-card .desc {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--fg-dim);
+    margin-top: 8px;
+    transition: color 0.3s;
+  }
+  .work-card:hover .desc { color: var(--bg); opacity: 0.9; }
+  .section-cta {
+    margin-top: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(20px, 2.4vw, 28px);
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+    text-decoration: none;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 4px;
+    cursor: none;
+    transition: color 0.25s, gap 0.25s;
+  }
+  .section-cta:hover { color: var(--accent); gap: 22px; }
+  .section-cta .arrow { color: var(--accent); }
   .work-card::before {
     content: "";
     position: absolute; inset: 0;
@@ -728,31 +768,39 @@
   <h2 class="section-headline">Stuff I made <em>that didn't</em> bore me.</h2>
 
   <div class="section-grid">
-    <div class="work-card">
+    <a class="work-card" href="work.html#caseStudy">
       <div class="num">01</div>
+      <span class="arrow">↗</span>
       <div>
-        <div class="meta">Client / SaaS</div>
-        <h3>The Receipt App That Argues Back</h3>
-      </div>
-      <div class="tag">UX/UI</div>
-    </div>
-    <div class="work-card">
-      <div class="num">02</div>
-      <div>
-        <div class="meta">Lab / AI Tool</div>
-        <h3>Branding Generator That Has Beef</h3>
+        <div class="meta">Personal · AI · Full-Stack · 2025</div>
+        <h3>My Own Personal 1973 Corvette Mechanic</h3>
+        <p class="desc">A multi-modal RAG sidekick built on FastAPI, Claude, and Supabase + pgvector. Diagnoses issues from photos. Tracks every bolt I've touched.</p>
       </div>
       <div class="tag">AI</div>
-    </div>
-    <div class="work-card">
+    </a>
+    <a class="work-card" href="work.html">
       <div class="num">03</div>
+      <span class="arrow">↗</span>
       <div>
-        <div class="meta">Brand / Identity</div>
-        <h3>Type System For A Smug Coffee Shop</h3>
+        <div class="meta">Client · Brenz Pizza Co · Jan 2026</div>
+        <h3>The Pizza Shop That Still Runs On Paper</h3>
+        <p class="desc">Vision recognition reads paper tickets. Twilio texts customers their ETA. Two displays show the live queue. Built solo for a shop that refused to use a KDS.</p>
       </div>
-      <div class="tag">BRAND</div>
-    </div>
+      <div class="tag">UX/UI</div>
+    </a>
+    <a class="work-card" href="work.html">
+      <div class="num">02</div>
+      <span class="arrow">↗</span>
+      <div>
+        <div class="meta">Personal · macOS App · 2026</div>
+        <h3>What Your Texting Really Says About You</h3>
+        <p class="desc">246,000 messages. 20+ insights. Built as a wrapped macOS app with PyQt6, sentiment analysis, topic modeling, and an AI chat tab powered by Claude.</p>
+      </div>
+      <div class="tag">AI</div>
+    </a>
   </div>
+
+  <a class="section-cta" href="work.html">See all work <span class="arrow">→</span></a>
 </section>
 
 <section class="section-about">
