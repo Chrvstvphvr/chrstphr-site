@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0A0A0A"/>
+
+  <!-- diagonal stripes accent -->
+  <g opacity="0.04">
+    <pattern id="stripes" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="1" height="14" fill="#F2EDE2"/>
+    </pattern>
+    <rect width="1200" height="630" fill="url(#stripes)"/>
+  </g>
+
+  <!-- corner brackets -->
+  <g stroke="#F2EDE2" stroke-width="2" fill="none" opacity="0.5">
+    <polyline points="40,40 40,80 80,40 40,40"/>
+    <polyline points="1160,40 1160,80 1120,40 1160,40"/>
+    <polyline points="40,590 40,550 80,590 40,590"/>
+    <polyline points="1160,590 1160,550 1120,590 1160,590"/>
+  </g>
+
+  <!-- top label -->
+  <text x="60" y="80"
+        font-family="Courier New, monospace"
+        font-size="20"
+        font-weight="700"
+        letter-spacing="6"
+        fill="#FF4500">CHRSTPHR.IO * v3.2</text>
+
+  <!-- giant wordmark -->
+  <text x="600" y="360"
+        text-anchor="middle"
+        font-family="Arial Black, Helvetica, sans-serif"
+        font-weight="900"
+        font-style="italic"
+        font-size="220"
+        letter-spacing="-10"
+        fill="#F2EDE2">CHRSTPHR</text>
+
+  <!-- accent star -->
+  <text x="990" y="200"
+        text-anchor="middle"
+        font-family="Arial Black, sans-serif"
+        font-weight="900"
+        font-size="120"
+        fill="#FF4500">*</text>
+
+  <!-- tagline -->
+  <text x="600" y="440"
+        text-anchor="middle"
+        font-family="Arial Black, Helvetica, sans-serif"
+        font-weight="900"
+        font-size="28"
+        letter-spacing="2"
+        fill="#F2EDE2">DESIGNER · DIGITAL · UX/UI · AI-NATIVE</text>
+
+  <!-- bottom accent strip -->
+  <rect x="0" y="540" width="1200" height="50" fill="#FF4500"/>
+  <text x="60" y="572"
+        font-family="Arial Black, sans-serif"
+        font-weight="900"
+        font-size="22"
+        letter-spacing="4"
+        fill="#0A0A0A">NOW BOOKING — SELECTED COLLABS</text>
+  <text x="1140" y="572"
+        text-anchor="end"
+        font-family="Arial Black, sans-serif"
+        font-weight="900"
+        font-size="22"
+        letter-spacing="4"
+        fill="#0A0A0A">HUMAN-MADE / AI-ASSISTED</text>
+</svg>

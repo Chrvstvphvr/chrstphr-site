@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#0A0A0A"/>
+  <text x="50%" y="56%"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="Arial Black, Helvetica, sans-serif"
+        font-weight="900"
+        font-style="italic"
+        font-size="56"
+        letter-spacing="-2"
+        fill="#F2EDE2">C</text>
+  <text x="50" y="20"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="Arial Black, sans-serif"
+        font-weight="900"
+        font-size="22"
+        fill="#FF4500">*</text>
+</svg>

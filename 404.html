@@ -13,33 +13,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CHRSTPHR — 404 / Lost</title>
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+
+<!-- Open Graph -->
+<meta property="og:title" content="CHRSTPHR — Lost">
+<meta property="og:description" content="You broke the internet. Or I did. Either way.">
+<meta property="og:image" content="https://ohchrstphr.com/assets/img/og-image.png">
+<meta property="og:url" content="https://ohchrstphr.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CHRSTPHR">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CHRSTPHR — Lost">
+<meta name="twitter:description" content="You broke the internet. Or I did. Either way.">
+<meta name="twitter:image" content="https://ohchrstphr.com/assets/img/og-image.png">
+
+<!-- SEO -->
+<meta name="description" content="You broke the internet. Or I did. Either way.">
+<link rel="stylesheet" href="assets/css/global.css">
 <style>
-  :root {
-    color-scheme: dark;
-    --bg: #0A0A0A;
-    --fg: #F2EDE2;
-    --fg-dim: rgba(242, 237, 226, 0.5);
-    --line: rgba(242, 237, 226, 0.15);
-    --accent: #FF4500;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    background: var(--bg);
-    color: var(--fg);
-    font-family: "Helvetica Neue", "Arial", sans-serif;
-    overflow-x: hidden;
-    min-height: 100vh;
-    cursor: none;
-  }
-  body::before {
-    content: "";
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0.45;
-    mix-blend-mode: overlay;
-  }
 
   .ghost-bg {
     position: fixed; inset: 0;
@@ -96,7 +93,6 @@
   }
   .top-bar .logo { font-weight: 900; }
   .top-bar .logo .star { color: var(--accent); display: inline-block; animation: spin 6s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
   .top-bar nav { display: flex; gap: 28px; }
   .top-bar nav a { color: inherit; text-decoration: none; position: relative; cursor: none; }
   .top-bar nav a::after {
@@ -344,7 +340,6 @@
     <a href="experience.html">Experience</a>
     <a href="skills.html">Skills</a>
     <a href="how-i-work.html">How I Work</a>
-    <a href="thoughts.html">Thoughts</a>
     <a href="contact.html">Contact</a>
   </nav>
 </div>
@@ -527,5 +522,38 @@
 
   console.log('%c404 / LOST', 'font-size:80px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
 </script>
+
+<!-- ===== SITE FOOTER (shared) ===== -->
+<footer class="site-footer">
+  <div class="footer-mark">CHRSTPHR<span class="dot">*</span></div>
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2</span>
+      <span class="accent">All pixels placed by hand</span>
+    </div>
+    <div class="group">
+      <span>Page: 404</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+<!-- ===== /SITE FOOTER ===== -->
 </body>
 </html>
