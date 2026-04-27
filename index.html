@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Chrstphr Hero V1",
+  "schemaVersion": 1,
+  "description": "Personal brand site — hero/landing v1. Maximalist typographic approach with cursor-reactive letters that dodge the pointer, draggable stickers, infinite marquee, custom cursor, Konami code easter egg, and a console message. Black canvas, cream text, blood orange accent.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — v3.2</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0A0A0A;
+    --fg: #F2EDE2;
+    --fg-dim: rgba(242, 237, 226, 0.5);
+    --line: rgba(242, 237, 226, 0.15);
+    --accent: #FF4500;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Helvetica Neue", "Arial", sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
+    cursor: none;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.45;
+    mix-blend-mode: overlay;
+  }
+
+  .ghost-bg {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    opacity: 0.035;
+    transform: rotate(-12deg) scale(1.4);
+  }
+  .ghost-bg-row {
+    font-family: "Arial Black", Impact, sans-serif;
+    font-weight: 900;
+    font-size: 220px;
+    letter-spacing: -0.05em;
+    line-height: 0.85;
+    white-space: nowrap;
+    color: var(--fg);
+    text-transform: uppercase;
+    animation: ghost-scroll 60s linear infinite;
+  }
+  .ghost-bg-row:nth-child(even) { animation-direction: reverse; animation-duration: 90s; }
+  @keyframes ghost-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .cursor {
+    position: fixed;
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s ease, height 0.25s ease, background 0.2s, border-radius 0.25s;
+  }
+  .cursor.big { width: 80px; height: 80px; }
+  .cursor.click { width: 12px; height: 12px; }
+  .cursor-label {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 800;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 5px 9px;
+    transform: translate(20px, 20px);
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .cursor-label.show { opacity: 1; }
+
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    z-index: 50;
+    mix-blend-mode: difference;
+    color: var(--fg);
+  }
+  .top-bar .logo { font-weight: 900; }
+  .top-bar .logo .star { color: var(--accent); display: inline-block; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .top-bar nav { display: flex; gap: 28px; }
+  .top-bar nav a {
+    color: inherit;
+    text-decoration: none;
+    position: relative;
+  }
+  .top-bar nav a::after {
+    content: ""; position: absolute;
+    left: 0; right: 100%; bottom: -4px;
+    height: 2px; background: var(--accent);
+    transition: right 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .top-bar nav a:hover::after { right: 0; }
+  .top-bar .clock { font-variant-numeric: tabular-nums; }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 7vw 140px;
+    position: relative;
+    z-index: 5;
+  }
+
+  .pre-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 24px;
+  }
+  .pre-title .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.85); } }
+
+  .name-frame {
+    border: 5px solid var(--fg);
+    padding: 7% 5% 6%;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    cursor: none;
+    --mx: 50%;
+    --my: 50%;
+  }
+  .name-frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        rgba(242, 237, 226, 0.025) 0px,
+        rgba(242, 237, 226, 0.025) 1px,
+        transparent 1px,
+        transparent 14px
+      );
+    pointer-events: none;
+  }
+
+  .name-frame .corner {
+    position: absolute;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    color: var(--fg-dim);
+    z-index: 5;
+  }
+  .name-frame .corner.tl { top: 18px; left: 22px; }
+  .name-frame .corner.tr { top: 18px; right: 22px; }
+  .name-frame .corner.bl { bottom: 18px; left: 22px; }
+  .name-frame .corner.br { bottom: 18px; right: 22px; }
+  .name-frame .corner .accent { color: var(--accent); }
+
+  .name-uniform {
+    font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif;
+    font-weight: 900;
+    font-size: clamp(80px, 15vw, 260px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    text-align: center;
+    white-space: nowrap;
+    position: relative;
+    z-index: 2;
+    background: radial-gradient(
+      circle 220px at var(--mx) var(--my),
+      var(--accent) 0%,
+      var(--accent) 22%,
+      var(--fg) 60%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    user-select: none;
+    transition: letter-spacing 0.4s;
+  }
+
+  .name-frame-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .name-frame-meta .accent { color: var(--accent); }
+  .name-frame-meta .center { display: flex; gap: 18px; }
+
+  .tagline {
+    margin-top: 36px;
+    max-width: 720px;
+    font-size: clamp(17px, 1.45vw, 22px);
+    line-height: 1.4;
+    color: var(--fg);
+  }
+  .tagline .accent { color: var(--accent); font-style: italic; font-weight: 500; }
+  .tagline .strike { text-decoration: line-through; opacity: 0.5; }
+  .tagline .underline { border-bottom: 2px solid var(--accent); padding-bottom: 1px; }
+
+  .word-swap {
+    display: inline-block;
+    height: 1.4em;
+    overflow: hidden;
+    vertical-align: bottom;
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 600;
+  }
+  .word-swap-inner {
+    display: flex;
+    flex-direction: column;
+    animation: swap 9s steps(3) infinite;
+  }
+  @keyframes swap {
+    0%, 33% { transform: translateY(0); }
+    34%, 66% { transform: translateY(-1.4em); }
+    67%, 100% { transform: translateY(-2.8em); }
+  }
+  .word-swap span { height: 1.4em; line-height: 1.4em; }
+
+  .sticker {
+    position: absolute;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: grab;
+    user-select: none;
+    z-index: 20;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+    transition: box-shadow 0.15s;
+    white-space: nowrap;
+  }
+  .sticker:active { cursor: grabbing; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
+  .sticker.s1 { top: 4%; right: 3%; background: var(--accent); color: #000; transform: rotate(-7deg); }
+  .sticker.s2 { top: 80%; right: 5%; background: var(--fg); color: #000; transform: rotate(4deg); }
+  .sticker.s3 { top: 78%; left: 3%; background: var(--bg); color: var(--fg); border: 2px solid var(--fg); transform: rotate(-3deg); }
+  .sticker.s4 { top: 6%; left: 3%; background: var(--bg); color: var(--accent); border: 2px solid var(--accent); transform: rotate(8deg); }
+
+  .marquee {
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+    background: var(--bg);
+    z-index: 6;
+  }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  .marquee-track {
+    display: flex;
+    white-space: nowrap;
+    animation: scroll 38s linear infinite;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+  }
+  .marquee-track > div { display: flex; align-items: center; padding-right: 60px; }
+  .marquee-track .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin: 0 32px;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 24px;
+    gap: 40px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    padding: 0 7vw 60px;
+    z-index: 6;
+    position: relative;
+  }
+  .meta-row .col { display: flex; flex-direction: column; gap: 6px; }
+  .meta-row .col strong { color: var(--fg); font-weight: 700; }
+  .meta-row .col .accent { color: var(--accent); }
+
+  .sound-toggle {
+    position: fixed;
+    bottom: 22px; right: 28px;
+    z-index: 60;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .sound-toggle:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle .on { color: var(--accent); }
+  .sound-toggle.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle.active .on { color: var(--bg); }
+
+  .scroll-cue {
+    position: fixed;
+    bottom: 22px; left: 28px;
+    z-index: 60;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    mix-blend-mode: difference;
+  }
+  .scroll-cue .arrow { animation: bob 1.6s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+  .section-two {
+    border-top: 1px solid var(--line);
+    padding: 100px 7vw;
+    position: relative;
+    z-index: 5;
+    background: var(--bg);
+  }
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 40px;
+  }
+  .section-label::before { content: "§ "; color: var(--accent); }
+  .section-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(40px, 8vw, 130px);
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    max-width: 16ch;
+  }
+  .section-headline em { color: var(--accent); font-style: italic; }
+  .section-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+  .work-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 24px;
+    aspect-ratio: 4/5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .work-card::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: var(--accent);
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 0;
+  }
+  .work-card > * { position: relative; z-index: 1; }
+  .work-card:hover::before { transform: translateY(0); }
+  .work-card:hover { color: var(--bg); border-color: var(--accent); }
+  .work-card .num {
+    font-family: "Arial Black", sans-serif;
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .work-card .meta {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+  }
+  .work-card:hover .meta { color: var(--bg); }
+  .work-card h3 {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .work-card .tag {
+    align-self: flex-start;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 8px;
+    font-weight: 700;
+  }
+  .work-card:hover .tag { color: var(--bg); border-color: var(--bg); }
+
+  .section-about {
+    border-top: 1px solid var(--line);
+    padding: 100px 7vw;
+    position: relative;
+    z-index: 5;
+    background: var(--bg);
+  }
+  .about-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(36px, 7vw, 110px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    max-width: 18ch;
+    margin-bottom: 60px;
+  }
+  .about-headline em { color: var(--accent); font-style: italic; }
+  .about-headline .strike { text-decoration: line-through; opacity: 0.4; font-style: normal; }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 60px;
+    align-items: start;
+  }
+  .about-portrait {
+    border: 1px solid var(--line);
+    aspect-ratio: 4/5;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px;
+  }
+  .about-portrait::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 60px, rgba(255,69,0,0.06) 60px, rgba(255,69,0,0.06) 61px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 60px, rgba(242,237,226,0.04) 60px, rgba(242,237,226,0.04) 61px);
+    pointer-events: none;
+  }
+  .about-portrait .portrait-mark {
+    font-family: "Arial Black", sans-serif;
+    font-weight: 900;
+    font-size: clamp(80px, 12vw, 200px);
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    align-self: center;
+    margin: auto 0;
+    position: relative;
+    z-index: 1;
+  }
+  .about-portrait .portrait-meta {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+  .about-portrait .portrait-meta strong { color: var(--fg); font-weight: 700; }
+
+  .about-bio p {
+    font-size: clamp(17px, 1.45vw, 22px);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .about-bio p .accent { color: var(--accent); }
+  .about-bio p .underline { border-bottom: 2px solid var(--accent); padding-bottom: 1px; }
+  .about-bio p .strike { text-decoration: line-through; opacity: 0.5; }
+  .about-bio .signature {
+    font-family: "Arial Black", sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    margin-top: 24px;
+    transform: rotate(-3deg);
+    display: inline-block;
+    letter-spacing: -0.02em;
+  }
+
+  .cfn-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 80px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .cfn-col {
+    padding: 32px 28px;
+    border-right: 1px solid var(--line);
+  }
+  .cfn-col:last-child { border-right: none; }
+  .cfn-col .cfn-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 18px;
+  }
+  .cfn-col .cfn-label::before { content: "→ "; color: var(--accent); }
+  .cfn-col h4 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(20px, 2.2vw, 32px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  .cfn-col h4 em { color: var(--accent); font-style: italic; }
+  .cfn-col p {
+    font-size: 14px;
+    color: var(--fg-dim);
+    line-height: 1.5;
+  }
+
+  .mr-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-top: 80px;
+    border: 1px solid var(--line);
+  }
+  .mr-col { padding: 36px 32px; }
+  .mr-col + .mr-col { border-left: 1px solid var(--line); }
+  .mr-col .mr-head {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    margin-bottom: 24px;
+    font-weight: 800;
+  }
+  .mr-col.make .mr-head { color: var(--accent); }
+  .mr-col.refuse .mr-head { color: var(--fg-dim); }
+  .mr-col ul { list-style: none; }
+  .mr-col li {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(20px, 2.4vw, 30px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.015em;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    transition: color 0.3s, padding-left 0.3s;
+    cursor: none;
+  }
+  .mr-col li:last-child { border-bottom: none; }
+  .mr-col.make li:hover { color: var(--accent); padding-left: 12px; }
+  .mr-col.refuse li {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+  .mr-col.refuse li:hover { opacity: 1; color: var(--accent); }
+
+  @media (max-width: 800px) {
+    .section-grid, .about-grid, .cfn-row, .mr-row { grid-template-columns: 1fr; }
+    .cfn-col, .mr-col { border-right: none !important; border-left: none !important; border-bottom: 1px solid var(--line); }
+    .top-bar nav { display: none; }
+    .sticker { font-size: 11px; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ghost-bg" aria-hidden="true">
+  <div class="ghost-bg-row">CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · </div>
+  <div class="ghost-bg-row">MAXIMALIST · MAXIMALIST · MAXIMALIST · MAXIMALIST · MAXIMALIST · </div>
+  <div class="ghost-bg-row">CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · </div>
+  <div class="ghost-bg-row">NO VOWELS · NO VOWELS · NO VOWELS · NO VOWELS · NO VOWELS · </div>
+  <div class="ghost-bg-row">CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · CHRSTPHR · </div>
+</div>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / EST. 2026</div>
+  <nav>
+    <a href="index.html" class="curr">Home</a>
+    <a href="work.html">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="thoughts.html">Thoughts</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <div class="clock" id="clock">--:--:--</div>
+</div>
+
+<main class="hero">
+  <div class="pre-title">
+    <span class="pulse"></span>
+    <span>Currently designing weird things in public · Index 01</span>
+  </div>
+
+  <div class="name-frame" id="nameFrame">
+    <span class="corner tl"><span class="accent">◢</span> 2026.04</span>
+    <span class="corner tr">PORTFOLIO / V03 <span class="accent">◣</span></span>
+    <span class="corner bl"><span class="accent">◤</span> SCRUB ME</span>
+    <span class="corner br">DESIGN · UX · UI · AI <span class="accent">◥</span></span>
+    <h1 class="name-uniform" id="nameUniform">CHRSTPHR</h1>
+  </div>
+
+  <div class="name-frame-meta">
+    <span><span class="accent">↳</span> Hover the frame above. The light follows.</span>
+    <span class="center">
+      <span>OS: HUMAN/v0.41</span>
+      <span>·</span>
+      <span class="accent">SIGNAL: STRONG</span>
+    </span>
+    <span>NO VOWELS · NO REGRETS</span>
+  </div>
+
+  <p class="tagline">
+    Designer who left the vowels at home. <span class="accent">Maximalist UX</span>, opinionated brand systems, and AI experiments that
+    <span class="word-swap">
+      <span class="word-swap-inner">
+        <span>occasionally surprise me.</span>
+        <span>pretend to be sentient.</span>
+        <span>actually ship.</span>
+      </span>
+    </span>
+    <br/>
+    <span class="strike">Available for everything.</span> Available for the <span class="underline">right</span> things.
+  </p>
+
+  <div class="sticker s1" data-cursor="DRAG">DRAG ME ↘</div>
+  <div class="sticker s2" data-cursor="DRAG">UX · BRAND · AI</div>
+  <div class="sticker s3" data-cursor="DRAG">↳ LET'S MAKE A SCENE</div>
+  <div class="sticker s4" data-cursor="DRAG">★ NEW WORK SOON</div>
+</main>
+
+<div class="marquee">
+  <div class="marquee-track" id="marquee">
+    <div>
+      MAXIMALIST UX <span class="dot"></span> AI-NATIVE DESIGN <span class="dot"></span> BRAND SYSTEMS WITH OPINIONS <span class="dot"></span> WEIRD ON PURPOSE <span class="dot"></span> CURRENTLY ACCEPTING WORK <span class="dot"></span> NO VOWELS REQUIRED <span class="dot"></span>
+    </div>
+    <div>
+      MAXIMALIST UX <span class="dot"></span> AI-NATIVE DESIGN <span class="dot"></span> BRAND SYSTEMS WITH OPINIONS <span class="dot"></span> WEIRD ON PURPOSE <span class="dot"></span> CURRENTLY ACCEPTING WORK <span class="dot"></span> NO VOWELS REQUIRED <span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+<div class="meta-row">
+  <div class="col">
+    <span>Index</span>
+    <strong>01 / Hello</strong>
+  </div>
+  <div class="col">
+    <span>Status</span>
+    <strong class="accent">Open · Selectively</strong>
+  </div>
+  <div class="col">
+    <span>Discipline</span>
+    <strong>UX · UI · BRAND · AI</strong>
+  </div>
+  <div class="col">
+    <span>Located</span>
+    <strong>Earth, mostly</strong>
+  </div>
+</div>
+
+<section class="section-two">
+  <div class="section-label">Selected Work / Always Becoming</div>
+  <h2 class="section-headline">Stuff I made <em>that didn't</em> bore me.</h2>
+
+  <div class="section-grid">
+    <div class="work-card">
+      <div class="num">01</div>
+      <div>
+        <div class="meta">Client / SaaS</div>
+        <h3>The Receipt App That Argues Back</h3>
+      </div>
+      <div class="tag">UX/UI</div>
+    </div>
+    <div class="work-card">
+      <div class="num">02</div>
+      <div>
+        <div class="meta">Lab / AI Tool</div>
+        <h3>Branding Generator That Has Beef</h3>
+      </div>
+      <div class="tag">AI</div>
+    </div>
+    <div class="work-card">
+      <div class="num">03</div>
+      <div>
+        <div class="meta">Brand / Identity</div>
+        <h3>Type System For A Smug Coffee Shop</h3>
+      </div>
+      <div class="tag">BRAND</div>
+    </div>
+  </div>
+</section>
+
+<section class="section-about">
+  <div class="section-label">About / Who's This Guy</div>
+  <h2 class="about-headline">
+    I make <em>weird useful things</em> with <span class="strike">computers</span> AI, opinions, and a lot of caffeine.
+  </h2>
+
+  <div class="about-grid">
+    <div class="about-portrait">
+      <div class="portrait-meta">
+        <span>SUBJECT / 1.0</span>
+        <strong>CHRSTPHR ●</strong>
+      </div>
+      <div class="portrait-mark">★</div>
+      <div class="portrait-meta">
+        <span>HUMAN · DESIGNER · OPINIONATED</span>
+        <strong class="accent">REC</strong>
+      </div>
+    </div>
+
+    <div class="about-bio">
+      <p>I'm CHRSTPHR — designer, professional <span class="accent">vowel skipper</span>, and someone who believes interfaces should make you feel something. Even if that something is "wait, what?"</p>
+      <p>I've spent the last decade-ish bouncing between UX/UI for actual products, brand systems with strong opinions, and weird little AI experiments where I see how far I can push the tools before they fight back.</p>
+      <p>I don't believe in <span class="strike">"clean and minimal"</span> as a personality. I believe in clarity, attitude, and surprise — in roughly that order. The best work is the kind people <span class="underline">screenshot to their friends</span>.</p>
+      <p>If you want a pixel-pusher who'll polish your dashboard into oblivion, you're in the wrong place. If you want someone who'll ask weird questions, push back on the brief, and ship something with bite — hi.</p>
+      <span class="signature">— CHRSTPHR</span>
+    </div>
+  </div>
+
+  <div class="cfn-row">
+    <div class="cfn-col">
+      <div class="cfn-label">Currently</div>
+      <h4>Designing tools that <em>behave</em> like collaborators, not interfaces.</h4>
+      <p>Mostly AI-native UX, brand systems, and the occasional ridiculous side project.</p>
+    </div>
+    <div class="cfn-col">
+      <div class="cfn-label">Formerly</div>
+      <h4>Lead designer, freelance gun-for-hire, recovering <em>print purist</em>.</h4>
+      <p>Worked across SaaS, fintech, consumer apps, and at least one client who made cheese.</p>
+    </div>
+    <div class="cfn-col">
+      <div class="cfn-label">Never</div>
+      <h4>Going to ship a <em>generic SaaS gradient</em> as long as I can help it.</h4>
+      <p>Also never going to use "leverage synergies" un-ironically. You have my word.</p>
+    </div>
+  </div>
+
+  <div class="mr-row">
+    <div class="mr-col make">
+      <div class="mr-head">Things I make</div>
+      <ul>
+        <li>Maximalist UX with attitude</li>
+        <li>AI tools that have a personality</li>
+        <li>Brand systems with opinions</li>
+        <li>Weird sites for clever people</li>
+        <li>Identity that stops the scroll</li>
+      </ul>
+    </div>
+    <div class="mr-col refuse">
+      <div class="mr-head">Things I refuse to make</div>
+      <ul>
+        <li>Beige corporate websites</li>
+        <li>Dashboards that look like dashboards</li>
+        <li>Anything called "synergy"</li>
+        <li>Logos shaped like infinity</li>
+        <li>Generic SaaS purple gradients</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<button class="sound-toggle active" id="soundToggle">
+  Sound <span class="on">●</span> on
+</button>
+
+<div class="scroll-cue">
+  <span>scroll · or don't</span>
+  <span class="arrow">↓</span>
+</div>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-label" id="cursorLabel"></div>
+
+<script>
+  function tickClock() {
+    const d = new Date();
+    const t = d.toTimeString().split(' ')[0];
+    document.getElementById('clock').textContent = t + ' · LOCAL';
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  const cursor = document.getElementById('cursor');
+  const cursorLabel = document.getElementById('cursorLabel');
+  let mx = window.innerWidth/2, my = window.innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function loop() {
+    cx += (mx - cx) * 0.22;
+    cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    cursorLabel.style.left = mx + 'px';
+    cursorLabel.style.top = my + 'px';
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  document.querySelectorAll('[data-cursor]').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.classList.add('big');
+      const txt = el.getAttribute('data-cursor');
+      if (txt && txt !== '→') {
+        cursorLabel.textContent = txt;
+        cursorLabel.classList.add('show');
+      }
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.classList.remove('big');
+      cursorLabel.classList.remove('show');
+    });
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  const nameFrame = document.getElementById('nameFrame');
+  const nameUniform = document.getElementById('nameUniform');
+  nameFrame.addEventListener('mousemove', e => {
+    const tr = nameUniform.getBoundingClientRect();
+    const tx = e.clientX - tr.left;
+    const ty = e.clientY - tr.top;
+    nameUniform.style.setProperty('--mx', tx + 'px');
+    nameUniform.style.setProperty('--my', ty + 'px');
+  });
+  nameFrame.addEventListener('mouseleave', () => {
+    nameUniform.style.setProperty('--mx', '50%');
+    nameUniform.style.setProperty('--my', '50%');
+  });
+
+  document.querySelectorAll('.sticker').forEach(s => {
+    let dragging = false, startX, startY, startLeft, startTop, vx = 0, vy = 0, lastX, lastY, raf;
+    function pin() {
+      const r = s.getBoundingClientRect();
+      s.style.left = r.left + 'px';
+      s.style.top = r.top + 'px';
+      s.style.right = 'auto';
+      s.style.bottom = 'auto';
+    }
+    s.addEventListener('mousedown', e => {
+      cancelAnimationFrame(raf);
+      pin();
+      dragging = true;
+      startX = e.clientX; startY = e.clientY;
+      lastX = e.clientX; lastY = e.clientY;
+      const r = s.getBoundingClientRect();
+      startLeft = r.left; startTop = r.top;
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const nx = startLeft + e.clientX - startX;
+      const ny = startTop + e.clientY - startY;
+      s.style.left = nx + 'px';
+      s.style.top = ny + 'px';
+      vx = e.clientX - lastX;
+      vy = e.clientY - lastY;
+      lastX = e.clientX; lastY = e.clientY;
+    });
+    document.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      function flick() {
+        vx *= 0.94; vy *= 0.94;
+        const r = s.getBoundingClientRect();
+        let nx = r.left + vx;
+        let ny = r.top + vy;
+        if (nx < 0) { nx = 0; vx = -vx * 0.6; }
+        if (nx + r.width > innerWidth) { nx = innerWidth - r.width; vx = -vx * 0.6; }
+        if (ny < 60) { ny = 60; vy = -vy * 0.6; }
+        if (ny + r.height > innerHeight) { ny = innerHeight - r.height; vy = -vy * 0.6; }
+        s.style.left = nx + 'px';
+        s.style.top = ny + 'px';
+        if (Math.abs(vx) > 0.5 || Math.abs(vy) > 0.5) raf = requestAnimationFrame(flick);
+      }
+      flick();
+    });
+  });
+
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  document.addEventListener('mousedown', ensureAudio, { passive: true });
+  document.addEventListener('keydown', ensureAudio);
+  document.addEventListener('touchstart', ensureAudio, { passive: true });
+
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundToggle.classList.toggle('active', soundOn);
+    soundToggle.innerHTML = soundOn ? 'Sound <span class="on">●</span> on' : 'Sound <span class="on">●</span> off';
+    if (soundOn) blip(660, 0.08);
+  });
+  function blip(freq, dur, type = 'square') {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = type;
+    g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + dur);
+  }
+  document.querySelectorAll('[data-cursor], .sticker, .work-card, .mr-col li').forEach(el => {
+    el.addEventListener('mouseenter', () => blip(440 + Math.random() * 400, 0.04, 'sine'));
+  });
+
+  const code = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let buf = [];
+  document.addEventListener('keydown', e => {
+    buf.push(e.key);
+    if (buf.length > code.length) buf.shift();
+    if (buf.join('|').toLowerCase() === code.join('|').toLowerCase()) {
+      document.body.style.transition = 'filter 0.6s';
+      document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+      const msg = document.createElement('div');
+      msg.textContent = 'YOU FOUND THE THING. WELL DONE.';
+      msg.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;font-family:Arial Black,sans-serif;letter-spacing:-0.03em;color:#FF4500;background:rgba(0,0,0,0.85);z-index:99999;pointer-events:none;text-align:center;padding:20px;';
+      document.body.appendChild(msg);
+      setTimeout(() => {
+        document.body.style.filter = '';
+        msg.remove();
+      }, 3500);
+      buf = [];
+    }
+  });
+
+  console.log('%cCHRSTPHR', 'font-size:80px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+</body>
+</html>

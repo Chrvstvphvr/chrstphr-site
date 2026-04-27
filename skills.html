@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Chrstphr Services",
+  "schemaVersion": 1,
+  "description": "CHRSTPHR Services page — vending machine as the hero (12 service slots, click to lock in details, \"Get a quote\" launches mailto), engagement models (Sprint / Project / Partner), FAQ accordion, and a CTA strip.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Skills</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0A0A0A;
+    --fg: #F2EDE2;
+    --fg-dim: rgba(242, 237, 226, 0.5);
+    --line: rgba(242, 237, 226, 0.15);
+    --accent: #FF4500;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Helvetica Neue", "Arial", sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    cursor: none;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+  }
+
+  .cursor {
+    position: fixed;
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s, height 0.25s;
+  }
+  .cursor.big { width: 70px; height: 70px; }
+  .cursor.click { width: 12px; height: 12px; }
+
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    z-index: 50;
+    color: var(--fg);
+    mix-blend-mode: difference;
+  }
+  .top-bar .logo { font-weight: 900; }
+  .top-bar .logo .star { color: var(--accent); display: inline-block; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .top-bar nav { display: flex; gap: 28px; }
+  .top-bar nav a { color: inherit; text-decoration: none; position: relative; cursor: none; }
+  .top-bar nav a.curr { color: var(--accent); }
+  .top-bar nav a::after {
+    content: ""; position: absolute;
+    left: 0; right: 100%; bottom: -4px;
+    height: 2px; background: var(--accent);
+    transition: right 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .top-bar nav a:hover::after, .top-bar nav a.curr::after { right: 0; }
+
+  /* HERO — compact */
+  .hero {
+    padding: 100px 5vw 24px;
+    position: relative;
+    z-index: 5;
+  }
+  .pre-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 12px;
+  }
+  .pre-title .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+
+  .hero-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(38px, 6.4vw, 100px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    max-width: 16ch;
+  }
+  .hero-headline em { color: var(--accent); font-style: italic; }
+  .hero-sub {
+    max-width: 700px;
+    font-size: clamp(14px, 1.1vw, 17px);
+    line-height: 1.45;
+    color: var(--fg);
+  }
+  .hero-sub .accent { color: var(--accent); }
+  .hero-sub .strike { text-decoration: line-through; opacity: 0.5; }
+
+  /* MACHINE — fits on screen */
+  .machine-section {
+    padding: 16px 5vw 60px;
+    position: relative;
+    z-index: 5;
+  }
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 14px;
+  }
+  .section-label::before { content: "§ "; color: var(--accent); }
+
+  .machine-wrap {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 24px;
+    align-items: start;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+
+  .machine-body {
+    border: 4px solid var(--fg);
+    background: var(--bg);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 70vh;
+    min-height: 540px;
+  }
+
+  /* HEAD */
+  .machine-head {
+    background: var(--accent);
+    padding: 14px 20px;
+    border-bottom: 4px solid var(--fg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .machine-head .brand {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 1.8vw, 26px);
+    color: var(--bg);
+    letter-spacing: -0.025em;
+  }
+  .machine-head .brand .small {
+    font-size: 10px;
+    color: rgba(0, 0, 0, 0.55);
+    margin-left: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: 700;
+  }
+  .machine-head .head-meta {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: rgba(0, 0, 0, 0.7);
+    text-align: right;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+  .machine-head .led {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: var(--bg);
+    border-radius: 50%;
+    margin-left: 8px;
+    animation: blink-led 2s ease-in-out infinite;
+  }
+  @keyframes blink-led { 50% { opacity: 0.35; } }
+
+  /* BODY: GLASS + CONTROLS (side by side) */
+  .machine-mid {
+    display: grid;
+    grid-template-columns: 2.6fr 1fr;
+    overflow: hidden;
+  }
+
+  /* GLASS with shelves */
+  .machine-glass {
+    border-right: 4px solid var(--fg);
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+  }
+  .shelf {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 4px solid var(--fg);
+    position: relative;
+  }
+  .shelf:last-child { border-bottom: none; }
+  .shelf::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0; right: 0;
+    height: 4px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+    pointer-events: none;
+  }
+  .shelf.active::after { transform: scaleX(1); }
+
+  .slot {
+    background: var(--bg);
+    border-right: 2px solid var(--line);
+    padding: 10px;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 0;
+  }
+  .slot:last-child { border-right: none; }
+  .slot::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: var(--accent);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 0;
+  }
+  .slot > * { position: relative; z-index: 1; }
+  .slot:hover::before { transform: scaleY(1); }
+  .slot:hover .slot-name, .slot:hover .slot-code, .slot:hover .slot-tag { color: var(--bg); }
+  .slot.selected::before { transform: scaleY(1); }
+  .slot.selected .slot-name, .slot.selected .slot-code, .slot.selected .slot-tag, .slot.selected .slot-icon { color: var(--bg); }
+
+  .slot-code {
+    font-family: "Courier New", monospace;
+    font-size: 9px;
+    color: var(--fg-dim);
+    letter-spacing: 0.18em;
+    font-weight: 700;
+  }
+  .slot-icon {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(20px, 2.4vw, 36px);
+    line-height: 1;
+    color: var(--accent);
+    transition: color 0.25s, transform 0.4s;
+    align-self: center;
+  }
+  .slot:hover .slot-icon { color: var(--bg); transform: rotate(-6deg) scale(1.06); }
+  .slot-name {
+    font-family: "Arial Black", sans-serif;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: -0.005em;
+    line-height: 1.05;
+    color: var(--fg);
+  }
+  .slot-tag {
+    font-family: "Courier New", monospace;
+    font-size: 8.5px;
+    color: var(--accent);
+    margin-top: 2px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .slot.unavailable { opacity: 0.4; }
+  .slot.unavailable:hover::before { transform: scaleY(0); }
+  .slot.unavailable:hover .slot-icon { transform: none; color: var(--fg-dim); }
+
+  /* CONTROLS — RIGHT SIDE */
+  .machine-controls {
+    background: var(--bg);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: hidden;
+  }
+  .display-wrap {
+    background: var(--bg);
+    border: 2px solid var(--fg);
+    padding: 4px;
+    flex-shrink: 0;
+  }
+  .display {
+    background: #1a0a00;
+    color: var(--accent);
+    font-family: "Courier New", monospace;
+    padding: 8px 10px;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.5;
+    min-height: 80px;
+    position: relative;
+    overflow: hidden;
+    text-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
+  }
+  .display::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.3) 2px, rgba(0, 0, 0, 0.3) 3px);
+    pointer-events: none;
+  }
+  .display .display-line { position: relative; z-index: 1; }
+  .display .label-l { color: rgba(255, 69, 0, 0.6); }
+  .display .blink-c {
+    display: inline-block;
+    width: 6px;
+    height: 10px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin-left: 2px;
+    animation: blink-c 1s steps(2) infinite;
+  }
+  @keyframes blink-c { 50% { opacity: 0; } }
+
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    flex: 1;
+    align-content: end;
+  }
+  .keypad button {
+    background: var(--bg);
+    border: 2px solid var(--fg);
+    color: var(--fg);
+    padding: 8px;
+    font-family: "Courier New", monospace;
+    font-weight: 800;
+    cursor: none;
+    font-size: 13px;
+    transition: all 0.1s;
+  }
+  .keypad button:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .keypad button:active { transform: translateY(1px); }
+  .keypad button.go {
+    background: var(--accent);
+    color: var(--bg);
+    grid-column: span 3;
+    font-family: "Arial Black", sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    padding: 11px;
+    border-color: var(--accent);
+    margin-top: 4px;
+  }
+  .keypad button.go:hover { background: var(--bg); color: var(--accent); }
+
+  .coin-slot-mini {
+    background: var(--bg);
+    border: 2px solid var(--fg);
+    padding: 6px 10px;
+    font-family: "Courier New", monospace;
+    font-size: 9px;
+    color: var(--fg);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.3;
+    flex-shrink: 0;
+  }
+  .coin-slot-mini .coin { color: var(--accent); }
+
+  /* DELIVERY */
+  .delivery {
+    background: var(--bg);
+    padding: 12px 16px;
+    border-top: 4px solid var(--fg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .delivery .door {
+    flex: 1;
+    height: 32px;
+    background: var(--bg);
+    border: 2px solid var(--fg);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Courier New", monospace;
+    font-size: 9px;
+    color: var(--fg-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .delivery .door .drop-item {
+    position: absolute;
+    color: var(--accent);
+    font-family: "Arial Black", sans-serif;
+    font-size: 18px;
+    transform: translateY(-50px);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .delivery .door.dropped .drop-item {
+    opacity: 1;
+    transform: translateY(0);
+    transition: transform 0.5s cubic-bezier(0.5, 0, 0.5, 1.5), opacity 0.2s;
+  }
+  .delivery .meta {
+    font-family: "Courier New", monospace;
+    font-size: 9px;
+    color: var(--fg-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  /* LEGS */
+  .machine-legs {
+    display: flex;
+    justify-content: space-between;
+    height: 28px;
+    margin: 0 12px;
+  }
+  .machine-legs .leg {
+    width: 28px;
+    background: var(--fg);
+    height: 100%;
+    border-left: 4px solid var(--bg);
+    border-right: 4px solid var(--bg);
+    position: relative;
+  }
+  .machine-legs .leg::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: -8px;
+    right: -8px;
+    height: 5px;
+    background: var(--fg);
+  }
+  .machine-legs .leg.middle { width: 10px; opacity: 0.4; align-self: center; height: 60%; }
+
+  /* INFO PANEL */
+  .info-panel {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 24px;
+    height: 70vh;
+    min-height: 540px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .info-panel .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 14px;
+    font-weight: 800;
+  }
+  .info-panel .label::before { content: "→ "; color: var(--accent); }
+  .info-panel h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(24px, 2.4vw, 36px);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    margin-bottom: 16px;
+    min-height: 1em;
+  }
+  .info-panel h3 em { color: var(--accent); font-style: italic; }
+  .info-panel p {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    color: var(--fg);
+  }
+  .info-panel .info-meta {
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+  }
+  .info-panel .info-meta strong { color: var(--fg); display: block; margin-top: 4px; font-size: 12px; letter-spacing: 0.05em; }
+  .info-panel .info-meta strong.accent { color: var(--accent); }
+  .info-panel .info-cta {
+    display: block;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 14px 16px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    cursor: none;
+    text-align: center;
+    transition: all 0.2s;
+    border: 2px solid var(--accent);
+    margin-top: auto;
+  }
+  .info-panel .info-cta:hover { background: transparent; color: var(--accent); }
+
+  /* FAQ */
+  .faq {
+    padding: 100px 7vw;
+    border-top: 1px solid var(--line);
+    position: relative;
+    z-index: 5;
+  }
+  .faq-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(34px, 6.5vw, 100px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    margin-bottom: 50px;
+    max-width: 22ch;
+  }
+  .faq-headline em { color: var(--accent); font-style: italic; }
+  .faq-list { border-top: 1px solid var(--line); }
+  .faq-item {
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+    cursor: none;
+    transition: padding-left 0.3s;
+  }
+  .faq-item:hover { padding-left: 12px; }
+  .faq-item .faq-q {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(20px, 2.4vw, 32px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.015em;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 20px;
+  }
+  .faq-item .faq-q .toggle {
+    color: var(--accent);
+    font-size: 28px;
+    flex-shrink: 0;
+    transition: transform 0.3s;
+  }
+  .faq-item.open .faq-q .toggle { transform: rotate(45deg); }
+  .faq-item .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, margin 0.4s ease;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--fg);
+    max-width: 70ch;
+  }
+  .faq-item .faq-a .accent { color: var(--accent); }
+  .faq-item.open .faq-a {
+    max-height: 600px;
+    margin-top: 16px;
+  }
+
+  /* CTA */
+  .cta {
+    padding: 100px 7vw 130px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative;
+    z-index: 5;
+  }
+  .cta h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 10vw, 180px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cta h2 em { color: var(--accent); font-style: italic; }
+  .cta p {
+    max-width: 600px;
+    margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-dim);
+  }
+  .cta-button {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 26px 44px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 4px solid var(--accent);
+  }
+  .cta-button:hover { background: transparent; color: var(--accent); }
+
+  .sound-toggle {
+    position: fixed;
+    bottom: 22px; right: 28px;
+    z-index: 200;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .sound-toggle:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle .on { color: var(--accent); }
+  .sound-toggle.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle.active .on { color: var(--bg); }
+
+  @media (max-width: 1100px) {
+    .machine-wrap { grid-template-columns: 1fr; }
+    .info-panel { height: auto; min-height: auto; }
+    .machine-body { height: auto; min-height: 600px; }
+  }
+  @media (max-width: 700px) {
+    .top-bar nav { display: none; }
+    .machine-mid { grid-template-columns: 1fr; }
+    .machine-glass { border-right: none; border-bottom: 4px solid var(--fg); }
+    .machine-controls { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / SKILLS</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html" class="curr">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="thoughts.html">Thoughts</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="pre-title">
+    <span class="pulse"></span>
+    <span>Index 04 / What CHRSTPHR brings to the table</span>
+  </div>
+  <h1 class="hero-headline">Skills, on <em>display</em>.</h1>
+  <p class="hero-sub">
+    Twelve disciplines on a machine. <span class="strike">Insert quarters.</span> Pick a slot to see what each one actually means. No prices, no contracts — just <span class="accent">what CHRSTPHR is fluent in</span>.
+  </p>
+</section>
+
+<section class="machine-section">
+  <div class="section-label">The Skill.Machine / 12 in stock, 1 out</div>
+  <div class="machine-wrap">
+
+    <div>
+      <div class="machine-body">
+        <div class="machine-head">
+          <span class="brand">SKILL.MACHINE <span class="small">v0.41</span></span>
+          <span class="head-meta">
+            ONLINE <span class="led"></span><br/>
+            <span style="opacity: 0.7">RACK: 4 × 3</span>
+          </span>
+        </div>
+
+        <div class="machine-mid">
+          <div class="machine-glass">
+            <div class="shelf" id="shelf1"></div>
+            <div class="shelf" id="shelf2"></div>
+            <div class="shelf" id="shelf3"></div>
+            <div class="shelf" id="shelf4"></div>
+          </div>
+
+          <div class="machine-controls">
+            <div class="display-wrap">
+              <div class="display">
+                <div class="display-line"><span class="label-l">SEL ▸</span> <span id="dispCode">— · —</span></div>
+                <div class="display-line"><span class="label-l">NAM ▸</span> <span id="dispName">PICK A SLOT</span></div>
+                <div class="display-line"><span class="label-l">LVL ▸</span> <span id="dispLevel">———————</span></div>
+                <div class="display-line"><span class="label-l">USE ▸</span> <span id="dispUse">———<span class="blink-c"></span></span></div>
+              </div>
+            </div>
+            <div class="keypad">
+              <button data-key="A">A</button><button data-key="B">B</button><button data-key="C">C</button>
+              <button data-key="D">D</button><button data-key="1">1</button><button data-key="2">2</button>
+              <button data-key="3">3</button><button data-key="*">★</button><button data-key="?">?</button>
+              <button class="go" id="vendBtn">↳ VEND</button>
+            </div>
+            <div class="coin-slot-mini">INSERT <span class="coin">★</span> COIN · MESSAGE = $</div>
+          </div>
+        </div>
+
+        <div class="delivery">
+          <div class="door" id="deliveryDoor">
+            <span style="position:relative;z-index:1">DELIVERY</span>
+            <span class="drop-item" id="dropItem">★</span>
+          </div>
+          <div class="meta">DROP ZONE</div>
+        </div>
+      </div>
+
+      <div class="machine-legs">
+        <div class="leg"></div>
+        <div class="leg middle"></div>
+        <div class="leg"></div>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <div class="label">Selected Skill / Read out</div>
+      <h3 id="infoTitle">Pick a slot →</h3>
+      <p id="infoDesc">Hover any slot to peek inside. Click to lock it in. Each one is a thing CHRSTPHR actively does, often, well.</p>
+      <div class="info-meta">
+        <div>Code<strong id="infoCode">—</strong></div>
+        <div>Level<strong class="accent" id="infoLevel">—</strong></div>
+        <div>Years<strong id="infoYears">—</strong></div>
+        <div>Vibe<strong id="infoVibe">—</strong></div>
+      </div>
+      <a href="mailto:hi@chrstphr.studio" class="info-cta" id="infoCta">↳ TALK ABOUT IT</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="section-label">Things you'll ask</div>
+  <h2 class="faq-headline">Yeah, <em>that's</em> a fair question.</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q"><span>Why a vending machine?</span><span class="toggle">+</span></div>
+      <div class="faq-a">Because most "skills" pages are <span class="accent">a bullet list with no information density</span>. You can vend a quarter and get exactly the same insight. This way at least you have to push a button.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><span>What's the difference between "Expert" and "Fluent"?</span><span class="toggle">+</span></div>
+      <div class="faq-a"><span class="accent">Expert</span> means CHRSTPHR has shipped it under pressure, mentored on it, and has strong opinions about how it should be done. <span class="accent">Fluent</span> means working in it confidently and shipping — but still actively learning. <span class="accent">Exploring</span> means playing with it but you'd hire someone better than CHRSTPHR to lead it.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><span>Where's the pricing?</span><span class="toggle">+</span></div>
+      <div class="faq-a">Not on this page. <span class="accent">This is a skills page</span>, not a menu. Pricing happens after we figure out if CHRSTPHR is the right person for what you actually need.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><span>Are you actively doing all 12 of these?</span><span class="toggle">+</span></div>
+      <div class="faq-a">At any given moment? <span class="accent">No</span>. Across a year of projects? Pretty much, yeah. Most projects pull on 3–5 of these at once.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><span>What about skills NOT in the machine?</span><span class="toggle">+</span></div>
+      <div class="faq-a">Then either CHRSTPHR doesn't do it, or isn't good enough at it to put it on display. <span class="accent">Better to decline a project than fake it.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Want CHRSTPHR to bring <em>any of these</em> to your project?</h2>
+  <p>Pick a skill, say hi, tell CHRSTPHR what you're working on. Replies come in real sentences.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<button class="sound-toggle active" id="soundToggle">
+  Sound <span class="on">●</span> on
+</button>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  let mx = window.innerWidth/2, my = window.innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function loop() {
+    cx += (mx - cx) * 0.22;
+    cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  }
+  loop();
+  function refreshHovers() {
+    document.querySelectorAll('button, a, .slot, .faq-item').forEach(el => {
+      if (el.dataset.cursorBound) return;
+      el.dataset.cursorBound = '1';
+      el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+    });
+  }
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  // SOUND
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  document.addEventListener('mousedown', ensureAudio, { passive: true });
+  document.addEventListener('keydown', ensureAudio);
+  document.addEventListener('touchstart', ensureAudio, { passive: true });
+
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundToggle.classList.toggle('active', soundOn);
+    soundToggle.innerHTML = soundOn ? 'Sound <span class="on">●</span> on' : 'Sound <span class="on">●</span> off';
+    if (soundOn) blip(660, 0.08);
+  });
+  function blip(freq, dur, type = 'square') {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = type;
+    g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + dur);
+  }
+
+  // SKILLS
+  const skills = [
+    { code: 'A1', icon: '✱', name: 'Maximalist UX',     level: 'EXPERT',    years: '10+',  vibe: 'Loud, clear, alive', desc: "Interfaces that make people feel something — in a good way. Lots of personality, hierarchy that hits, motion with intent." },
+    { code: 'A2', icon: '◤', name: 'Brand Systems',     level: 'EXPERT',    years: '10+',  vibe: 'Cohesive, with bite', desc: "Voice, color, type, motion, logo, the whole identity stack — built to hold up across web, product, and print." },
+    { code: 'A3', icon: '▲', name: 'AI-Native Design',  level: 'FLUENT',    years: '4',    vibe: 'Strange, useful', desc: "Designing interfaces where AI is the core mechanic, not a sidebar bolt-on. Generative tools, agent UX, tools that feel alive." },
+    { code: 'B1', icon: '◉', name: 'Visual Identity',   level: 'EXPERT',    years: '10+',  vibe: 'Iconic on purpose', desc: "Logos, marks, identity systems with rules, lockups, and rationale. Built to scale and outlast a CEO change." },
+    { code: 'B2', icon: '◐', name: 'UI Design',         level: 'EXPERT',    years: '10+',  vibe: 'Pixel-tight + warm', desc: "High-fidelity interface design across product surfaces. Component-level rigor with emotional warmth — both, not either." },
+    { code: 'B3', icon: '◇', name: 'Design Systems',    level: 'FLUENT',    years: '6',    vibe: 'Tidy, opinionated', desc: "Component libraries, token systems, documentation that designers and engineers actually read." },
+    { code: 'C1', icon: '∆', name: 'Typography',        level: 'EXPERT',    years: '12+',  vibe: 'Custom or curated', desc: "Type pairing, hierarchy, custom letterforms, rhythm and scale. Type as the brand's voice, not its decoration." },
+    { code: 'C2', icon: '▣', name: 'Motion + Interact', level: 'FLUENT',    years: '5',    vibe: 'Tactile, purposeful', desc: "Micro-interactions, scroll-driven motion, transitions that feel like the product is breathing — not just moving." },
+    { code: 'C3', icon: '☎', name: 'AI Prototyping',    level: 'FLUENT',    years: '3',    vibe: 'Fast + weird', desc: "Wiring up real AI prototypes with code + LLMs. Less Figma, more working tool. Hands-on with engineers (or alone)." },
+    { code: 'D1', icon: '?', name: 'Brand Strategy',    level: 'FLUENT',    years: '7',    vibe: 'Sharp positioning', desc: "Helping you figure out what you're actually about before we make it look like anything. Positioning, voice, audience." },
+    { code: 'D2', icon: '☕', name: 'Product Thinking',  level: 'FLUENT',    years: '8',    vibe: 'Skeptical, generative', desc: "Working with founders + PMs on what to build, not just how it looks. Pushes back, asks weird questions, writes specs." },
+    { code: 'D3', icon: '×', name: '— Out of Stock —',  level: 'N/A',       years: '—',    vibe: '—',                   desc: "This slot is famously empty. Could be a skill CHRSTPHR doesn't have. Could be one CHRSTPHR refuses to advertise. You decide.", unavailable: true }
+  ];
+
+  function renderSlots() {
+    const shelves = [
+      document.getElementById('shelf1'),
+      document.getElementById('shelf2'),
+      document.getElementById('shelf3'),
+      document.getElementById('shelf4')
+    ];
+    skills.forEach((sk, i) => {
+      const div = document.createElement('div');
+      div.className = 'slot' + (sk.unavailable ? ' unavailable' : '');
+      div.dataset.code = sk.code;
+      div.innerHTML = `
+        <div class="slot-code">${sk.code}</div>
+        <div class="slot-icon">${sk.icon}</div>
+        <div>
+          <div class="slot-name">${sk.name}</div>
+          <div class="slot-tag">${sk.level}</div>
+        </div>
+      `;
+      div.addEventListener('mouseenter', () => {
+        previewSkill(sk);
+        document.querySelectorAll('.shelf').forEach(s => s.classList.remove('active'));
+        shelves[Math.floor(i / 3)].classList.add('active');
+        blip(540 + Math.random() * 200, 0.025, 'sine');
+      });
+      div.addEventListener('mouseleave', () => {
+        document.querySelectorAll('.shelf').forEach(s => s.classList.remove('active'));
+      });
+      div.addEventListener('click', () => selectSkill(sk, div));
+      shelves[Math.floor(i / 3)].appendChild(div);
+    });
+  }
+  renderSlots();
+  refreshHovers();
+
+  let selected = null;
+  function previewSkill(sk) {
+    document.getElementById('dispCode').textContent = sk.code + ' · ' + sk.level;
+    document.getElementById('dispName').textContent = sk.name.toUpperCase();
+    document.getElementById('dispLevel').textContent = sk.level + ' · ' + sk.years + ' YRS';
+    document.getElementById('dispUse').innerHTML = sk.vibe.toUpperCase() + '<span class="blink-c"></span>';
+  }
+  function selectSkill(sk, el) {
+    if (sk.unavailable) {
+      blip(180, 0.18, 'sawtooth');
+      setTimeout(() => blip(140, 0.12, 'sawtooth'), 100);
+      document.querySelector('.display').animate(
+        [{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }],
+        { duration: 280 }
+      );
+      return;
+    }
+    selected = sk;
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('infoTitle').textContent = sk.name;
+    document.getElementById('infoDesc').textContent = sk.desc;
+    document.getElementById('infoCode').textContent = sk.code;
+    document.getElementById('infoLevel').textContent = sk.level;
+    document.getElementById('infoYears').textContent = sk.years;
+    document.getElementById('infoVibe').textContent = sk.vibe;
+    el.style.transition = 'transform 0.35s cubic-bezier(0.65, 0, 0.35, 1)';
+    el.style.transform = 'translateY(8px) scale(0.96)';
+    setTimeout(() => el.style.transform = '', 350);
+    blip(640, 0.05);
+    setTimeout(() => blip(880, 0.04), 60);
+    const door = document.getElementById('deliveryDoor');
+    const drop = document.getElementById('dropItem');
+    drop.textContent = sk.icon;
+    door.classList.remove('dropped');
+    void door.offsetWidth;
+    door.classList.add('dropped');
+    setTimeout(() => blip(420, 0.04), 180);
+    setTimeout(() => blip(280, 0.06), 320);
+    setTimeout(() => blip(180, 0.05), 440);
+  }
+
+  document.getElementById('vendBtn').addEventListener('click', () => {
+    if (!selected) {
+      blip(180, 0.2, 'sawtooth');
+      setTimeout(() => blip(140, 0.15, 'sawtooth'), 100);
+      const dispName = document.getElementById('dispName');
+      const og = dispName.textContent;
+      dispName.textContent = '** PICK A SLOT **';
+      setTimeout(() => dispName.textContent = og, 1600);
+      return;
+    }
+    blip(560, 0.04);
+    setTimeout(() => blip(720, 0.04), 80);
+    setTimeout(() => blip(960, 0.05), 160);
+    const subj = encodeURIComponent('About ' + selected.name + ' (' + selected.code + ')');
+    const body = encodeURIComponent("Hi CHRSTPHR — I want to talk about: " + selected.name + " (" + selected.code + ")\n\n");
+    window.location.href = 'mailto:hi@chrstphr.studio?subject=' + subj + '&body=' + body;
+  });
+
+  document.querySelectorAll('.keypad button:not(.go)').forEach(b => {
+    b.addEventListener('click', () => {
+      blip(700 + Math.random() * 200, 0.03);
+      setTimeout(() => blip(420 + Math.random() * 100, 0.02), 30);
+    });
+    b.addEventListener('mouseenter', () => blip(880 + Math.random() * 120, 0.02, 'sine'));
+  });
+
+  document.querySelectorAll('button, a').forEach(el => {
+    if (el.classList.contains('keypad')) return;
+    el.addEventListener('mouseenter', () => blip(440 + Math.random() * 400, 0.04, 'sine'));
+  });
+
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.addEventListener('mouseenter', () => blip(560 + Math.random() * 200, 0.025, 'sine'));
+    item.addEventListener('click', () => {
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) {
+        item.classList.add('open');
+        blip(660, 0.04);
+        setTimeout(() => blip(880, 0.04), 60);
+      } else {
+        blip(380, 0.04);
+      }
+    });
+  });
+
+  console.log('%cCHRSTPHR // SKILLS', 'font-size:48px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+</body>
+</html>

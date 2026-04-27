@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Chrstphr 404",
+  "schemaVersion": 1,
+  "description": "CHRSTPHR 404 / Lost page — on-brand error experience. Massive 404 typography where the zero runs away from your cursor, snarky copy, four \"find your way back\" cards, and a mock search that suggests progressively weirder fake results.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — 404 / Lost</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0A0A0A;
+    --fg: #F2EDE2;
+    --fg-dim: rgba(242, 237, 226, 0.5);
+    --line: rgba(242, 237, 226, 0.15);
+    --accent: #FF4500;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Helvetica Neue", "Arial", sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    cursor: none;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.45;
+    mix-blend-mode: overlay;
+  }
+
+  .ghost-bg {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    opacity: 0.04;
+    transform: rotate(-12deg) scale(1.4);
+  }
+  .ghost-bg-row {
+    font-family: "Arial Black", Impact, sans-serif;
+    font-weight: 900;
+    font-size: 220px;
+    letter-spacing: -0.05em;
+    line-height: 0.85;
+    white-space: nowrap;
+    color: var(--fg);
+    text-transform: uppercase;
+    animation: ghost-scroll 70s linear infinite;
+  }
+  .ghost-bg-row:nth-child(even) { animation-direction: reverse; animation-duration: 100s; color: var(--accent); opacity: 0.5; }
+  @keyframes ghost-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .cursor {
+    position: fixed;
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s, height 0.25s, border-radius 0.25s;
+  }
+  .cursor.big { width: 70px; height: 70px; }
+  .cursor.click { width: 12px; height: 12px; }
+
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    z-index: 50;
+    color: var(--fg);
+    mix-blend-mode: difference;
+  }
+  .top-bar .logo { font-weight: 900; }
+  .top-bar .logo .star { color: var(--accent); display: inline-block; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .top-bar nav { display: flex; gap: 28px; }
+  .top-bar nav a { color: inherit; text-decoration: none; position: relative; cursor: none; }
+  .top-bar nav a::after {
+    content: ""; position: absolute;
+    left: 0; right: 100%; bottom: -4px;
+    height: 2px; background: var(--accent);
+    transition: right 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .top-bar nav a:hover::after { right: 0; }
+  .top-bar .err-tag {
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    animation: blinkE 1.5s steps(2) infinite;
+  }
+  @keyframes blinkE { 50% { opacity: 0.4; } }
+
+  .hero {
+    min-height: 100vh;
+    padding: 100px 7vw 80px;
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .pre-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 10px;
+  }
+  .pre-title .accent { color: var(--accent); font-weight: 800; }
+  .pre-title .timer { color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 700; }
+
+  .four {
+    font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif;
+    font-weight: 900;
+    font-size: clamp(180px, 38vw, 580px);
+    line-height: 0.78;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    user-select: none;
+    margin: 24px 0;
+    display: flex;
+    justify-content: center;
+    gap: 0.02em;
+    position: relative;
+  }
+  .four .digit {
+    display: inline-block;
+    will-change: transform;
+    transition: color 0.3s;
+  }
+  .four .digit.outline {
+    color: transparent;
+    -webkit-text-stroke: 4px var(--fg);
+  }
+  .four .digit.zero {
+    color: var(--accent);
+    transition: transform 0.15s ease-out, color 0.3s;
+    cursor: none;
+  }
+  .four .digit.zero:hover { color: var(--fg); }
+
+  .four .runaway-hint {
+    position: absolute;
+    bottom: -30px;
+    right: 50%;
+    transform: translateX(50%);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    font-weight: 700;
+    font-family: "Helvetica Neue", sans-serif;
+  }
+
+  .err-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(34px, 6vw, 88px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    margin-top: 60px;
+    max-width: 22ch;
+  }
+  .err-headline em { color: var(--accent); font-style: italic; }
+
+  .err-body {
+    margin-top: 28px;
+    max-width: 600px;
+    font-size: clamp(17px, 1.35vw, 21px);
+    line-height: 1.5;
+    color: var(--fg);
+  }
+  .err-body .accent { color: var(--accent); }
+  .err-body .strike { text-decoration: line-through; opacity: 0.5; }
+  .err-body .underline { border-bottom: 2px solid var(--accent); padding-bottom: 1px; }
+
+  /* BACK CARDS */
+  .back-cards { margin-top: 80px; }
+  .back-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 24px;
+  }
+  .back-label::before { content: "§ "; color: var(--accent); }
+  .back-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .back-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 22px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+    text-decoration: none;
+    color: inherit;
+  }
+  .back-card::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: var(--accent);
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 0;
+  }
+  .back-card > * { position: relative; z-index: 1; }
+  .back-card:hover::before { transform: translateY(0); }
+  .back-card:hover { color: var(--bg); border-color: var(--accent); }
+  .back-card .num {
+    font-family: "Arial Black", sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--accent);
+    transition: color 0.3s;
+  }
+  .back-card:hover .num { color: var(--bg); }
+  .back-card .label-meta {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+  }
+  .back-card:hover .label-meta { color: var(--bg); opacity: 0.85; }
+  .back-card h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: 22px;
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: -0.015em;
+  }
+  .back-card .arrow {
+    align-self: flex-end;
+    font-size: 24px;
+    transition: transform 0.3s;
+  }
+  .back-card:hover .arrow { transform: translateX(6px) translateY(-6px); }
+
+  /* FOOTER */
+  .err-footer {
+    border-top: 1px solid var(--line);
+    margin-top: 80px;
+    padding-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .err-footer a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 69, 0, 0.4);
+    text-underline-offset: 4px;
+    cursor: none;
+  }
+
+  .sound-toggle {
+    position: fixed;
+    bottom: 22px; right: 28px;
+    z-index: 200;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .sound-toggle:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle .on { color: var(--accent); }
+  .sound-toggle.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle.active .on { color: var(--bg); }
+
+  @media (max-width: 800px) {
+    .back-grid { grid-template-columns: 1fr 1fr; }
+    .top-bar nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ghost-bg" aria-hidden="true">
+  <div class="ghost-bg-row">LOST · LOST · LOST · LOST · LOST · LOST · LOST · LOST · LOST · </div>
+  <div class="ghost-bg-row">404 · 404 · 404 · 404 · 404 · 404 · 404 · 404 · 404 · 404 · </div>
+  <div class="ghost-bg-row">LOST · LOST · LOST · LOST · LOST · LOST · LOST · LOST · LOST · </div>
+  <div class="ghost-bg-row">404 · 404 · 404 · 404 · 404 · 404 · 404 · 404 · 404 · 404 · </div>
+  <div class="ghost-bg-row">LOST · LOST · LOST · LOST · LOST · LOST · LOST · LOST · LOST · </div>
+</div>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / 404</div>
+  <span class="err-tag">ERR · PAGE NOT FOUND</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="thoughts.html">Thoughts</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<main class="hero">
+  <div class="pre-title">
+    <span class="accent">●</span>
+    <span>Lost since <span class="timer" id="timer">00:00</span></span>
+    <span>·</span>
+    <span>This page is unaccounted for</span>
+  </div>
+
+  <div class="four" id="four">
+    <span class="digit outline">4</span><span class="digit zero" id="runZero">0</span><span class="digit outline">4</span>
+    <span class="runaway-hint">↑ try to catch the zero</span>
+  </div>
+
+  <h1 class="err-headline">
+    This page took a <em>sick day</em>.
+  </h1>
+
+  <p class="err-body">
+    Either it <span class="accent">moved</span>, never existed in the first place, or you typed something <span class="strike">cursed</span> creative. Don't worry, it happens. <span class="underline">You're still in the right neighborhood.</span>
+  </p>
+
+  <div class="back-cards">
+    <div class="back-label">Or just go somewhere useful</div>
+    <div class="back-grid">
+      <a href="#" class="back-card">
+        <div>
+          <div class="num">01</div>
+          <div class="label-meta" style="margin-top:8px">Home</div>
+        </div>
+        <h3>The starting line</h3>
+        <span class="arrow">↗</span>
+      </a>
+      <a href="#" class="back-card">
+        <div>
+          <div class="num">02</div>
+          <div class="label-meta" style="margin-top:8px">Work</div>
+        </div>
+        <h3>Stuff I made</h3>
+        <span class="arrow">↗</span>
+      </a>
+      <a href="#" class="back-card">
+        <div>
+          <div class="num">03</div>
+          <div class="label-meta" style="margin-top:8px">About</div>
+        </div>
+        <h3>Who's this guy</h3>
+        <span class="arrow">↗</span>
+      </a>
+      <a href="#" class="back-card">
+        <div>
+          <div class="num">04</div>
+          <div class="label-meta" style="margin-top:8px">Contact</div>
+        </div>
+        <h3>Yell at me</h3>
+        <span class="arrow">↗</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="err-footer">
+    <span>STATUS: <span style="color:var(--accent)">UNHELPFULLY LOST</span></span>
+    <span>Still can't find it? <a href="#">Tell me what's broken →</a></span>
+    <span>ERR_CODE: 404 · GHOST_PAGE</span>
+  </div>
+</main>
+
+<button class="sound-toggle active" id="soundToggle">
+  Sound <span class="on">●</span> on
+</button>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  let mx = window.innerWidth/2, my = window.innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function loop() {
+    cx += (mx - cx) * 0.22;
+    cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  }
+  loop();
+  document.querySelectorAll('button, a, .digit.zero').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  let secs = 0;
+  setInterval(() => {
+    secs++;
+    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+    const s = String(secs % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = m + ':' + s;
+  }, 1000);
+
+  // ZERO RUNS AWAY
+  const zero = document.getElementById('runZero');
+  let zx = 0, zy = 0, zvx = 0, zvy = 0;
+  document.addEventListener('mousemove', e => {
+    const r = zero.getBoundingClientRect();
+    const cxx = r.left + r.width/2;
+    const cyy = r.top + r.height/2;
+    const dx = e.clientX - cxx, dy = e.clientY - cyy;
+    const dist = Math.hypot(dx, dy);
+    const max = 280;
+    if (dist < max) {
+      const force = 1 - dist/max;
+      const fx = -dx * force * 0.6;
+      const fy = -dy * force * 0.6;
+      zvx += (fx - zx) * 0.15;
+      zvy += (fy - zy) * 0.15;
+    }
+  });
+  function zeroLoop() {
+    zvx *= 0.85; zvy *= 0.85;
+    zx += zvx * 0.1;
+    zy += zvy * 0.1;
+    zx *= 0.96; zy *= 0.96;
+    zero.style.transform = `translate(${zx}px, ${zy}px) rotate(${zx * 0.2}deg)`;
+    requestAnimationFrame(zeroLoop);
+  }
+  zeroLoop();
+
+  zero.addEventListener('click', () => {
+    blip(880, 0.08);
+    setTimeout(() => blip(440, 0.06), 80);
+    zvx = (Math.random() - 0.5) * 1200;
+    zvy = (Math.random() - 0.5) * 1200;
+  });
+  zero.addEventListener('mouseenter', () => blip(660 + Math.random()*120, 0.04, 'sine'));
+
+  // SOUND (default ON)
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  document.addEventListener('mousedown', ensureAudio, { passive: true });
+  document.addEventListener('keydown', ensureAudio);
+  document.addEventListener('touchstart', ensureAudio, { passive: true });
+
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundToggle.classList.toggle('active', soundOn);
+    soundToggle.innerHTML = soundOn ? 'Sound <span class="on">●</span> on' : 'Sound <span class="on">●</span> off';
+    if (soundOn) blip(660, 0.08);
+  });
+  function blip(freq, dur, type = 'square') {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = type;
+    g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + dur);
+  }
+  // more beeps
+  document.querySelectorAll('button, a, .back-card').forEach(el => {
+    el.addEventListener('mouseenter', () => blip(440 + Math.random() * 400, 0.04, 'sine'));
+  });
+  document.querySelectorAll('.back-card').forEach(c => {
+    c.addEventListener('click', () => {
+      blip(720, 0.05);
+      setTimeout(() => blip(540, 0.05), 70);
+    });
+  });
+
+  console.log('%c404 / LOST', 'font-size:80px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+</body>
+</html>

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Chrstphr Thoughts",
+  "schemaVersion": 1,
+  "description": "CHRSTPHR Thoughts page — mixed feed of essays, hot takes, and links. Filterable by post type, tag-based search. Asymmetric grid layout where essays span 2 cols, takes span 1 col, and links span full width. Sound on by default.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE CHRSTPHR TIMES</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0A0A0A;
+    --fg: #F2EDE2;
+    --fg-dim: rgba(242, 237, 226, 0.5);
+    --line: rgba(242, 237, 226, 0.2);
+    --rule: rgba(242, 237, 226, 0.6);
+    --accent: #FF4500;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Helvetica Neue", "Arial", sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    cursor: none;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+  }
+
+  /* CURSOR — bulletproof: solid color, high z-index, outline halo */
+  .cursor {
+    position: fixed;
+    width: 24px; height: 24px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999999;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s, height 0.25s;
+    box-shadow:
+      0 0 0 2px rgba(0, 0, 0, 0.5),
+      0 0 0 4px rgba(255, 255, 255, 0.25),
+      0 0 12px rgba(255, 69, 0, 0.6);
+  }
+  .cursor.big { width: 70px; height: 70px; }
+  .cursor.click { width: 12px; height: 12px; }
+
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 28px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    z-index: 50;
+    color: var(--fg);
+    mix-blend-mode: difference;
+  }
+  .top-bar .logo { font-weight: 900; }
+  .top-bar .logo .star { color: var(--accent); display: inline-block; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .top-bar nav { display: flex; gap: 28px; }
+  .top-bar nav a { color: inherit; text-decoration: none; position: relative; cursor: none; }
+  .top-bar nav a.curr { color: var(--accent); }
+  .top-bar nav a::after {
+    content: ""; position: absolute;
+    left: 0; right: 100%; bottom: -4px;
+    height: 2px; background: var(--accent);
+    transition: right 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .top-bar nav a:hover::after, .top-bar nav a.curr::after { right: 0; }
+
+  .paper { max-width: 1500px; margin: 0 auto; padding: 80px 4vw 60px; position: relative; z-index: 5; }
+
+  .masthead {
+    border-top: 8px solid var(--fg);
+    border-bottom: 4px solid var(--fg);
+    padding: 24px 0 18px;
+    text-align: center;
+    position: relative;
+  }
+  .masthead .pre {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    color: var(--fg-dim);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .masthead .pre .accent { color: var(--accent); }
+  .masthead h1 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(56px, 11vw, 200px);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    font-style: italic;
+    text-shadow: 4px 4px 0 var(--accent);
+  }
+  .masthead .motto { font-style: italic; color: var(--fg-dim); font-size: 14px; margin-top: 12px; }
+
+  .meta-strip {
+    border-bottom: 2px solid var(--fg);
+    padding: 10px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.18em; font-weight: 800;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .meta-strip .accent { color: var(--accent); }
+  .meta-strip .pulse {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+
+  .sections-bar {
+    border-bottom: 1px solid var(--fg);
+    padding: 12px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .sections-bar .sections { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter-btn {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid transparent;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.22em;
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { color: var(--accent); }
+  .filter-btn.active { background: var(--fg); color: var(--bg); }
+  .filter-btn .count { margin-left: 6px; color: var(--accent); font-weight: 700; }
+  .filter-btn.active .count { color: var(--accent); }
+  .sections-bar .search-wrap { display: flex; align-items: center; gap: 8px; }
+  .sections-bar .search-wrap label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.22em;
+    color: var(--fg-dim); font-weight: 800;
+  }
+  .filter-search {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--fg);
+    padding: 6px 12px;
+    font-family: inherit; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    outline: none; cursor: none; width: 200px;
+  }
+  .filter-search:focus { border-color: var(--accent); }
+  .filter-search::placeholder { color: var(--fg-dim); }
+
+  .paper-body { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 4px; }
+  .paper-body > * { padding: 22px 22px; border-right: 1px solid var(--fg); border-bottom: 1px solid var(--fg); min-width: 0; }
+  .paper-body > *:nth-child(4n) { border-right: none; }
+
+  .lead { grid-column: span 3; grid-row: span 2; }
+  .lead .kicker {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--accent);
+    font-weight: 800; margin-bottom: 10px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--fg);
+  }
+  .lead h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(36px, 5.4vw, 78px);
+    line-height: 0.95; letter-spacing: -0.035em;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .lead h2 em { color: var(--accent); font-style: italic; }
+  .lead .dek {
+    font-size: 18px; line-height: 1.4;
+    color: var(--fg-dim); font-style: italic;
+    margin-bottom: 18px; border-bottom: 1px dashed var(--line);
+    padding-bottom: 14px;
+  }
+  .lead .lead-body {
+    column-count: 2; column-gap: 24px;
+    column-rule: 1px solid var(--line);
+    font-size: 14px; line-height: 1.55;
+  }
+  .lead .lead-body p { margin-bottom: 12px; }
+  .lead .lead-body p:first-child::first-letter {
+    font-family: "Arial Black", sans-serif;
+    font-size: 72px; line-height: 0.85;
+    float: left; padding-right: 8px; padding-top: 4px;
+    color: var(--accent);
+  }
+  .lead .byline {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--fg-dim);
+    margin-top: 14px; font-weight: 700;
+    padding-top: 10px; border-top: 1px solid var(--line);
+  }
+  .lead .byline strong { color: var(--accent); }
+  .lead .read-more {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 8px; color: var(--accent);
+    font-weight: 800; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.22em;
+    cursor: none; text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: rgba(255, 69, 0, 0.4);
+  }
+
+  .weather { grid-column: span 1; grid-row: span 1; display: flex; flex-direction: column; gap: 14px; }
+  .weather .w-label {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--fg-dim);
+    font-weight: 800; border-bottom: 1px solid var(--fg);
+    padding-bottom: 8px; margin-bottom: 4px;
+  }
+  .weather .w-day {
+    font-family: "Arial Black", sans-serif;
+    font-size: 22px; line-height: 1;
+    text-transform: uppercase; letter-spacing: -0.015em;
+  }
+  .weather .w-mood {
+    font-family: "Arial Black", sans-serif;
+    font-size: 36px; color: var(--accent);
+    line-height: 0.95; letter-spacing: -0.025em;
+    text-transform: uppercase; font-style: italic;
+  }
+  .weather .w-stat {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.18em; color: var(--fg-dim);
+    line-height: 1.6; border-top: 1px dashed var(--line);
+    padding-top: 10px;
+  }
+  .weather .w-stat strong { color: var(--fg); }
+
+  .corner-take { grid-column: span 1; grid-row: span 1; display: flex; flex-direction: column; justify-content: space-between; }
+  .corner-take .ct-label {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--accent);
+    font-weight: 800; margin-bottom: 12px;
+    border-bottom: 1px solid var(--fg); padding-bottom: 8px;
+  }
+  .corner-take .ct-quote {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 1.6vw, 22px);
+    line-height: 1.1; letter-spacing: -0.02em;
+    text-transform: uppercase; flex: 1;
+    display: flex; align-items: center;
+  }
+  .corner-take .ct-quote em { color: var(--accent); font-style: italic; }
+  .corner-take .ct-attrib {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--fg-dim);
+    margin-top: 12px; font-weight: 700;
+    border-top: 1px dashed var(--line); padding-top: 8px;
+    text-align: right;
+  }
+
+  .takes-ribbon {
+    grid-column: span 4;
+    border-top: 4px solid var(--fg);
+    border-bottom: 4px solid var(--fg);
+    padding: 0 !important;
+    border-right: none !important;
+    display: grid;
+    grid-template-columns: auto repeat(3, 1fr);
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .takes-ribbon .ribbon-label {
+    background: var(--accent); color: var(--bg);
+    padding: 22px 18px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 16px; text-transform: uppercase;
+    letter-spacing: 0.05em; line-height: 1;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    text-align: center; border-right: 2px solid var(--bg);
+  }
+  .takes-ribbon .ribbon-take {
+    padding: 18px 22px;
+    border-right: 2px solid var(--bg);
+    cursor: none; transition: background 0.2s;
+    display: flex; flex-direction: column;
+    justify-content: space-between; min-height: 130px;
+  }
+  .takes-ribbon .ribbon-take:last-child { border-right: none; }
+  .takes-ribbon .ribbon-take:hover { background: var(--accent); color: var(--bg); }
+  .takes-ribbon .ribbon-take .quote {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(15px, 1.3vw, 19px);
+    line-height: 1.1; text-transform: uppercase;
+    letter-spacing: -0.015em;
+  }
+  .takes-ribbon .ribbon-take .quote em { color: var(--accent); font-style: italic; }
+  .takes-ribbon .ribbon-take:hover .quote em { color: var(--bg); }
+  .takes-ribbon .ribbon-take .meta {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: rgba(0, 0, 0, 0.6);
+    margin-top: 10px; font-weight: 800;
+  }
+  .takes-ribbon .ribbon-take:hover .meta { color: rgba(0, 0, 0, 0.7); }
+
+  .feature { grid-column: span 1; cursor: none; transition: background 0.25s; }
+  .feature:hover { background: rgba(255, 69, 0, 0.06); }
+  .feature .kicker {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--accent);
+    font-weight: 800; border-bottom: 1px solid var(--fg);
+    padding-bottom: 6px; margin-bottom: 12px;
+  }
+  .feature h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(20px, 1.7vw, 26px);
+    line-height: 1; text-transform: uppercase;
+    letter-spacing: -0.02em; margin-bottom: 10px;
+  }
+  .feature h3 em { color: var(--accent); font-style: italic; }
+  .feature .feat-dek {
+    font-size: 14px; line-height: 1.45; color: var(--fg);
+    margin-bottom: 12px; font-style: italic;
+  }
+  .feature .feat-meta {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--fg-dim);
+    font-weight: 700; border-top: 1px dashed var(--line);
+    padding-top: 8px;
+  }
+  .feature .feat-meta strong { color: var(--accent); }
+
+  .wire { grid-column: span 1; grid-row: span 2; background: rgba(255, 69, 0, 0.05); }
+  .wire .wire-label {
+    font-family: "Arial Black", sans-serif;
+    font-size: 22px; line-height: 1;
+    text-transform: uppercase; letter-spacing: -0.025em;
+    color: var(--accent);
+    border-bottom: 4px double var(--accent);
+    padding-bottom: 8px; margin-bottom: 14px;
+  }
+  .wire .wire-sub {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--fg-dim);
+    font-weight: 700; margin-bottom: 18px; font-style: italic;
+  }
+  .wire .wire-item {
+    border-bottom: 1px dotted var(--line); padding: 12px 0;
+    cursor: none; transition: padding-left 0.2s; display: block;
+  }
+  .wire .wire-item:hover { padding-left: 6px; }
+  .wire .wire-item .wire-arrow {
+    color: var(--accent); font-family: "Arial Black", sans-serif;
+    font-size: 20px; line-height: 1;
+  }
+  .wire .wire-item h4 {
+    font-family: "Arial Black", sans-serif;
+    font-size: 14px; line-height: 1.1;
+    text-transform: uppercase; letter-spacing: -0.015em;
+    margin: 4px 0 4px;
+  }
+  .wire .wire-item .wire-source {
+    font-family: "Courier New", monospace;
+    font-size: 10px; color: var(--fg-dim);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .wire .wire-item:hover .wire-source { color: var(--accent); }
+
+  .banner-take {
+    grid-column: span 4;
+    border-top: 4px double var(--fg);
+    border-bottom: 4px double var(--fg);
+    padding: 32px 28px !important;
+    border-right: none !important;
+    text-align: center; background: var(--bg);
+    cursor: none; transition: background 0.3s;
+  }
+  .banner-take:hover { background: rgba(255, 69, 0, 0.08); }
+  .banner-take .banner-quote {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(28px, 4.5vw, 60px);
+    line-height: 1.05; letter-spacing: -0.03em;
+    text-transform: uppercase; max-width: 22ch; margin: 0 auto;
+  }
+  .banner-take .banner-quote em { color: var(--accent); font-style: italic; }
+  .banner-take .banner-attrib {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--fg-dim);
+    font-weight: 800; margin-top: 18px;
+  }
+  .banner-take .banner-attrib .accent { color: var(--accent); }
+
+  .classifieds {
+    grid-column: span 4;
+    padding: 24px 22px !important;
+    border-right: none !important;
+    border-bottom: none !important;
+  }
+  .classifieds .c-label {
+    font-family: "Arial Black", sans-serif;
+    font-size: 16px; text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--fg);
+    padding-bottom: 8px; margin-bottom: 14px;
+  }
+  .classifieds .c-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .classifieds .c-ad {
+    border: 1px dashed var(--line); padding: 14px;
+    cursor: none; transition: all 0.2s;
+  }
+  .classifieds .c-ad:hover { border-color: var(--accent); background: rgba(255, 69, 0, 0.05); }
+  .classifieds .c-ad h5 {
+    font-family: "Arial Black", sans-serif;
+    font-size: 14px; line-height: 1.05;
+    text-transform: uppercase; margin-bottom: 6px;
+    letter-spacing: -0.015em;
+  }
+  .classifieds .c-ad p { font-size: 12px; line-height: 1.45; color: var(--fg-dim); }
+  .classifieds .c-ad .c-tag {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--accent);
+    font-weight: 800; margin-top: 8px; display: block;
+  }
+
+  .paper-footer {
+    margin-top: 40px; padding-top: 18px;
+    border-top: 4px solid var(--fg);
+    display: flex; justify-content: space-between;
+    align-items: center;
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--fg-dim);
+    flex-wrap: wrap; gap: 20px; font-weight: 800;
+  }
+  .paper-footer a {
+    color: var(--accent); text-decoration: underline;
+    text-underline-offset: 4px; cursor: none;
+  }
+
+  .post.hidden { display: none !important; }
+  .empty-state {
+    grid-column: 1 / -1; padding: 60px 20px;
+    text-align: center; color: var(--fg-dim);
+    font-size: 14px; border-bottom: none !important;
+    border-right: none !important;
+  }
+  .empty-state .big {
+    font-family: "Arial Black", sans-serif;
+    font-size: 80px; color: var(--accent);
+    line-height: 1; margin-bottom: 12px;
+  }
+
+  .sound-toggle {
+    position: fixed; bottom: 22px; right: 28px;
+    z-index: 200;
+    background: var(--bg); color: var(--fg);
+    border: 1px solid var(--line); padding: 10px 14px;
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; font-weight: 700;
+    font-family: inherit; cursor: none;
+    transition: all 0.2s;
+  }
+  .sound-toggle:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle .on { color: var(--accent); }
+  .sound-toggle.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle.active .on { color: var(--bg); }
+
+  @media (max-width: 1100px) {
+    .paper-body { grid-template-columns: repeat(2, 1fr); }
+    .lead { grid-column: span 2; grid-row: span 1; }
+    .lead .lead-body { column-count: 1; }
+    .weather, .corner-take, .feature, .wire { grid-column: span 1; grid-row: span 1; }
+    .wire { grid-row: span 2; }
+    .takes-ribbon { grid-column: span 2; grid-template-columns: auto 1fr 1fr; }
+    .takes-ribbon .ribbon-take:nth-child(4) { display: none; }
+    .banner-take, .classifieds { grid-column: span 2; }
+    .paper-body > *:nth-child(2n) { border-right: none; }
+    .paper-body > *:not(:nth-child(2n)) { border-right: 1px solid var(--fg); }
+    .classifieds .c-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .paper-body { grid-template-columns: 1fr; }
+    .paper-body > * { grid-column: span 1 !important; border-right: none !important; }
+    .takes-ribbon { grid-template-columns: 1fr; }
+    .takes-ribbon .ribbon-label { writing-mode: horizontal-tb; transform: none; padding: 14px; }
+    .top-bar nav { display: none; }
+    .classifieds .c-grid { grid-template-columns: 1fr; }
+    .filter-search { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / THOUGHTS</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="thoughts.html" class="curr">Thoughts</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<div class="paper">
+
+  <div class="masthead">
+    <div class="pre">VOL. 04 · ISSUE 027 · MONDAY EDITION · <span class="accent">FIRST PRINTING</span></div>
+    <h1>The CHRSTPHR Times</h1>
+    <div class="motto">"All the news that's fit to <em>argue with</em>." — established 2026</div>
+  </div>
+
+  <div class="meta-strip">
+    <span><span class="pulse"></span><span class="accent">LIVE</span> · UPDATED WEEKLY-ISH</span>
+    <span>EDITOR & PUBLISHER · <span class="accent">CHRSTPHR</span></span>
+    <span>WEATHER: MAXIMALIST · LIGHTLY OPINIONATED</span>
+    <span>PRICE: <span class="accent">YOUR ATTENTION</span></span>
+  </div>
+
+  <div class="sections-bar">
+    <div class="sections" id="filters">
+      <button class="filter-btn active" data-filter="all">All <span class="count" id="cAll">12</span></button>
+      <button class="filter-btn" data-filter="essay">Essays <span class="count" id="cEssay">4</span></button>
+      <button class="filter-btn" data-filter="take">Takes <span class="count" id="cTake">5</span></button>
+      <button class="filter-btn" data-filter="link">The Wire <span class="count" id="cLink">3</span></button>
+    </div>
+    <div class="search-wrap">
+      <label>Search:</label>
+      <input type="text" id="search" class="filter-search" placeholder="Type a word, any word...">
+    </div>
+  </div>
+
+  <div class="paper-body" id="paperBody">
+
+    <article class="lead post" data-type="essay" data-search="ai uncanny valley products design uncanny ai">
+      <div class="kicker">★ Lead Story · Filed under AI · UX</div>
+      <h2>Why most AI products feel like <em>uncanny valley</em> software.</h2>
+      <div class="dek">"A textarea with attitude" is not a product. It's a placeholder. The good ones treat the model as a collaborator, not a paperclip mascot — here's what that actually means in interface terms.</div>
+      <div class="lead-body">
+        <p>There is a specific feeling you get when you use a bad AI product. The interface looks fine. The features make sense on paper. But something about the experience is faintly off — like the software is wearing a costume of itself.</p>
+        <p>Most of the time, this is because the AI was bolted on. Designed for a world without it, then asked to accommodate one with it. The seams show. The chat interface lives in a sidebar. The "powered by AI" badge is doing real emotional labor.</p>
+        <p>The good AI products don't have that problem. They feel like the AI was always going to be there — like the designer started with the model and worked outward, not inward. Cursor. Linear's auto-categorization. Notion's AI when it's tuned right. The interface and the intelligence were designed together, not stapled together.</p>
+        <p>The trick is that AI isn't a feature you add. It's a <em>material</em> you design with — like color, like type, like motion. And like any material, it has a grain. Working with the grain feels natural. Working against it feels uncanny.</p>
+      </div>
+      <div class="byline">By <strong>CHRSTPHR</strong> · April 14, 2026 · 4 MIN READ · <span class="read-more">READ THE WHOLE THING ↗</span></div>
+    </article>
+
+    <div class="weather">
+      <div class="w-label">★ Today's Forecast</div>
+      <div>
+        <div class="w-day">Monday</div>
+        <div class="w-mood">Maximalist with a chance of <em>snark</em>.</div>
+      </div>
+      <div class="w-stat">
+        Productivity: <strong>Above average</strong><br/>
+        Patience: <strong>Variable</strong><br/>
+        Coffee Index: <strong class="accent">Critical</strong>
+      </div>
+    </div>
+
+    <article class="corner-take post" data-type="take" data-search="beige design personality test failing brand">
+      <div class="ct-label">✱ HOT TAKE / FILED UNDER OPINION</div>
+      <div class="ct-quote">"Beige design is a <em>personality test</em> you're failing."</div>
+      <div class="ct-attrib">— CHRSTPHR · APR 12</div>
+    </article>
+
+    <div class="takes-ribbon">
+      <div class="ribbon-label">★ HOT TAKES TODAY</div>
+      <div class="ribbon-take post" data-type="take" data-search="dashboard product furniture ux">
+        <div class="quote">"Your dashboard is not a <em>product</em>. It's furniture."</div>
+        <div class="meta">— CHRSTPHR · APR 04</div>
+      </div>
+      <div class="ribbon-take post" data-type="take" data-search="minimal thoughtless design minimalism">
+        <div class="quote">Stop calling everything <em>"minimal"</em>. It's just thoughtless.</div>
+        <div class="meta">— CHRSTPHR · MAR 24</div>
+      </div>
+      <div class="ribbon-take post" data-type="take" data-search="logo algorithm brand mid">
+        <div class="quote">If your logo can be made by an <em>algorithm</em>, your brand was already mid.</div>
+        <div class="meta">— CHRSTPHR · MAR 08</div>
+      </div>
+    </div>
+
+    <article class="feature post" data-type="essay" data-search="maximalist style shipping brand ux notes">
+      <div class="kicker">FEATURES · BRAND</div>
+      <h3>Notes on shipping in <em>maximalist</em> style.</h3>
+      <p class="feat-dek">How do you ship a maximalist site without it looking like a 2002 GeoCities page? Constraints. Specifically: pick exactly three things to be loud about, and shut up everywhere else.</p>
+      <div class="feat-meta">By <strong>CHRSTPHR</strong> · APR 06 · 6 MIN</div>
+    </article>
+
+    <article class="feature post" data-type="essay" data-search="ai design material generative tools">
+      <div class="kicker">FEATURES · AI</div>
+      <h3>AI as a <em>design material</em>.</h3>
+      <p class="feat-dek">Stop treating AI like a feature you bolt on. Treat it like clay. Generative tools, fluid interfaces, products that change shape — the design becomes about boundaries, not surfaces.</p>
+      <div class="feat-meta">By <strong>CHRSTPHR</strong> · MAR 28 · 5 MIN</div>
+    </article>
+
+    <article class="feature post" data-type="essay" data-search="brand systems attitude opinion personality">
+      <div class="kicker">FEATURES · BRAND</div>
+      <h3>Brand systems with <em>attitude</em>.</h3>
+      <p class="feat-dek">Most brand systems are tone-of-voice docs nobody reads. The ones that work treat the system as a personality contract — here's how they're built and why they last.</p>
+      <div class="feat-meta">By <strong>CHRSTPHR</strong> · MAR 14 · 7 MIN</div>
+    </article>
+
+    <aside class="wire">
+      <div class="wire-label">The Wire</div>
+      <div class="wire-sub">Things by smarter people, filed for your edification</div>
+
+      <a class="wire-item post" data-type="link" data-search="bruno simon portfolio web 3d inspo">
+        <span class="wire-arrow">↗</span>
+        <h4>Bruno Simon's portfolio is still the bar.</h4>
+        <div class="wire-source">bruno-simon.com · APR 11</div>
+      </a>
+
+      <a class="wire-item post" data-type="link" data-search="pangram pangram type typeface drop">
+        <span class="wire-arrow">↗</span>
+        <h4>Pangram Pangram's new typeface drop.</h4>
+        <div class="wire-source">pangrampangram.com · APR 01</div>
+      </a>
+
+      <a class="wire-item post" data-type="link" data-search="rachel andrew system fonts type writing">
+        <span class="wire-arrow">↗</span>
+        <h4>Rachel Andrew on actually-good system fonts.</h4>
+        <div class="wire-source">rachelandrew.co.uk · MAR 21</div>
+      </a>
+
+      <div class="wire-sub" style="margin-top: 16px; margin-bottom: 0;">More on the wire weekly. Subscribe via RSS.</div>
+    </aside>
+
+    <div class="banner-take post" data-type="take" data-search="onboarding analytics confessions marketing team">
+      <div class="banner-quote">"Onboarding flows that ask <em>'how did you hear about us?'</em> are confessions of a marketing team without analytics."</div>
+      <div class="banner-attrib">★ <span class="accent">CHRSTPHR</span> · MAR 01 · TAGGED: UX</div>
+    </div>
+
+    <div class="classifieds">
+      <div class="c-label">⌘ Classifieds & Notices ⌘</div>
+      <div class="c-grid">
+        <div class="c-ad">
+          <h5>Wanted: Brave Clients</h5>
+          <p>Designer with strong opinions seeks projects with bigger ambitions than budgets. Loud preferred.</p>
+          <span class="c-tag">→ HIRE CHRSTPHR</span>
+        </div>
+        <div class="c-ad">
+          <h5>Subscribe by Email</h5>
+          <p>Weekly digest of essays, takes, and recommended reading. No spam. No "drip campaigns."</p>
+          <span class="c-tag">→ SUBSCRIBE</span>
+        </div>
+        <div class="c-ad">
+          <h5>RSS Lives, Babe</h5>
+          <p>Old web traditions die hard. Pipe these thoughts into your reader of choice.</p>
+          <span class="c-tag">→ /FEED.XML</span>
+        </div>
+        <div class="c-ad">
+          <h5>Disagree Loudly</h5>
+          <p>Found something to argue with? CHRSTPHR reads every reply. Civility appreciated, not required.</p>
+          <span class="c-tag">→ MAIL THE EDITOR</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="paper-footer">
+    <span>© 2026 THE CHRSTPHR TIMES · NO REPRINT WITHOUT MILDLY ANNOYED PERMISSION</span>
+    <span><a href="#">RSS ↗</a> · <a href="#">EMAIL ↗</a> · <a href="#">ARCHIVE ↗</a></span>
+    <span>WRITTEN ON A LAPTOP · MOSTLY HORIZONTAL</span>
+  </div>
+</div>
+
+<button class="sound-toggle active" id="soundToggle">
+  Sound <span class="on">●</span> on
+</button>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  let mx = window.innerWidth/2, my = window.innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function loop() {
+    cx += (mx - cx) * 0.22;
+    cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  }
+  loop();
+  function refreshHovers() {
+    document.querySelectorAll('button, a, input, .feature, .corner-take, .ribbon-take, .banner-take, .c-ad, .read-more').forEach(el => {
+      if (el.dataset.cursorBound) return;
+      el.dataset.cursorBound = '1';
+      el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+    });
+  }
+  refreshHovers();
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  document.addEventListener('mousedown', ensureAudio, { passive: true });
+  document.addEventListener('keydown', ensureAudio);
+  document.addEventListener('touchstart', ensureAudio, { passive: true });
+
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundToggle.classList.toggle('active', soundOn);
+    soundToggle.innerHTML = soundOn ? 'Sound <span class="on">●</span> on' : 'Sound <span class="on">●</span> off';
+    if (soundOn) blip(660, 0.08);
+  });
+  function blip(freq, dur, type = 'square') {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = type;
+    g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + dur);
+  }
+
+  document.querySelectorAll('button, a, .feature, .corner-take, .ribbon-take, .banner-take, .c-ad, .wire-item').forEach(el => {
+    el.addEventListener('mouseenter', () => blip(440 + Math.random() * 400, 0.04, 'sine'));
+  });
+  document.querySelectorAll('input').forEach(el => {
+    el.addEventListener('focus', () => { blip(660, 0.05); setTimeout(() => blip(880, 0.04), 60); });
+    el.addEventListener('input', () => blip(700 + Math.random() * 200, 0.012, 'sine'));
+  });
+
+  let activeFilter = 'all';
+  let activeSearch = '';
+  function applyFilters() {
+    let shown = 0;
+    document.querySelectorAll('.post').forEach(p => {
+      const matchType = activeFilter === 'all' || p.dataset.type === activeFilter;
+      const matchSearch = !activeSearch || (p.dataset.search || '').includes(activeSearch);
+      const visible = matchType && matchSearch;
+      p.classList.toggle('hidden', !visible);
+      if (visible) shown++;
+    });
+    const existing = document.querySelector('.empty-state');
+    if (existing) existing.remove();
+    if (shown === 0) {
+      const div = document.createElement('div');
+      div.className = 'empty-state';
+      div.innerHTML = `<div class="big">∅</div><p>Nothing matches that filter. Try widening it, lowering your standards, or both.</p>`;
+      document.getElementById('paperBody').appendChild(div);
+    }
+  }
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      blip(560, 0.05);
+      setTimeout(() => blip(720, 0.04), 60);
+      applyFilters();
+    });
+  });
+  document.getElementById('search').addEventListener('input', e => {
+    activeSearch = e.target.value.toLowerCase().trim();
+    applyFilters();
+  });
+
+  console.log('%cTHE CHRSTPHR TIMES', 'font-size:48px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;font-style:italic;');
+</script>
+</body>
+</html>

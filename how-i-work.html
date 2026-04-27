@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Chrstphr How I Work",
+  "schemaVersion": 1,
+  "description": "CHRSTPHR How I Work page — process methodology, principles, and rituals. Five-phase process explainer (Discovery → Concept → Build → Ship → Reflect), 8 working principles as bold maxims, and a tools+rituals breakdown. Sound on by default.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — How I Work</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0A0A0A;
+    --fg: #F2EDE2;
+    --fg-dim: rgba(242, 237, 226, 0.5);
+    --line: rgba(242, 237, 226, 0.15);
+    --accent: #FF4500;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Helvetica Neue", "Arial", sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    cursor: none;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.93 0 0 0 0 0.88 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+  }
+
+  .cursor {
+    position: fixed;
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+    transition: width 0.25s, height 0.25s;
+  }
+  .cursor.big { width: 70px; height: 70px; }
+  .cursor.click { width: 12px; height: 12px; }
+
+  /* CURSOR-FOLLOWING TOOLTIP */
+  .floating-tip {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 10px 14px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(28px, 18px) scale(0.9);
+    transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .floating-tip.show {
+    opacity: 1;
+    transform: translate(28px, 18px) scale(1);
+  }
+  .floating-tip::before {
+    content: "";
+    position: absolute;
+    top: -8px; left: 14px;
+    width: 14px; height: 14px;
+    background: var(--accent);
+    transform: rotate(45deg);
+    z-index: -1;
+  }
+  .floating-tip em { font-style: italic; }
+
+  .top-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    z-index: 50;
+    color: var(--fg);
+    mix-blend-mode: difference;
+  }
+  .top-bar .logo { font-weight: 900; }
+  .top-bar .logo .star { color: var(--accent); display: inline-block; animation: spin 6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .top-bar nav { display: flex; gap: 28px; }
+  .top-bar nav a { color: inherit; text-decoration: none; position: relative; cursor: none; }
+  .top-bar nav a.curr { color: var(--accent); }
+  .top-bar nav a::after {
+    content: ""; position: absolute;
+    left: 0; right: 100%; bottom: -4px;
+    height: 2px; background: var(--accent);
+    transition: right 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .top-bar nav a:hover::after, .top-bar nav a.curr::after { right: 0; }
+
+  .hero { padding: 110px 7vw 60px; position: relative; z-index: 5; }
+  .pre-title {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--fg-dim);
+    margin-bottom: 24px;
+  }
+  .pre-title .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent); border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+
+  .hero-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(50px, 11vw, 200px);
+    line-height: 0.88; letter-spacing: -0.045em;
+    text-transform: uppercase; margin-bottom: 24px;
+    max-width: 16ch;
+  }
+  .hero-headline em { color: var(--accent); font-style: italic; }
+  .hero-sub {
+    max-width: 720px;
+    font-size: clamp(17px, 1.4vw, 21px);
+    line-height: 1.45; color: var(--fg);
+  }
+  .hero-sub .accent { color: var(--accent); }
+  .hero-sub .strike { text-decoration: line-through; opacity: 0.5; }
+
+  .section-label {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--fg-dim);
+    margin-bottom: 30px;
+  }
+  .section-label::before { content: "§ "; color: var(--accent); }
+
+  .process { padding: 60px 7vw 80px; border-top: 1px solid var(--line); position: relative; z-index: 5; }
+  .process-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(36px, 6.5vw, 100px);
+    line-height: 0.95; letter-spacing: -0.035em;
+    text-transform: uppercase; margin-bottom: 50px;
+    max-width: 22ch;
+  }
+  .process-headline em { color: var(--accent); font-style: italic; }
+
+  .phases {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  }
+  .phase {
+    padding: 28px 22px;
+    border-right: 1px solid var(--line);
+    position: relative; cursor: none;
+    transition: all 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    overflow: hidden; min-height: 320px;
+    display: flex; flex-direction: column;
+  }
+  .phase:last-child { border-right: none; }
+  .phase::before {
+    content: ""; position: absolute; inset: 0;
+    background: var(--accent); transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+    z-index: 0;
+  }
+  .phase > * { position: relative; z-index: 1; }
+  .phase:hover::before { transform: translateY(0); }
+  .phase:hover { color: var(--bg); }
+  .phase .phase-num {
+    font-family: "Arial Black", sans-serif;
+    font-size: 56px; line-height: 1;
+    color: var(--accent); transition: color 0.3s;
+    margin-bottom: 6px;
+  }
+  .phase:hover .phase-num { color: var(--bg); }
+  .phase .phase-arrow {
+    position: absolute; top: 30px; right: 18px;
+    color: var(--accent);
+    font-family: "Arial Black", sans-serif;
+    font-size: 24px;
+    transition: color 0.3s, transform 0.3s;
+    z-index: 1;
+  }
+  .phase:last-child .phase-arrow { display: none; }
+  .phase:hover .phase-arrow { color: var(--bg); transform: translateX(4px); }
+  .phase .phase-name {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--fg-dim);
+    margin-bottom: 14px;
+  }
+  .phase:hover .phase-name { color: var(--bg); opacity: 0.85; }
+  .phase h4 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 1.8vw, 26px);
+    line-height: 1.05; letter-spacing: -0.02em;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .phase p { font-size: 13px; line-height: 1.5; margin-bottom: 16px; flex: 1; }
+  .phase .deliv {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; color: var(--accent);
+    border-top: 1px solid var(--line);
+    padding-top: 12px; font-weight: 700;
+    margin-top: auto;
+  }
+  .phase:hover .deliv { color: var(--bg); border-top-color: rgba(0,0,0,0.2); }
+
+  .principles { padding: 100px 7vw; border-top: 1px solid var(--line); position: relative; z-index: 5; }
+  .principles-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(36px, 6.5vw, 100px);
+    line-height: 0.95; letter-spacing: -0.035em;
+    text-transform: uppercase; margin-bottom: 50px;
+    max-width: 22ch;
+  }
+  .principles-headline em { color: var(--accent); font-style: italic; }
+
+  .principle-grid { border-top: 1px solid var(--line); }
+  .principle {
+    border-bottom: 1px solid var(--line);
+    padding: 30px 0;
+    display: grid;
+    grid-template-columns: auto 1fr 1.4fr;
+    gap: 32px; align-items: start;
+    cursor: none; transition: padding-left 0.3s;
+  }
+  .principle:hover { padding-left: 14px; }
+  .principle .p-num {
+    font-family: "Courier New", monospace;
+    font-size: 14px; color: var(--fg-dim);
+    letter-spacing: 0.15em; font-weight: 700;
+    padding-top: 6px;
+  }
+  .principle .p-quote {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(22px, 2.6vw, 38px);
+    line-height: 1.05; letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .principle .p-quote em { color: var(--accent); font-style: italic; }
+  .principle .p-explain {
+    font-size: 15px; line-height: 1.55;
+    color: var(--fg-dim); padding-top: 8px;
+    transition: color 0.3s;
+  }
+  .principle:hover .p-explain { color: var(--fg); }
+
+  .toolbox { padding: 100px 7vw; border-top: 1px solid var(--line); position: relative; z-index: 5; }
+  .toolbox-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(36px, 6.5vw, 100px);
+    line-height: 0.95; letter-spacing: -0.035em;
+    text-transform: uppercase; margin-bottom: 50px;
+    max-width: 22ch;
+  }
+  .toolbox-headline em { color: var(--accent); font-style: italic; }
+  .tools-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0; border: 1px solid var(--line);
+  }
+  .tools-col { padding: 36px 32px; }
+  .tools-col + .tools-col { border-left: 1px solid var(--line); }
+  .tools-col h5 {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.3em; color: var(--accent);
+    font-weight: 800; margin-bottom: 24px;
+  }
+  .tools-col ul { list-style: none; }
+  .tools-col li {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    transition: padding-left 0.3s;
+    cursor: none;
+  }
+  .tools-col li:last-child { border-bottom: none; }
+  .tools-col li:hover { padding-left: 12px; }
+  .tools-col .li-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(20px, 2.4vw, 30px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.015em;
+    transition: color 0.3s;
+  }
+  .tools-col li:hover .li-row { color: var(--accent); }
+  .tools-col .li-row .annot {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--fg-dim);
+    font-weight: 700;
+    text-align: right;
+    flex-shrink: 0;
+    transition: color 0.3s;
+  }
+  .tools-col li:hover .li-row .annot { color: var(--accent); opacity: 0.85; }
+  .tools-col .li-desc {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 13px;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    margin-top: 6px;
+    letter-spacing: 0.01em;
+    text-transform: none;
+    line-height: 1.4;
+  }
+
+  .manifesto {
+    padding: 80px 7vw;
+    border-top: 1px solid var(--line);
+    text-align: center; background: var(--bg);
+    position: relative; z-index: 5;
+  }
+  .manifesto p {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(28px, 4.5vw, 64px);
+    line-height: 1.05; letter-spacing: -0.03em;
+    text-transform: uppercase; max-width: 22ch; margin: 0 auto;
+  }
+  .manifesto p em { color: var(--accent); font-style: italic; }
+  .manifesto .signature {
+    margin-top: 22px;
+    font-family: "Arial Black", sans-serif;
+    color: var(--accent); font-size: 28px;
+    transform: rotate(-3deg); display: inline-block;
+  }
+
+  .cta {
+    padding: 100px 7vw 130px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative; z-index: 5;
+  }
+  .cta h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 10vw, 180px);
+    line-height: 0.9; letter-spacing: -0.045em;
+    text-transform: uppercase; margin-bottom: 28px;
+  }
+  .cta h2 em { color: var(--accent); font-style: italic; }
+  .cta p {
+    max-width: 600px; margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5; color: var(--fg-dim);
+  }
+  .cta-button {
+    display: inline-block;
+    background: var(--accent); color: var(--bg);
+    text-decoration: none;
+    padding: 26px 44px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 4px solid var(--accent);
+  }
+  .cta-button:hover { background: transparent; color: var(--accent); }
+
+  .sound-toggle {
+    position: fixed;
+    bottom: 22px; right: 28px;
+    z-index: 200;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.22em; font-weight: 700;
+    font-family: inherit; cursor: none;
+    transition: all 0.2s;
+  }
+  .sound-toggle:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle .on { color: var(--accent); }
+  .sound-toggle.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .sound-toggle.active .on { color: var(--bg); }
+
+  @media (max-width: 1100px) {
+    .phases { grid-template-columns: 1fr 1fr; }
+    .phase { border-right: none; border-bottom: 1px solid var(--line); min-height: auto; }
+    .phase:nth-child(2n) { border-right: none; }
+  }
+  @media (max-width: 800px) {
+    .phases { grid-template-columns: 1fr; }
+    .principle { grid-template-columns: 1fr; gap: 12px; }
+    .tools-row { grid-template-columns: 1fr; }
+    .tools-col + .tools-col { border-left: none; border-top: 1px solid var(--line); }
+    .top-bar nav { display: none; }
+    .tools-col .li-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .tools-col .li-row .annot { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / HOW I WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html" class="curr">How I Work</a>
+    <a href="thoughts.html">Thoughts</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="pre-title">
+    <span class="pulse"></span>
+    <span>Index 05 / Methodology · Principles · Rituals</span>
+  </div>
+  <h1 class="hero-headline">How <em>this</em> goes.</h1>
+  <p class="hero-sub">
+    A short, honest accounting of how CHRSTPHR actually <span class="accent">works</span>. Not a process diagram made for a deck. The real one — the steps, the principles that won't bend, and the daily rituals that keep CHRSTPHR from <span class="strike">going feral</span> losing the plot.
+  </p>
+</section>
+
+<section class="process">
+  <div class="section-label">The Process / 5 phases · adjustable</div>
+  <h2 class="process-headline">From "what is this?" to "<em>oh that's good</em>".</h2>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-num">01</div>
+      <span class="phase-arrow">→</span>
+      <div class="phase-name">Discover</div>
+      <h4>Listen until I find the <em>real</em> brief.</h4>
+      <p>The brief you sent is a guess. Together we figure out what's actually broken, who's actually using it, and what success would actually look like. Lots of questions, some annoying.</p>
+      <div class="deliv">Output: brief v2</div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">02</div>
+      <span class="phase-arrow">→</span>
+      <div class="phase-name">Concept</div>
+      <h4>Three directions, then <em>kill</em> the safe one.</h4>
+      <p>I show three concepts of differing risk. We talk about them honestly. The conservative one usually dies first — that's a feature, not a bug. We pick a direction with intent.</p>
+      <div class="deliv">Output: chosen direction</div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">03</div>
+      <span class="phase-arrow">→</span>
+      <div class="phase-name">Build</div>
+      <h4>Make it. <em>Refine</em> it. Push.</h4>
+      <p>Heads-down execution. Iterations are sharing-by-default — I'd rather show you something messy on Tuesday than something polished on Friday. Feedback compounds.</p>
+      <div class="deliv">Output: working drafts</div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">04</div>
+      <span class="phase-arrow">→</span>
+      <div class="phase-name">Ship</div>
+      <h4>Polish. Document. <em>Deliver.</em></h4>
+      <p>Tighten the seams, write the rationale, hand off cleanly (or keep going if I'm building it too). Includes whatever you need to keep the thing alive after I'm gone.</p>
+      <div class="deliv">Output: final + docs</div>
+    </div>
+    <div class="phase">
+      <div class="phase-num">05</div>
+      <span class="phase-arrow">→</span>
+      <div class="phase-name">Reflect</div>
+      <h4>Look back. <em>Write down</em> what changed.</h4>
+      <p>Two weeks after ship, I write a short retrospective — what worked, what I'd do again, what I won't. I send it to you. You're free to ignore it. I keep getting better either way.</p>
+      <div class="deliv">Output: retro note</div>
+    </div>
+  </div>
+</section>
+
+<section class="principles">
+  <div class="section-label">The Principles / non-negotiables (mostly)</div>
+  <h2 class="principles-headline">Eight things I won't <em>argue</em> about.</h2>
+
+  <div class="principle-grid">
+    <div class="principle">
+      <div class="p-num">P/01</div>
+      <div class="p-quote">"The brief is wrong. The <em>real</em> brief is somewhere underneath it."</div>
+      <div class="p-explain">Briefs are guesses dressed up as instructions. Half the value of any project is finding the question that should have been asked, and asking it.</div>
+    </div>
+    <div class="principle">
+      <div class="p-num">P/02</div>
+      <div class="p-quote">"<em>Strong opinions</em>, willingly held."</div>
+      <div class="p-explain">CHRSTPHR brings the best take and defends it. Also drops it the second you give a better reason. Stubbornness without reason is just ego with extra steps.</div>
+    </div>
+    <div class="principle">
+      <div class="p-num">P/03</div>
+      <div class="p-quote">"<em>Maximalist</em> on purpose. Minimalist when forced."</div>
+      <div class="p-explain">Restraint is great when it's a choice. When it's a default, it's a personality bypass. Lean loud and earn the quiet moments.</div>
+    </div>
+    <div class="principle">
+      <div class="p-num">P/04</div>
+      <div class="p-quote">"<em>Document the why</em>, not the what."</div>
+      <div class="p-explain">Anyone can describe what a thing looks like. The reason something exists in a particular way — the constraint, the opinion, the trade-off — is the actually useful part.</div>
+    </div>
+    <div class="principle">
+      <div class="p-num">P/05</div>
+      <div class="p-quote">"Push back early. <em>Disagreement</em> is a sign of trust."</div>
+      <div class="p-explain">If your idea is off, I'll tell you in week one, not week six. That's not difficult — that's caring about the outcome more than the vibe.</div>
+    </div>
+    <div class="principle">
+      <div class="p-num">P/06</div>
+      <div class="p-quote">"<em>Ship</em> is a verb. So is iterate."</div>
+      <div class="p-explain">Shipping is the start of the design, not the end. The thing only learns when it's in the world. Ship at v0.7, then make v0.8 better.</div>
+    </div>
+    <div class="principle">
+      <div class="p-num">P/07</div>
+      <div class="p-quote">"If a system can make it, the <em>system</em> should make it."</div>
+      <div class="p-explain">CHRSTPHR's job is the part the system can't do — taste, framing, judgment, weird connections. AI takes care of repetition. CHRSTPHR takes care of surprise.</div>
+    </div>
+    <div class="principle">
+      <div class="p-num">P/08</div>
+      <div class="p-quote">"The work tells you when it's <em>done</em>. (Sometimes it lies.)"</div>
+      <div class="p-explain">There's a moment a piece settles and asks for nothing else. CHRSTPHR trusts that signal — but not blindly. A second pair of eyes always catches the lie.</div>
+    </div>
+  </div>
+</section>
+
+<section class="toolbox">
+  <div class="section-label">The Toolbox / what CHRSTPHR uses, how CHRSTPHR shows up</div>
+  <h2 class="toolbox-headline">Tools and <em>habits</em>.</h2>
+
+  <div class="tools-row">
+    <div class="tools-col">
+      <h5>● Tools I actually use</h5>
+      <ul>
+        <li data-tip="Remember when it was called CS?">
+          <div class="li-row"><span>Adobe Creative Cloud</span><span class="annot">DAILY</span></div>
+          <div class="li-desc">Expert</div>
+        </li>
+        <li>
+          <div class="li-row"><span>XD</span><span class="annot">PROTOTYPING</span></div>
+          <div class="li-desc">Experienced</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Figma</span><span class="annot">PROTOTYPING</span></div>
+          <div class="li-desc">Well-versed</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Lottie</span><span class="annot">FOR FUN</span></div>
+          <div class="li-desc">Easy</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Webflow</span><span class="annot">WHEN I NEED CONTROL</span></div>
+          <div class="li-desc">Expert</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Spotify</span><span class="annot">CONSTANTLY</span></div>
+          <div class="li-desc">Hacker / Master</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Slack</span><span class="annot">DAILY</span></div>
+          <div class="li-desc">Admin</div>
+        </li>
+      </ul>
+    </div>
+    <div class="tools-col">
+      <h5>★ Rituals I keep</h5>
+      <ul>
+        <li>
+          <div class="li-row"><span>Morning Walk</span><span class="annot">EVERY MORNING</span></div>
+          <div class="li-desc">Daily — without it, the day starts flat.</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Kill One Bad Idea</span><span class="annot">WEEKLY</span></div>
+          <div class="li-desc">Sometimes I need to let go and move on.</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Ship An Idea</span><span class="annot">MONTHLY</span></div>
+          <div class="li-desc">Or else it's useless.</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Sketch Pen-on-Paper</span><span class="annot">NEVER SKIP</span></div>
+          <div class="li-desc">Best way to think visually.</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Get Feedback</span><span class="annot">BEFORE SENDING OFF</span></div>
+          <div class="li-desc">Always.</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Get Up &amp; Walk Away</span><span class="annot">AT LEAST ONCE PER DAY</span></div>
+          <div class="li-desc">Sanity check.</div>
+        </li>
+        <li>
+          <div class="li-row"><span>Ask "Is It Still Delightful?"</span><span class="annot">EVERY DECISION</span></div>
+          <div class="li-desc">Because that part... is the part that matters.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="manifesto">
+  <p>The work should make people <em>look twice</em>. Then it should be <em>useful</em>. Then it should <em>last</em>.</p>
+  <div class="signature">— CHRSTPHR</div>
+</section>
+
+<section class="cta">
+  <h2>This <em>resonate</em>?</h2>
+  <p>If the way CHRSTPHR works sounds like the kind of partner you want, let's talk. If not, also fair — better to find out now than three weeks in.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<button class="sound-toggle active" id="soundToggle">
+  Sound <span class="on">●</span> on
+</button>
+
+<!-- FLOATING TOOLTIP -->
+<div class="floating-tip" id="floatingTip"></div>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const tip = document.getElementById('floatingTip');
+  let mx = window.innerWidth/2, my = window.innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    // tooltip follows cursor while shown
+    if (tip.classList.contains('show')) {
+      tip.style.left = mx + 'px';
+      tip.style.top = my + 'px';
+    }
+  });
+  function loop() {
+    cx += (mx - cx) * 0.22;
+    cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  }
+  loop();
+  document.querySelectorAll('button, a, .phase, .principle, .tools-col li').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  // FLOATING TOOLTIP — for any element with data-tip
+  document.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      tip.textContent = el.getAttribute('data-tip');
+      tip.style.left = mx + 'px';
+      tip.style.top = my + 'px';
+      tip.classList.add('show');
+    });
+    el.addEventListener('mouseleave', () => {
+      tip.classList.remove('show');
+    });
+  });
+
+  let audioCtx = null;
+  let soundOn = true;
+  function ensureAudio() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  document.addEventListener('mousedown', ensureAudio, { passive: true });
+  document.addEventListener('keydown', ensureAudio);
+  document.addEventListener('touchstart', ensureAudio, { passive: true });
+
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundToggle.classList.toggle('active', soundOn);
+    soundToggle.innerHTML = soundOn ? 'Sound <span class="on">●</span> on' : 'Sound <span class="on">●</span> off';
+    if (soundOn) blip(660, 0.08);
+  });
+  function blip(freq, dur, type = 'square') {
+    if (!soundOn || !audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = type;
+    g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + dur);
+  }
+  document.querySelectorAll('button, a, .phase, .principle, .tools-col li').forEach(el => {
+    el.addEventListener('mouseenter', () => blip(440 + Math.random() * 400, 0.04, 'sine'));
+  });
+
+  console.log('%cCHRSTPHR // HOW I WORK', 'font-size:48px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+</body>
+</html>
