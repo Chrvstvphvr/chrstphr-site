@@ -1,0 +1,121 @@
+{
+  "process": {
+    "label": "The Process / 5 phases · adjustable",
+    "headline": "From \"what is this?\" to \"<em>oh that's good</em>\".",
+    "phases": [
+      {
+        "num": "01",
+        "name": "Discover",
+        "headline": "Listen until I find the <em>real</em> brief.",
+        "description": "The brief you sent is a guess. Together we figure out what's actually broken, who's actually using it, and what success would actually look like. Lots of questions, some annoying.",
+        "deliverable": "Output: brief v2"
+      },
+      {
+        "num": "02",
+        "name": "Concept",
+        "headline": "Three directions, then <em>kill</em> the safe one.",
+        "description": "I show three concepts of differing risk. We talk about them honestly. The conservative one usually dies first — that's a feature, not a bug. We pick a direction with intent.",
+        "deliverable": "Output: chosen direction"
+      },
+      {
+        "num": "03",
+        "name": "Build",
+        "headline": "Make it. <em>Refine</em> it. Push.",
+        "description": "Heads-down execution. Iterations are sharing-by-default — I'd rather show you something messy on Tuesday than something polished on Friday. Feedback compounds.",
+        "deliverable": "Output: working drafts"
+      },
+      {
+        "num": "04",
+        "name": "Ship",
+        "headline": "Polish. Document. <em>Deliver.</em>",
+        "description": "Tighten the seams, write the rationale, hand off cleanly (or keep going if I'm building it too). Includes whatever you need to keep the thing alive after I'm gone.",
+        "deliverable": "Output: final + docs"
+      },
+      {
+        "num": "05",
+        "name": "Reflect",
+        "headline": "Look back. <em>Write down</em> what changed.",
+        "description": "Two weeks after ship, I write a short retrospective — what worked, what I'd do again, what I won't. I send it to you. You're free to ignore it. I keep getting better either way.",
+        "deliverable": "Output: retro note"
+      }
+    ]
+  },
+  "principles": {
+    "label": "The Principles / non-negotiables (mostly)",
+    "headline": "Eight things I won't <em>argue</em> about.",
+    "items": [
+      {
+        "num": "P/01",
+        "quote": "\"The brief is wrong. The <em>real</em> brief is somewhere underneath it.\"",
+        "explain": "Briefs are guesses dressed up as instructions. Half the value of any project is finding the question that should have been asked, and asking it."
+      },
+      {
+        "num": "P/02",
+        "quote": "\"<em>Strong opinions</em>, willingly held.\"",
+        "explain": "CHRSTPHR brings the best take and defends it. Also drops it the second you give a better reason. Stubbornness without reason is just ego with extra steps."
+      },
+      {
+        "num": "P/03",
+        "quote": "\"<em>Maximalist</em> on purpose. Minimalist when forced.\"",
+        "explain": "Restraint is great when it's a choice. When it's a default, it's a personality bypass. Lean loud and earn the quiet moments."
+      },
+      {
+        "num": "P/04",
+        "quote": "\"<em>Document the why</em>, not the what.\"",
+        "explain": "Anyone can describe what a thing looks like. The reason something exists in a particular way — the constraint, the opinion, the trade-off — is the actually useful part."
+      },
+      {
+        "num": "P/05",
+        "quote": "\"Push back early. <em>Disagreement</em> is a sign of trust.\"",
+        "explain": "If your idea is off, I'll tell you in week one, not week six. That's not difficult — that's caring about the outcome more than the vibe."
+      },
+      {
+        "num": "P/06",
+        "quote": "\"<em>Ship</em> is a verb. So is iterate.\"",
+        "explain": "Shipping is the start of the design, not the end. The thing only learns when it's in the world. Ship at v0.7, then make v0.8 better."
+      },
+      {
+        "num": "P/07",
+        "quote": "\"If a system can make it, the <em>system</em> should make it.\"",
+        "explain": "CHRSTPHR's job is the part the system can't do — taste, framing, judgment, weird connections. AI takes care of repetition. CHRSTPHR takes care of surprise."
+      },
+      {
+        "num": "P/08",
+        "quote": "\"The work tells you when it's <em>done</em>. (Sometimes it lies.)\"",
+        "explain": "There's a moment a piece settles and asks for nothing else. CHRSTPHR trusts that signal — but not blindly. A second pair of eyes always catches the lie."
+      }
+    ]
+  },
+  "toolbox": {
+    "label": "The Toolbox / what CHRSTPHR uses, how CHRSTPHR shows up",
+    "headline": "Tools and <em>habits</em>.",
+    "tools": {
+      "title": "● Tools I actually use",
+      "items": [
+        { "name": "Adobe Creative Cloud", "annot": "DAILY",                "level": "Expert",        "tip": "Remember when it was called CS?" },
+        { "name": "XD",                    "annot": "PROTOTYPING",          "level": "Experienced" },
+        { "name": "Figma",                 "annot": "PROTOTYPING",          "level": "Well-versed" },
+        { "name": "Lottie",                "annot": "FOR FUN",              "level": "Easy" },
+        { "name": "Webflow",               "annot": "WHEN I NEED CONTROL",  "level": "Expert" },
+        { "name": "Spotify",               "annot": "CONSTANTLY",           "level": "Hacker / Master" },
+        { "name": "Slack",                 "annot": "DAILY",                "level": "Admin" }
+      ]
+    },
+    "rituals": {
+      "title": "★ Rituals I keep",
+      "items": [
+        { "name": "Morning Walk",                  "annot": "EVERY MORNING",         "desc": "Daily — without it, the day starts flat." },
+        { "name": "Kill One Bad Idea",             "annot": "WEEKLY",                "desc": "Sometimes I need to let go and move on." },
+        { "name": "Ship An Idea",                  "annot": "MONTHLY",               "desc": "Or else it's useless." },
+        { "name": "Sketch Pen-on-Paper",           "annot": "NEVER SKIP",            "desc": "Best way to think visually." },
+        { "name": "Get Feedback",                  "annot": "BEFORE SENDING OFF",    "desc": "Always." },
+        { "name": "Get Up & Walk Away",            "annot": "AT LEAST ONCE PER DAY", "desc": "Sanity check." },
+        { "name": "Ask \"Is It Still Delightful?\"", "annot": "EVERY DECISION",       "desc": "Because that part... is the part that matters." }
+      ]
+    }
+  },
+  "manifesto": {
+    "text": "The work should make people <em>look twice</em>. Then it should be <em>useful</em>. Then it should <em>last</em>.",
+    "signature": "— CHRSTPHR"
+  }
+}

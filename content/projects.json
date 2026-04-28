@@ -1,0 +1,109 @@
+{
+  "featured": {
+    "num": "01",
+    "year": "2025",
+    "client": "Personal Project",
+    "role": "Solo Builder",
+    "title": "My Own Personal 1973 Corvette Mechanic",
+    "titleEm": "(and he's a genius!)",
+    "coverMark": "↗↗↗",
+    "coverTag": "PERSONAL · FULL-STACK · AI",
+    "description": "Got my dream car. No idea what I was doing. Scratch-built a full-stack, multi-modal RAG AI sidekick — built on <span class=\"accent\">FastAPI, Claude, Supabase + pgvector</span> — to ingest gigabytes of manuals, forum data, and repair docs. Now it diagnoses issues from photos and tracks every bolt I've touched.",
+    "tags": ["AI", "PERSONAL", "FULL-STACK"],
+    "ctaHref": "#caseStudy",
+    "ctaLabel": "↳ READ THE WHOLE STORY"
+  },
+  "filters": [
+    { "id": "all", "label": "All" },
+    { "id": "ux", "label": "UX/UI" },
+    { "id": "ai", "label": "AI" }
+  ],
+  "projects": [
+    {
+      "num": "02",
+      "tag": "AI",
+      "filter": "ai",
+      "size": "m",
+      "mark": "❤️",
+      "meta": "iMessage Analyzer for macOS · Personal · 2026",
+      "title": "What Your Texting Really Says About You.",
+      "description": "246,000 messages. 20+ insights. Turns out you text most at 11am — and 2am. Built as a wrapped macOS app with PyQt6, sentiment analysis, topic modeling, and an AI chat tab powered by Claude.",
+      "href": "#"
+    },
+    {
+      "num": "03",
+      "tag": "UX/UI",
+      "filter": "ux",
+      "size": "l",
+      "mark": "🍕",
+      "meta": "Client · Brenz Pizza Co · Jan 2026",
+      "title": "Full-Stack Order Intelligence for a Pizza Shop That STILL RUNS ON PAPER!?!?",
+      "description": "Vibe-coded, tested, vetted, awesome. Vision recognition reads paper tickets at each stage of the make process. Twilio texts customers their ETA. Two displays — one in the dining room, one visible from the parking lot — show the live order queue. Employee dashboard lets staff override any step. Built solo for a shop that refused to use a KDS.",
+      "href": "#"
+    },
+    {
+      "num": "04",
+      "tag": "UX/UI",
+      "filter": "ux",
+      "size": "m",
+      "mark": "🏆",
+      "meta": "Client · Brenz Pizza Co · Mar 2026",
+      "title": "The Scoreboard the Boss Asked For on a Tuesday.",
+      "description": "Real-time sales, labor, transactions, and voids across 7 shops on a single dark display. Boss asked. Delivered in 3 hours with Claude Code. Designed, built, deployed, and in use.",
+      "href": "#"
+    }
+  ],
+  "caseStudy": {
+    "label": "Case Study / Project 01",
+    "pill": "PROJECT 01",
+    "title": "My Own Personal 1973 Corvette Mechanic",
+    "titleEm": "(and he's a genius!)",
+    "metaRow": [
+      { "label": "Client", "value": "Personal Project" },
+      { "label": "Year", "value": "2025 (ongoing)" },
+      { "label": "Role", "value": "Solo Builder", "accent": true },
+      { "label": "Duration", "value": "Ongoing" },
+      { "label": "Type", "value": "Personal · AI · Full-Stack" }
+    ],
+    "hero": {
+      "mark": "↗↗↗",
+      "caption": "FIG. 01 · 1973 CORVETTE · RAG AI SIDEKICK"
+    },
+    "sections": [
+      {
+        "num": "01 / Brief",
+        "headline": "The <em>real</em> brief.",
+        "paragraphs": [
+          "Got the dream car. A 1973 Corvette. No garage experience, no mechanic on speed dial, and no idea what I was looking at under the hood. The shop quotes were brutal. The manuals were 400 pages of dense technical copy from 1972.",
+          "The <span class=\"accent\">real</span> problem: all the knowledge exists — gigabytes of it — scattered across factory service manuals, forum threads, and repair logs. It just wasn't accessible in real time, while kneeling on a garage floor with grease on my hands."
+        ]
+      },
+      {
+        "num": "02 / Approach",
+        "headline": "Building a <em>genius</em> from scratch.",
+        "paragraphs": [
+          "Scratch-built a full-stack, multi-modal RAG AI sidekick on <span class=\"accent\">FastAPI, Claude, Supabase, and pgvector</span>. Ingested gigabytes of factory manuals, forum data, and repair documentation. The system can now diagnose issues from photos, answer highly specific technical questions with citation, and track every bolt touched in a persistent repair log.",
+          "The multi-modal layer changed everything. Instead of typing a description of a problem, you photograph it. Claude identifies the component, cross-references the manual, and surfaces the relevant repair procedure. <span class=\"strike\">Going to the shop.</span> Not anymore."
+        ],
+        "pullQuote": "Send it a photo of a mystery part. It tells you what it is, what it does, and when it was last replaced."
+      },
+      {
+        "num": "03 / Reflection",
+        "headline": "What CHRSTPHR <em>learned</em>.",
+        "paragraphs": [
+          "The biggest lesson: domain expertise doesn't have to live in a person. When you structure the knowledge correctly — chunked, embedded, retrievable — the model becomes genuinely expert. Not a chatbot. An expert.",
+          "If CHRSTPHR did this again: earlier investment in the photo-to-diagnosis pipeline. The multi-modal capability turned out to be the killer feature. Text queries are fine. Photos are <span class=\"accent\">magic</span>."
+        ]
+      }
+    ],
+    "stats": [
+      { "num": "4GB+", "label": "Docs ingested" },
+      { "num": "100%", "label": "Solo-built" },
+      { "num": "$6,800", "label": "Saved in shop labor" }
+    ],
+    "nav": {
+      "prev": { "num": "04", "title": "The Scoreboard the Boss Asked For on a Tuesday", "href": "#" },
+      "next": { "num": "02", "title": "What Your Texting Really Says About You", "href": "#" }
+    }
+  }
+}

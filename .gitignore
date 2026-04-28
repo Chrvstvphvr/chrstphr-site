@@ -18,3 +18,7 @@ TODO.local
 
 # Stray iCloud / Finder duplicate
 Untitled/
+
+# Admin local secrets — NEVER commit
+admin/.password
+admin/.session-secret

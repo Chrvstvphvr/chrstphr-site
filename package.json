@@ -1,0 +1,10 @@
+{
+  "name": "chrstphr-site",
+  "version": "3.2.0",
+  "private": true,
+  "description": "CHRSTPHR personal brand site + local content admin",
+  "scripts": {
+    "admin": "node admin/server.js",
+    "serve": "node admin/server.js"
+  }
+}

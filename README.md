@@ -16,9 +16,19 @@ A static HTML prototype of the CHRSTPHR personal brand site. Seven pages, fully 
 
 ## How to view
 
-Open any `.html` file directly in a browser — no server needed.
+Most pages open directly in a browser via `file://`. Two pages (`work.html` and `how-i-work.html`) read their content from JSON files at runtime, so they need a local server. Easiest: run the admin server (see below) and visit `http://localhost:4000/`.
 
 The top-bar navigation is wired across all pages. The current page is highlighted in orange.
+
+## Local content admin
+
+Projects + How I Work content live in `/content/*.json` and are edited via a local-only password-gated admin.
+
+```bash
+npm run admin
+```
+
+Opens `http://localhost:4000/admin/`. Default password is `chrstphr` (change it in `admin/.password` — gitignored — or set `PASSWORD` env var). The server only binds to `127.0.0.1`, so it's never reachable from the network. Edits autosave to the JSON files. To deploy: `git add content/ && git commit && git push`.
 
 ## Brand system
 

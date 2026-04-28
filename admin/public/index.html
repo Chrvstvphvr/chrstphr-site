@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CHRSTPHR // Admin</title>
+<link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
+<style>
+  :root {
+    --bg: #0A0A0A;
+    --fg: #F2EDE2;
+    --fg-dim: rgba(242, 237, 226, 0.5);
+    --line: rgba(242, 237, 226, 0.15);
+    --accent: #FF4500;
+    --field-bg: rgba(255, 255, 255, 0.04);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Helvetica Neue", "Arial", sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ----- TOP BAR ----- */
+  .bar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 28px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .bar .logo {
+    font-family: "Arial Black", sans-serif;
+    font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase;
+    font-style: italic;
+  }
+  .bar .logo .accent { color: var(--accent); }
+  .bar .right { display: flex; gap: 16px; align-items: center; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+  .bar a, .bar button {
+    background: none; border: 1px solid var(--line); color: var(--fg);
+    padding: 8px 14px; font-family: inherit; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.18em; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .bar a:hover, .bar button:hover { border-color: var(--accent); color: var(--accent); }
+  .save-state { color: var(--fg-dim); }
+  .save-state.dirty { color: var(--accent); }
+  .save-state.saving { color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  .save-state.saved { color: #4ade80; }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+
+  /* ----- LOGIN ----- */
+  .login {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+  }
+  .login form {
+    width: 100%; max-width: 400px;
+    border: 1px solid var(--line);
+    padding: 36px;
+  }
+  .login h1 {
+    font-family: "Arial Black", sans-serif; font-style: italic;
+    font-size: 32px; line-height: 1; margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: -0.025em;
+  }
+  .login h1 .accent { color: var(--accent); }
+  .login .sub { color: var(--fg-dim); font-size: 12px; text-transform: uppercase; letter-spacing: 0.22em; margin-bottom: 28px; }
+  .login label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--fg-dim); margin-bottom: 8px; }
+  .login input {
+    width: 100%; padding: 12px 14px; background: var(--field-bg); border: 1px solid var(--line);
+    color: var(--fg); font-family: inherit; font-size: 16px; outline: none;
+  }
+  .login input:focus { border-color: var(--accent); }
+  .login button[type=submit] {
+    margin-top: 18px; width: 100%; padding: 14px; background: var(--accent); color: var(--bg);
+    border: none; font-family: "Arial Black", sans-serif; font-style: italic;
+    font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;
+    transition: filter 0.2s;
+  }
+  .login button[type=submit]:hover { filter: brightness(1.1); }
+  .login .err { color: var(--accent); font-size: 12px; margin-top: 14px; min-height: 18px; }
+
+  /* ----- WORKSPACE ----- */
+  .ws { padding: 28px 28px 80px; max-width: 1100px; margin: 0 auto; }
+  .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid var(--line); }
+  .tabs button {
+    background: none; border: none; color: var(--fg-dim); font-family: inherit;
+    padding: 14px 24px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.22em;
+    font-weight: 700; cursor: pointer; position: relative; transition: color 0.2s;
+  }
+  .tabs button.active { color: var(--accent); }
+  .tabs button.active::after {
+    content: ""; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--accent);
+  }
+  .tabs button:hover { color: var(--fg); }
+  .tabs button.active:hover { color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ----- SECTIONS / CARDS ----- */
+  .group {
+    border: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+  .group-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.02);
+  }
+  .group-head h3 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; font-weight: 800; color: var(--accent);
+  }
+  .group-body { padding: 18px; }
+
+  .item {
+    border: 1px solid var(--line);
+    padding: 16px;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.02);
+    position: relative;
+  }
+  .item-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dotted var(--line);
+  }
+  .item-head .label {
+    font-family: "Courier New", monospace; font-size: 11px; color: var(--accent);
+    letter-spacing: 0.18em; font-weight: 800;
+  }
+  .item-controls { display: flex; gap: 6px; }
+  .icon-btn {
+    background: none; border: 1px solid var(--line); color: var(--fg-dim);
+    padding: 4px 10px; font-family: inherit; font-size: 11px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+
+  /* ----- FIELDS ----- */
+  .row { display: grid; gap: 12px; margin-bottom: 12px; }
+  .row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  @media (max-width: 720px) {
+    .row.cols-2, .row.cols-3, .row.cols-4 { grid-template-columns: 1fr; }
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--fg-dim);
+    font-weight: 700;
+  }
+  .field input, .field textarea, .field select {
+    background: var(--field-bg);
+    border: 1px solid var(--line);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .field textarea { resize: vertical; min-height: 60px; line-height: 1.5; font-family: "Courier New", monospace; font-size: 13px; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+  .field .hint { font-size: 10px; color: var(--fg-dim); font-style: italic; }
+
+  .add-row {
+    text-align: center; padding: 12px;
+    border: 1px dashed var(--line);
+    color: var(--fg-dim);
+    cursor: pointer;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.22em; font-weight: 700;
+    transition: all 0.2s;
+  }
+  .add-row:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
+
+  .footer-help {
+    margin-top: 40px; padding: 18px; border: 1px solid var(--line);
+    color: var(--fg-dim); font-size: 12px; line-height: 1.6;
+    background: rgba(255, 69, 0, 0.04);
+  }
+  .footer-help .accent { color: var(--accent); }
+  .footer-help code {
+    font-family: "Courier New", monospace; background: rgba(0,0,0,0.4); padding: 2px 6px;
+    color: var(--fg);
+  }
+
+  /* hidden until ready */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ====== LOGIN ====== -->
+<div id="loginView" class="login">
+  <form id="loginForm" autocomplete="off">
+    <h1>CHRSTPHR<span class="accent">*</span> Admin</h1>
+    <div class="sub">Local-only / Password-gated</div>
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autofocus>
+    <button type="submit">Unlock →</button>
+    <div class="err" id="err"></div>
+  </form>
+</div>
+
+<!-- ====== WORKSPACE ====== -->
+<div id="adminView" class="hidden">
+  <div class="bar">
+    <div class="logo">CHRSTPHR<span class="accent">*</span> / ADMIN</div>
+    <div class="right">
+      <span class="save-state" id="saveState">All saved</span>
+      <a href="/" target="_blank">View site ↗</a>
+      <button id="logoutBtn">Sign out</button>
+    </div>
+  </div>
+
+  <div class="ws">
+    <div class="tabs">
+      <button class="tab active" data-tab="projects">Projects</button>
+      <button class="tab" data-tab="how-i-work">How I Work</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-projects"></div>
+    <div class="tab-panel" id="tab-how-i-work"></div>
+
+    <div class="footer-help">
+      <strong class="accent">Edits save automatically.</strong> Files written to <code>content/projects.json</code> and <code>content/how-i-work.json</code>.
+      The site reads from those files at page load. To deploy, <code>git add content/ && git commit && git push</code>.
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
