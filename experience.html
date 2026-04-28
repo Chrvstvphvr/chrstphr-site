@@ -249,62 +249,61 @@
   .panel.active { display: block; }
 
   /* TIMELINE */
-  .timeline-wrap {
+  .timeline-list {
     padding: 60px 7vw 100px;
+    position: relative;
+  }
+  .timeline-entry {
     display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 0;
+    grid-template-columns: 140px 1fr;
+    gap: 36px;
+    align-items: start;
+    cursor: none;
   }
-  .timeline-axis {
-    position: sticky;
-    top: 80px;
-    align-self: start;
-    height: calc(100vh - 100px);
-    border-right: 1px solid var(--line);
-    padding-right: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .timeline-axis .axis-year {
-    font-family: "Arial Black", sans-serif;
-    font-size: clamp(28px, 3vw, 48px);
-    line-height: 1;
-    color: var(--fg-dim);
+  .timeline-entry .te-year-col {
     text-align: right;
+    padding-top: 6px;
+    user-select: none;
   }
-  .timeline-axis .axis-tick {
-    font-size: 9px;
+  .timeline-entry .te-year-big {
+    font-family: "Arial Black", sans-serif;
+    font-style: italic;
+    font-size: clamp(40px, 4.4vw, 72px);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--fg-dim);
+    transition: color 0.3s;
+  }
+  .timeline-entry:hover .te-year-big,
+  .timeline-entry.open .te-year-big { color: var(--accent); }
+  .timeline-entry .te-year-sub {
+    font-family: "Courier New", monospace;
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.22em;
     color: var(--fg-dim);
-    text-align: right;
-    margin-top: 4px;
+    margin-top: 8px;
   }
 
-  .timeline-track { padding-left: 32px; position: relative; }
-  .timeline-track::before {
-    content: ""; position: absolute;
-    top: 0; bottom: 0; left: 0;
-    width: 2px; background: var(--line);
-  }
-  .timeline-entry {
+  .timeline-entry .te-content-col {
     position: relative;
-    padding: 0 0 60px 30px;
-    cursor: none;
+    padding-left: 32px;
+    padding-bottom: 60px;
+    border-left: 1px solid var(--line);
   }
-  .timeline-entry::before {
+  .timeline-entry:last-of-type .te-content-col { padding-bottom: 24px; }
+  .timeline-entry .te-content-col::before {
     content: "";
     position: absolute;
-    left: -7px; top: 8px;
+    left: -8px; top: 12px;
     width: 14px; height: 14px;
     background: var(--bg);
     border: 2px solid var(--accent);
     border-radius: 50%;
     transition: all 0.3s;
   }
-  .timeline-entry:hover::before { background: var(--accent); transform: scale(1.4); }
-  .timeline-entry.open::before { background: var(--accent); transform: scale(1.4); box-shadow: 0 0 0 6px rgba(255,69,0,0.18); }
+  .timeline-entry:hover .te-content-col::before { background: var(--accent); transform: scale(1.4); }
+  .timeline-entry.open .te-content-col::before { background: var(--accent); transform: scale(1.4); box-shadow: 0 0 0 6px rgba(255,69,0,0.18); }
   .timeline-entry .te-period {
     font-family: "Courier New", monospace;
     font-size: 12px;
@@ -707,9 +706,15 @@
   .sound-toggle.active .on { color: var(--bg); }
 
   @media (max-width: 1100px) {
-    .timeline-wrap { grid-template-columns: 70px 1fr; }
+    .timeline-entry { grid-template-columns: 90px 1fr; gap: 22px; }
+    .timeline-entry .te-year-big { font-size: clamp(28px, 5.5vw, 44px); }
     .projects-grid { grid-template-columns: 1fr; }
     .skills-shared { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .timeline-entry { grid-template-columns: 1fr; gap: 0; }
+    .timeline-entry .te-year-col { text-align: left; padding-top: 0; padding-bottom: 8px; }
+    .timeline-entry .te-content-col { padding-bottom: 40px; }
   }
   @media (max-width: 800px) {
     .switcher { grid-template-columns: 1fr; gap: 14px; }
@@ -784,97 +789,91 @@
 </div>
 
 <section class="panel active" data-panel="1">
-  <div class="timeline-wrap">
-    <div class="timeline-axis">
-      <div>
-        <div class="axis-year">2026</div>
-        <div class="axis-tick">— Now</div>
-      </div>
-      <div>
-        <div class="axis-year">2021</div>
-        <div class="axis-tick">— Brenz</div>
-      </div>
-      <div>
-        <div class="axis-year">2019</div>
-        <div class="axis-tick">— Archall</div>
-      </div>
-      <div>
-        <div class="axis-year">2014</div>
-        <div class="axis-tick">— Subliminal</div>
-      </div>
-      <div>
-        <div class="axis-year">2010</div>
-        <div class="axis-tick">— OSU</div>
-      </div>
-    </div>
-
-    <div class="timeline-track">
+  <div class="timeline-list">
 
       <div class="timeline-entry">
-        <div class="te-period">Aug 2021 — Present</div>
-        <h3>Digital Experience <em>Engineer</em></h3>
-        <div class="te-company">Brenz Pizza Co / <strong>Chapel Hill, NC</strong></div>
-        <div class="te-toggle"><span class="arrow">+</span> Click to expand</div>
-        <div class="te-meta">
-          <div class="label">Resp.</div>
-          <ul>
-            <li>Owned end-to-end UI/UX for Brenz.com — high-traffic online ordering and loyalty flows</li>
-            <li>Designed customer-facing digital interfaces — logo treatments, UI assets, brand-consistent vector components across web + mobile</li>
-            <li>Applied A/B testing, heuristic evaluations, journey mapping to reduce friction</li>
-            <li>Used HTML, CSS, and JavaScript to bridge design intent and front-end implementation</li>
-            <li>Produced and reviewed vector graphics and design assets for quality + consistency against brand guidelines</li>
-          </ul>
-          <div class="label">Results</div>
-          <ul>
-            <li>Improved usability and conversion across high-traffic ordering flows through data-informed iteration</li>
-            <li>Reduced design-to-engineering back-and-forth by handling FE implementation directly</li>
-            <li>Partnered daily with product, engineering, and marketing to ship buildable UI fast</li>
-          </ul>
+        <div class="te-year-col">
+          <div class="te-year-big">2021</div>
+          <div class="te-year-sub">— Now</div>
+        </div>
+        <div class="te-content-col">
+          <div class="te-period">Aug 2021 — Present</div>
+          <h3>Digital Experience <em>Engineer</em></h3>
+          <div class="te-company">Brenz Pizza Co / <strong>Chapel Hill, NC</strong></div>
+          <div class="te-toggle"><span class="arrow">+</span> Click to expand</div>
+          <div class="te-meta">
+            <div class="label">Resp.</div>
+            <ul>
+              <li>Owned end-to-end UI/UX for Brenz.com — high-traffic online ordering and loyalty flows</li>
+              <li>Designed customer-facing digital interfaces — logo treatments, UI assets, brand-consistent vector components across web + mobile</li>
+              <li>Applied A/B testing, heuristic evaluations, journey mapping to reduce friction</li>
+              <li>Used HTML, CSS, and JavaScript to bridge design intent and front-end implementation</li>
+              <li>Produced and reviewed vector graphics and design assets for quality + consistency against brand guidelines</li>
+            </ul>
+            <div class="label">Results</div>
+            <ul>
+              <li>Improved usability and conversion across high-traffic ordering flows through data-informed iteration</li>
+              <li>Reduced design-to-engineering back-and-forth by handling FE implementation directly</li>
+              <li>Partnered daily with product, engineering, and marketing to ship buildable UI fast</li>
+            </ul>
+          </div>
         </div>
       </div>
 
       <div class="timeline-entry">
-        <div class="te-period">Sep 2019 — Aug 2021</div>
-        <h3>Digital Marketing & <em>Web Developer</em></h3>
-        <div class="te-company">Archall Architects / <strong>Chapel Hill, NC</strong></div>
-        <div class="te-toggle"><span class="arrow">+</span> Click to expand</div>
-        <div class="te-meta">
-          <div class="label">Resp.</div>
-          <ul>
-            <li>Redesigned and developed Archall.com with a user-centered approach</li>
-            <li>Created brand-aligned web graphics, icons, and visual assets working from structured brand briefs</li>
-            <li>Implemented responsive, accessible front-end updates</li>
-            <li>Planned digital marketing initiatives to grow organic reach + brand visibility</li>
-          </ul>
-          <div class="label">Results</div>
-          <ul>
-            <li>Improved navigation clarity and the client acquisition experience from first visit through contact</li>
-            <li>Produced print and digital design materials ensuring visual consistency across all deliverables</li>
-          </ul>
+        <div class="te-year-col">
+          <div class="te-year-big">2019</div>
+          <div class="te-year-sub">— 2021</div>
+        </div>
+        <div class="te-content-col">
+          <div class="te-period">Sep 2019 — Aug 2021</div>
+          <h3>Digital Marketing & <em>Web Developer</em></h3>
+          <div class="te-company">Archall Architects / <strong>Chapel Hill, NC</strong></div>
+          <div class="te-toggle"><span class="arrow">+</span> Click to expand</div>
+          <div class="te-meta">
+            <div class="label">Resp.</div>
+            <ul>
+              <li>Redesigned and developed Archall.com with a user-centered approach</li>
+              <li>Created brand-aligned web graphics, icons, and visual assets working from structured brand briefs</li>
+              <li>Implemented responsive, accessible front-end updates</li>
+              <li>Planned digital marketing initiatives to grow organic reach + brand visibility</li>
+            </ul>
+            <div class="label">Results</div>
+            <ul>
+              <li>Improved navigation clarity and the client acquisition experience from first visit through contact</li>
+              <li>Produced print and digital design materials ensuring visual consistency across all deliverables</li>
+            </ul>
+          </div>
         </div>
       </div>
 
       <div class="timeline-entry">
-        <div class="te-period">Apr 2014 — Sep 2019</div>
-        <h3>Lead Product <em>Designer</em></h3>
-        <div class="te-company">Subliminal Design / <strong>Studio</strong></div>
-        <div class="te-toggle"><span class="arrow">+</span> Click to expand</div>
-        <div class="te-meta">
-          <div class="label">Resp.</div>
-          <ul>
-            <li>Led a multidisciplinary team delivering web UI/UX for a diverse client portfolio</li>
-            <li>Owned UX research, usability testing, and competitive analysis end-to-end</li>
-            <li>Built and maintained scalable design systems and component libraries</li>
-            <li>Created low-to-high-fidelity prototypes in Figma, Sketch, and Adobe XD</li>
-            <li>Led visual design and brand identity work — logo design, icon systems, scalable vector assets</li>
-            <li>Developed thorough practice of reviewing and annotating design work against client briefs and brand guidelines</li>
-          </ul>
-          <div class="label">Results</div>
-          <ul>
-            <li>Delivered responsive, accessibility-aware designs across all client engagements as a first-tier priority</li>
-            <li>Conducted design quality reviews and maintained component libraries for precision and consistency</li>
-            <li>Worked extensively in vector tools producing both print-ready and web-optimized assets</li>
-          </ul>
+        <div class="te-year-col">
+          <div class="te-year-big">2014</div>
+          <div class="te-year-sub">— 2019</div>
+        </div>
+        <div class="te-content-col">
+          <div class="te-period">Apr 2014 — Sep 2019</div>
+          <h3>Lead Product <em>Designer</em></h3>
+          <div class="te-company">Subliminal Design / <strong>Studio</strong></div>
+          <div class="te-toggle"><span class="arrow">+</span> Click to expand</div>
+          <div class="te-meta">
+            <div class="label">Resp.</div>
+            <ul>
+              <li>Led a multidisciplinary team delivering web UI/UX for a diverse client portfolio</li>
+              <li>Owned UX research, usability testing, and competitive analysis end-to-end</li>
+              <li>Built and maintained scalable design systems and component libraries</li>
+              <li>Created low-to-high-fidelity prototypes in Figma, Sketch, and Adobe XD</li>
+              <li>Led visual design and brand identity work — logo design, icon systems, scalable vector assets</li>
+              <li>Developed thorough practice of reviewing and annotating design work against client briefs and brand guidelines</li>
+            </ul>
+            <div class="label">Results</div>
+            <ul>
+              <li>Delivered responsive, accessibility-aware designs across all client engagements as a first-tier priority</li>
+              <li>Conducted design quality reviews and maintained component libraries for precision and consistency</li>
+              <li>Worked extensively in vector tools producing both print-ready and web-optimized assets</li>
+            </ul>
+          </div>
         </div>
       </div>
 
