@@ -1,6 +1,11 @@
 /* CHRSTPHR Admin — single-file editor.
    Renders forms for projects.json and how-i-work.json, autosaves on change. */
 
+console.log('[admin] app.js loaded');
+
+window.addEventListener('error', e => console.error('[admin] uncaught error:', e.error || e.message));
+window.addEventListener('unhandledrejection', e => console.error('[admin] unhandled promise:', e.reason));
+
 // ============ Tiny DOM helpers ============
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -603,23 +608,63 @@ function moveItem(slug, i, delta, rerender) {
 }
 
 // ============ Boot ============
-async function boot() {
-  // Login form
-  $('#loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const pw = $('#pw').value;
+async function attemptLogin() {
+  console.log('[admin] attemptLogin');
+  const pwInput = $('#pw');
+  const errEl = $('#err');
+  const pw = pwInput ? pwInput.value : '';
+  errEl && (errEl.textContent = '');
+  try {
     const ok = await login(pw);
+    console.log('[admin] login response ok =', ok);
     if (ok) {
       $('#loginView').classList.add('hidden');
       $('#adminView').classList.remove('hidden');
       await loadAll();
     } else {
-      $('#err').textContent = 'Wrong password.';
+      errEl && (errEl.textContent = 'Wrong password.');
     }
-  });
-  $('#logoutBtn').addEventListener('click', logout);
+  } catch (e) {
+    console.error('[admin] login threw:', e);
+    errEl && (errEl.textContent = 'Login error — check console.');
+  }
+  return false;
+}
 
-  // Tabs
+function boot() {
+  console.log('[admin] boot');
+
+  const form = document.getElementById('loginForm');
+  const btn  = document.getElementById('loginBtn');
+
+  if (!form) console.error('[admin] #loginForm not found at boot');
+  if (!btn)  console.error('[admin] #loginBtn not found at boot');
+
+  // Triple redundancy on the submit:
+  //  1) <form onsubmit="return false"> in HTML (prevents naive submit)
+  //  2) submit event listener
+  //  3) click on the button
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      console.log('[admin] form submit fired');
+      e.preventDefault();
+      e.stopPropagation();
+      attemptLogin();
+      return false;
+    });
+  }
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      console.log('[admin] login button clicked');
+      e.preventDefault();
+      e.stopPropagation();
+      attemptLogin();
+    });
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.addEventListener('click', logout);
+
   $$('.tab').forEach(t => {
     t.addEventListener('click', () => {
       $$('.tab').forEach(x => x.classList.remove('active'));
@@ -629,11 +674,15 @@ async function boot() {
     });
   });
 
-  if (await checkAuth()) {
-    $('#loginView').classList.add('hidden');
-    $('#adminView').classList.remove('hidden');
-    await loadAll();
-  }
+  // Then asynchronously check if already authenticated
+  checkAuth().then(authed => {
+    console.log('[admin] checkAuth =', authed);
+    if (authed) {
+      $('#loginView').classList.add('hidden');
+      $('#adminView').classList.remove('hidden');
+      loadAll().catch(e => console.error('[admin] loadAll threw:', e));
+    }
+  }).catch(e => console.error('[admin] checkAuth threw:', e));
 }
 
 async function loadAll() {

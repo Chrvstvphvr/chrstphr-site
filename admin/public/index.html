@@ -202,12 +202,12 @@
 
 <!-- ====== LOGIN ====== -->
 <div id="loginView" class="login">
-  <form id="loginForm" autocomplete="off">
+  <form id="loginForm" autocomplete="off" onsubmit="return false;" action="javascript:void(0);">
     <h1>CHRSTPHR<span class="accent">*</span> Admin</h1>
     <div class="sub">Local-only / Password-gated</div>
     <label for="pw">Password</label>
     <input id="pw" type="password" autofocus>
-    <button type="submit">Unlock →</button>
+    <button type="submit" id="loginBtn">Unlock →</button>
     <div class="err" id="err"></div>
   </form>
 </div>

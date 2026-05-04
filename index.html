@@ -268,10 +268,10 @@
     white-space: nowrap;
   }
   .sticker:active { cursor: grabbing; box-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
-  .sticker.s1 { top: 4%; right: 3%; background: var(--accent); color: #000; transform: rotate(-7deg); }
-  .sticker.s2 { top: 80%; right: 5%; background: var(--fg); color: #000; transform: rotate(4deg); }
-  .sticker.s3 { top: 78%; left: 3%; background: var(--bg); color: var(--fg); border: 2px solid var(--fg); transform: rotate(-3deg); }
-  .sticker.s4 { top: 6%; left: 3%; background: var(--bg); color: var(--accent); border: 2px solid var(--accent); transform: rotate(8deg); }
+  .sticker.s1 { top: 22%; right: 22%; background: var(--accent); color: #000; transform: rotate(-7deg); }
+  .sticker.s2 { top: 68%; right: 24%; background: var(--fg); color: #000; transform: rotate(4deg); }
+  .sticker.s3 { top: 65%; left: 22%; background: var(--bg); color: var(--fg); border: 2px solid var(--fg); transform: rotate(-3deg); }
+  .sticker.s4 { top: 24%; left: 22%; background: var(--bg); color: var(--accent); border: 2px solid var(--accent); transform: rotate(8deg); }
 
   .marquee {
     position: relative;
@@ -357,6 +357,8 @@
     align-items: center;
     gap: 8px;
     mix-blend-mode: difference;
+    opacity: 1;
+    transition: opacity 0.5s ease;
   }
   .scroll-cue .arrow { animation: bob 1.6s ease-in-out infinite; }
   @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
@@ -937,6 +939,12 @@
 <div class="cursor-label" id="cursorLabel"></div>
 
 <script>
+  // Fade scroll cue out after 100px scroll
+  const scrollCue = document.querySelector('.scroll-cue');
+  window.addEventListener('scroll', () => {
+    if (scrollCue) scrollCue.style.opacity = window.scrollY > 100 ? '0' : '1';
+  }, { passive: true });
+
   function tickClock() {
     const d = new Date();
     const t = d.toTimeString().split(' ')[0];
