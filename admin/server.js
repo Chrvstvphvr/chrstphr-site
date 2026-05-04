@@ -193,7 +193,11 @@ async function handle(req, res) {
   }
 
   // ---------- ADMIN UI ----------
-  if (pathname === '/admin' || pathname === '/admin/') {
+  if (pathname === '/admin') {
+    res.writeHead(301, { Location: '/admin/' });
+    return res.end();
+  }
+  if (pathname === '/admin/') {
     return serveStatic(res, path.join(PUBLIC_DIR, 'index.html'));
   }
   if (pathname.startsWith('/admin/')) {
