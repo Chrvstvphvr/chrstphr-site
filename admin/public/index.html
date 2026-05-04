@@ -184,8 +184,8 @@
   .add-row:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
 
   .footer-help {
-    margin-top: 40px; padding: 18px; border: 1px solid var(--line);
-    color: var(--fg-dim); font-size: 12px; line-height: 1.6;
+    margin-top: 40px; padding: 22px; border: 1px solid var(--line);
+    color: var(--fg-dim); font-size: 13px; line-height: 1.6;
     background: rgba(255, 69, 0, 0.04);
   }
   .footer-help .accent { color: var(--accent); }
@@ -193,6 +193,46 @@
     font-family: "Courier New", monospace; background: rgba(0,0,0,0.4); padding: 2px 6px;
     color: var(--fg);
   }
+  .footer-help h4 {
+    color: var(--fg);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-weight: 800;
+    margin: 18px 0 10px;
+  }
+  .footer-help h4:first-child { margin-top: 0; }
+  .code-block {
+    position: relative;
+    background: #000;
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    padding-right: 90px;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    color: var(--fg);
+    overflow-x: auto;
+    line-height: 1.55;
+    white-space: pre;
+    margin: 0;
+  }
+  .code-block .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--field-bg);
+    border: 1px solid var(--line);
+    color: var(--fg-dim);
+    padding: 4px 10px;
+    font-family: inherit;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .code-block .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .code-block .copy-btn.copied { border-color: #4ade80; color: #4ade80; }
 
   /* hidden until ready */
   .hidden { display: none !important; }
@@ -233,8 +273,17 @@
     <div class="tab-panel" id="tab-how-i-work"></div>
 
     <div class="footer-help">
-      <strong class="accent">Edits save automatically.</strong> Files written to <code>content/projects.json</code> and <code>content/how-i-work.json</code>.
-      The site reads from those files at page load. To deploy, <code>git add content/ && git commit && git push</code>.
+      <p><strong class="accent">Edits save automatically.</strong> Files written to <code>content/projects.json</code> and <code>content/how-i-work.json</code>. The site reads from those files at page load. To deploy your changes to the live site, run the commands below in <strong>Terminal</strong>.</p>
+
+      <h4>Deploy to ohchrstphr.com</h4>
+      <pre class="code-block" id="deployCode"><button class="copy-btn" data-target="deployCode">Copy</button>cd "/Users/christopherscott/Library/Mobile Documents/com~apple~CloudDocs/AI Work/Personal Brand/site"
+git add content/
+git commit -m "Content update"
+git push</pre>
+
+      <h4>Just check what changed first</h4>
+      <pre class="code-block" id="diffCode"><button class="copy-btn" data-target="diffCode">Copy</button>cd "/Users/christopherscott/Library/Mobile Documents/com~apple~CloudDocs/AI Work/Personal Brand/site"
+git diff content/</pre>
     </div>
   </div>
 </div>

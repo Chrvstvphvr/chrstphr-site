@@ -674,6 +674,32 @@ function boot() {
     });
   });
 
+  // Copy-to-clipboard buttons in the footer help block
+  $$('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
+      // Grab text content but strip the button's own label
+      const code = Array.from(target.childNodes)
+        .filter(n => n.nodeType === 3 || (n.nodeType === 1 && !n.classList.contains('copy-btn')))
+        .map(n => n.textContent).join('').trim();
+      try {
+        await navigator.clipboard.writeText(code);
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1500);
+      } catch (err) {
+        console.error('[admin] copy failed:', err);
+        btn.textContent = 'Copy failed';
+      }
+    });
+  });
+
   // Then asynchronously check if already authenticated
   checkAuth().then(authed => {
     console.log('[admin] checkAuth =', authed);

@@ -8,15 +8,28 @@
     "titleEm": "(and he's a genius!)",
     "coverMark": "↗↗↗",
     "coverTag": "PERSONAL · FULL-STACK · AI",
-    "description": "Got my dream car. No idea what I was doing. Scratch-built a full-stack, multi-modal RAG AI sidekick — built on <span class=\"accent\">FastAPI, Claude, Supabase + pgvector</span> — to ingest gigabytes of manuals, forum data, and repair docs. Now it diagnoses issues from photos and tracks every bolt I've touched.",
-    "tags": ["AI", "PERSONAL", "FULL-STACK"],
+    "description": "Got my dream project car. No idea what I was doing. Scratch-built a full-stack, multi-modal RAG AI sidekick — built on <span class=\"accent\">FastAPI, Claude, Supabase + pgvector</span> — to ingest gigabytes of manuals, forum data, and repair docs. Now it diagnoses issues from photos and tracks every bolt I've touched.",
+    "tags": [
+      "AI",
+      "PERSONAL",
+      "FULL-STACK"
+    ],
     "ctaHref": "#caseStudy",
     "ctaLabel": "↳ READ THE WHOLE STORY"
   },
   "filters": [
-    { "id": "all", "label": "All" },
-    { "id": "ux", "label": "UX/UI" },
-    { "id": "ai", "label": "AI" }
+    {
+      "id": "all",
+      "label": "All"
+    },
+    {
+      "id": "ux",
+      "label": "UX/UI"
+    },
+    {
+      "id": "ai",
+      "label": "AI"
+    }
   ],
   "projects": [
     {
@@ -59,11 +72,27 @@
     "title": "My Own Personal 1973 Corvette Mechanic",
     "titleEm": "(and he's a genius!)",
     "metaRow": [
-      { "label": "Client", "value": "Personal Project" },
-      { "label": "Year", "value": "2025 (ongoing)" },
-      { "label": "Role", "value": "Solo Builder", "accent": true },
-      { "label": "Duration", "value": "Ongoing" },
-      { "label": "Type", "value": "Personal · AI · Full-Stack" }
+      {
+        "label": "Client",
+        "value": "Personal Project"
+      },
+      {
+        "label": "Year",
+        "value": "2025 (ongoing)"
+      },
+      {
+        "label": "Role",
+        "value": "Solo Builder",
+        "accent": true
+      },
+      {
+        "label": "Duration",
+        "value": "Ongoing"
+      },
+      {
+        "label": "Type",
+        "value": "Personal · AI · Full-Stack"
+      }
     ],
     "hero": {
       "mark": "↗↗↗",
@@ -97,13 +126,30 @@
       }
     ],
     "stats": [
-      { "num": "4GB+", "label": "Docs ingested" },
-      { "num": "100%", "label": "Solo-built" },
-      { "num": "$6,800", "label": "Saved in shop labor" }
+      {
+        "num": "4GB+",
+        "label": "Docs ingested"
+      },
+      {
+        "num": "100%",
+        "label": "Solo-built"
+      },
+      {
+        "num": "$6,800",
+        "label": "Saved in shop labor"
+      }
     ],
     "nav": {
-      "prev": { "num": "04", "title": "The Scoreboard the Boss Asked For on a Tuesday", "href": "#" },
-      "next": { "num": "02", "title": "What Your Texting Really Says About You", "href": "#" }
+      "prev": {
+        "num": "04",
+        "title": "The Scoreboard the Boss Asked For on a Tuesday",
+        "href": "#"
+      },
+      "next": {
+        "num": "02",
+        "title": "What Your Texting Really Says About You",
+        "href": "#"
+      }
     }
   }
 }
