@@ -272,6 +272,7 @@
   .sticker.s2 { top: 68%; right: 24%; background: var(--fg); color: #000; transform: rotate(4deg); }
   .sticker.s3 { top: 65%; left: 22%; background: var(--bg); color: var(--fg); border: 2px solid var(--fg); transform: rotate(-3deg); }
   .sticker.s4 { top: 24%; left: 22%; background: var(--bg); color: var(--accent); border: 2px solid var(--accent); transform: rotate(8deg); }
+  .sticker.s5 { top: 45%; left: 42%; background: var(--accent); color: #000; transform: rotate(-5deg); }
 
   .marquee {
     position: relative;
@@ -780,6 +781,7 @@
   <div class="sticker s2" data-cursor="DRAG">UX · BRAND · AI</div>
   <a href="contact.html" class="sticker s3" data-cursor="DRAG">↳ LET'S MAKE A SCENE</a>
   <div class="sticker s4" data-cursor="DRAG">★ NEW WORK SOON</div>
+  <div class="sticker s5" data-cursor="DRAG">Throw me! ↗</div>
 </main>
 
 <div class="marquee">
@@ -999,53 +1001,63 @@
     nameUniform.style.setProperty('--my', '50%');
   });
 
+  // Sticker drag — single shared listeners to avoid multi-sticker interference
+  let activeSticker = null, sStartX, sStartY, sStartLeft, sStartTop,
+      sVx = 0, sVy = 0, sLastX, sLastY, sRaf, sHasMoved = false;
+
   document.querySelectorAll('.sticker').forEach(s => {
-    let dragging = false, startX, startY, startLeft, startTop, vx = 0, vy = 0, lastX, lastY, raf;
-    function pin() {
+    s.addEventListener('mousedown', e => {
+      if (activeSticker) return;
+      cancelAnimationFrame(sRaf);
       const r = s.getBoundingClientRect();
+      sStartLeft = r.left; sStartTop = r.top;
       s.style.left = r.left + 'px';
       s.style.top = r.top + 'px';
       s.style.right = 'auto';
       s.style.bottom = 'auto';
-    }
-    s.addEventListener('mousedown', e => {
-      cancelAnimationFrame(raf);
-      pin();
-      dragging = true;
-      startX = e.clientX; startY = e.clientY;
-      lastX = e.clientX; lastY = e.clientY;
-      const r = s.getBoundingClientRect();
-      startLeft = r.left; startTop = r.top;
+      activeSticker = s;
+      sHasMoved = false;
+      sStartX = e.clientX; sStartY = e.clientY;
+      sLastX = e.clientX; sLastY = e.clientY;
+      sVx = 0; sVy = 0;
       e.preventDefault();
     });
-    document.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      const nx = startLeft + e.clientX - startX;
-      const ny = startTop + e.clientY - startY;
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!activeSticker) return;
+    const dx = e.clientX - sStartX;
+    const dy = e.clientY - sStartY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) sHasMoved = true;
+    activeSticker.style.left = (sStartLeft + dx) + 'px';
+    activeSticker.style.top  = (sStartTop  + dy) + 'px';
+    sVx = e.clientX - sLastX;
+    sVy = e.clientY - sLastY;
+    sLastX = e.clientX; sLastY = e.clientY;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!activeSticker) return;
+    const s = activeSticker;
+    activeSticker = null;
+
+    if (sHasMoved && s.tagName === 'A') {
+      s.addEventListener('click', e => { e.preventDefault(); e.stopImmediatePropagation(); }, { once: true, capture: true });
+    }
+
+    (function flick() {
+      sVx *= 0.94; sVy *= 0.94;
+      const r = s.getBoundingClientRect();
+      let nx = r.left + sVx;
+      let ny = r.top  + sVy;
+      if (nx < 0) { nx = 0; sVx = -sVx * 0.6; }
+      if (nx + r.width  > innerWidth)  { nx = innerWidth  - r.width;  sVx = -sVx * 0.6; }
+      if (ny < 60) { ny = 60; sVy = -sVy * 0.6; }
+      if (ny + r.height > innerHeight) { ny = innerHeight - r.height; sVy = -sVy * 0.6; }
       s.style.left = nx + 'px';
-      s.style.top = ny + 'px';
-      vx = e.clientX - lastX;
-      vy = e.clientY - lastY;
-      lastX = e.clientX; lastY = e.clientY;
-    });
-    document.addEventListener('mouseup', () => {
-      if (!dragging) return;
-      dragging = false;
-      function flick() {
-        vx *= 0.94; vy *= 0.94;
-        const r = s.getBoundingClientRect();
-        let nx = r.left + vx;
-        let ny = r.top + vy;
-        if (nx < 0) { nx = 0; vx = -vx * 0.6; }
-        if (nx + r.width > innerWidth) { nx = innerWidth - r.width; vx = -vx * 0.6; }
-        if (ny < 60) { ny = 60; vy = -vy * 0.6; }
-        if (ny + r.height > innerHeight) { ny = innerHeight - r.height; vy = -vy * 0.6; }
-        s.style.left = nx + 'px';
-        s.style.top = ny + 'px';
-        if (Math.abs(vx) > 0.5 || Math.abs(vy) > 0.5) raf = requestAnimationFrame(flick);
-      }
-      flick();
-    });
+      s.style.top  = ny + 'px';
+      if (Math.abs(sVx) > 0.5 || Math.abs(sVy) > 0.5) sRaf = requestAnimationFrame(flick);
+    })();
   });
 
   let audioCtx = null;
@@ -1174,7 +1186,7 @@
     <div class="group">
       <span>© <span data-year>2026</span> CHRSTPHR</span>
       <span>v3.2</span>
-      <span class="accent">All pixels placed by hand</span>
+      <span class="accent">This site was literally prompted to existence from scratch in 10.67 hours.</span>
     </div>
     <div class="group">
       <span>Page: home</span>

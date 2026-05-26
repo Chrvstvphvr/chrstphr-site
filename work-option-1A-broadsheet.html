@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Work / Variant A · Broadsheet</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/global.css">
+<style>
+  /* ==========================================================
+     VARIANT A — THE BROADSHEET
+     Front-page newspaper. Multi-column body, ledger lines,
+     dateline, jumps, marginalia, hand-set masthead.
+     ========================================================== */
+
+  body {
+    /* fake newsprint warmth without abandoning the brand palette */
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,69,0,0.04), transparent 50%),
+      var(--bg);
+  }
+
+  /* MASTHEAD */
+  .broadsheet {
+    padding: 110px 5vw 0;
+    position: relative;
+    z-index: 5;
+  }
+
+  .nameplate {
+    border-top: 4px solid var(--fg);
+    border-bottom: 4px double var(--fg);
+    padding: 18px 0 14px;
+    text-align: center;
+    position: relative;
+  }
+  .nameplate-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+  }
+  .nameplate-svg text {
+    font-family: "Times New Roman", Georgia, serif;
+    font-weight: 900;
+    font-style: italic;
+    fill: var(--fg);
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+  }
+  .nameplate-svg .dot { fill: var(--accent); font-style: normal; }
+  .nameplate-tag {
+    margin-top: 6px;
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    color: var(--fg-dim);
+    letter-spacing: 0.08em;
+    font-size: 13px;
+  }
+  .nameplate-tag .accent { color: var(--accent); }
+
+  .dateline {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: center;
+    border-bottom: 1px solid var(--fg);
+    padding: 10px 0;
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+  }
+  .dateline .l { text-align: left; }
+  .dateline .c { text-align: center; font-weight: 700; color: var(--fg); }
+  .dateline .r { text-align: right; }
+  .dateline .accent { color: var(--accent); }
+
+  /* WEATHER BOX (fake top strip) */
+  .weather {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid var(--line);
+    font-family: "Times New Roman", Georgia, serif;
+  }
+  .weather .cell {
+    padding: 12px 14px;
+    border-right: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .weather .cell:last-child { border-right: none; }
+  .weather .cell strong {
+    display: block;
+    font-family: "Arial Black", sans-serif;
+    color: var(--fg);
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .weather .cell .accent { color: var(--accent); }
+
+  /* PAGE GRID */
+  .front {
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    gap: 0;
+    border-bottom: 1px solid var(--fg);
+  }
+
+  .col {
+    padding: 28px 22px;
+    border-right: 1px solid var(--line);
+    font-family: "Times New Roman", Georgia, serif;
+  }
+  .col:last-child { border-right: none; }
+
+  /* LEFT MARGIN — sidebar / index */
+  .col.l .kicker {
+    font-family: "Arial Black", sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .col.l h4 {
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+  }
+  .col.l ul { list-style: none; margin-bottom: 28px; }
+  .col.l li {
+    display: grid;
+    grid-template-columns: 28px 1fr 28px;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--fg);
+    border-bottom: 1px dotted var(--line);
+    padding: 8px 0;
+  }
+  .col.l li .pg { color: var(--accent); font-weight: 800; font-family: "Arial Black", sans-serif; font-size: 12px; }
+  .col.l li .ttl { color: var(--fg); }
+  .col.l li .ttl em { color: var(--accent); font-style: italic; }
+  .col.l li .arr { color: var(--fg-dim); text-align: right; }
+
+  .col.l .stamp {
+    border: 2px solid var(--accent);
+    padding: 12px 14px;
+    text-align: center;
+    transform: rotate(-3deg);
+    margin: 24px 0;
+    color: var(--accent);
+    font-family: "Arial Black", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+  .col.l .stamp strong { display: block; font-size: 22px; margin: 4px 0; }
+
+  .col.l .ad {
+    border: 1px dashed var(--fg-dim);
+    padding: 14px;
+    text-align: center;
+    margin-top: 20px;
+    font-family: "Times New Roman", Georgia, serif;
+  }
+  .col.l .ad .small {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    margin-bottom: 6px;
+  }
+  .col.l .ad strong {
+    display: block;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.2;
+    color: var(--accent);
+  }
+
+  /* CENTER — lead story */
+  .col.c {
+    padding: 32px 28px;
+  }
+  .col.c .above {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .col.c .above .right { color: var(--fg-dim); }
+
+  .lead-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(46px, 7vw, 110px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .lead-headline em { color: var(--accent); font-style: italic; }
+  .lead-deck {
+    text-align: center;
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    font-size: clamp(18px, 1.6vw, 24px);
+    line-height: 1.35;
+    color: var(--fg);
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--fg);
+    padding: 14px 0;
+    margin-bottom: 24px;
+    max-width: 760px;
+    margin-left: auto; margin-right: auto;
+  }
+  .lead-deck .accent { color: var(--accent); }
+
+  .byline {
+    text-align: center;
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 12px;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 26px;
+  }
+  .byline strong { color: var(--fg); }
+  .byline .accent { color: var(--accent); }
+
+  /* the hero "photo" — keeps the existing aesthetic, faked photo block */
+  .lead-photo {
+    border: 2px solid var(--fg);
+    aspect-ratio: 16/8;
+    background: var(--bg);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .lead-photo::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 26px, rgba(255,69,0,0.06) 26px, rgba(255,69,0,0.06) 27px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 26px, rgba(242,237,226,0.04) 26px, rgba(242,237,226,0.04) 27px),
+      radial-gradient(circle at 30% 40%, rgba(255,69,0,0.16), transparent 55%);
+  }
+  .lead-photo .mark {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(140px, 18vw, 280px);
+    color: var(--accent);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    transform: rotate(-3deg);
+    position: relative;
+    z-index: 1;
+  }
+  .photo-cap {
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--fg-dim);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 16px;
+    margin-bottom: 22px;
+  }
+  .photo-cap .accent { color: var(--accent); font-style: normal; font-weight: 700; }
+
+  /* multi-column body copy */
+  .body-copy {
+    column-count: 2;
+    column-gap: 28px;
+    column-rule: 1px solid var(--line);
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--fg);
+    text-align: justify;
+    hyphens: auto;
+  }
+  .body-copy p { margin-bottom: 12px; }
+  .body-copy p:first-of-type::first-letter {
+    font-family: "Arial Black", sans-serif;
+    font-size: 64px;
+    color: var(--accent);
+    float: left;
+    line-height: 0.85;
+    padding: 6px 8px 0 0;
+  }
+  .body-copy .accent { color: var(--accent); font-weight: 700; }
+  .body-copy .strike { text-decoration: line-through; opacity: 0.5; }
+  .body-copy .pull-quote {
+    font-family: "Arial Black", sans-serif;
+    font-size: 22px;
+    line-height: 1.15;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    border-top: 3px solid var(--accent);
+    border-bottom: 3px solid var(--accent);
+    padding: 14px 0;
+    margin: 14px 0;
+    text-align: left;
+    font-style: italic;
+    break-inside: avoid;
+  }
+  .jump {
+    margin-top: 18px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    text-transform: uppercase;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+  }
+  .jump a { color: var(--accent); text-decoration: none; cursor: none; }
+
+  /* RIGHT MARGIN — "today on page X" + ledger */
+  .col.r .kicker {
+    font-family: "Arial Black", sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .col.r .ledger {
+    border-top: 2px solid var(--fg);
+    border-bottom: 2px solid var(--fg);
+    padding: 14px 0;
+    margin-bottom: 24px;
+  }
+  .col.r .ledger-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 13px;
+    border-bottom: 1px dotted var(--line);
+    padding: 6px 0;
+    color: var(--fg);
+  }
+  .col.r .ledger-row:last-child { border-bottom: none; }
+  .col.r .ledger-row strong { font-family: "Arial Black", sans-serif; color: var(--accent); font-size: 14px; }
+
+  .col.r h5 {
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .col.r .brief {
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+  }
+  .col.r .brief:last-child { border-bottom: none; }
+  .col.r .brief .meta {
+    font-family: "Arial Black", sans-serif;
+    font-size: 9px;
+    color: var(--fg-dim);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  /* CONTINUED-ON BANNER */
+  .continued-banner {
+    text-align: center;
+    border-top: 4px double var(--fg);
+    border-bottom: 1px solid var(--fg);
+    padding: 14px 22px;
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    color: var(--fg-dim);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .continued-banner .accent { color: var(--accent); font-weight: 700; }
+
+  /* SECONDARY STORIES — below fold */
+  .below-fold {
+    padding: 36px 5vw;
+    border-bottom: 1px solid var(--fg);
+    position: relative;
+    z-index: 5;
+  }
+  .section-rule {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 4px solid var(--fg);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 0;
+    margin-bottom: 24px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .section-rule .right { color: var(--fg-dim); }
+
+  .stories {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--fg);
+    border-bottom: 1px solid var(--fg);
+  }
+  .story {
+    padding: 28px 26px;
+    border-right: 1px solid var(--line);
+    font-family: "Times New Roman", Georgia, serif;
+    text-decoration: none;
+    color: inherit;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+  .story:last-child { border-right: none; }
+  .story::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: var(--accent);
+    transform: translateY(101%);
+    transition: transform 0.5s cubic-bezier(0.65,0,0.35,1);
+    z-index: 0;
+  }
+  .story > * { position: relative; z-index: 1; }
+  .story:hover::before { transform: translateY(0); }
+  .story:hover { color: var(--bg); }
+
+  .story .label {
+    font-family: "Arial Black", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .story:hover .label { color: var(--bg); }
+  .story h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(22px, 2.4vw, 32px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .story h3 em { color: var(--accent); font-style: italic; transition: color 0.3s; }
+  .story:hover h3 em { color: var(--bg); }
+  .story .deck {
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.35;
+    color: var(--fg);
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+    margin-bottom: 14px;
+  }
+  .story:hover .deck { color: var(--bg); border-color: var(--bg); }
+  .story .body-mini {
+    font-family: "Times New Roman", Georgia, serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--fg);
+    text-align: justify;
+    hyphens: auto;
+  }
+  .story:hover .body-mini { color: var(--bg); }
+  .story .credits-mini {
+    font-family: "Arial Black", sans-serif;
+    font-size: 9px;
+    color: var(--fg-dim);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-top: 14px;
+    border-top: 1px dotted var(--line);
+    padding-top: 8px;
+  }
+  .story:hover .credits-mini { color: var(--bg); border-color: var(--bg); }
+  .story .turn {
+    margin-top: 12px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .story:hover .turn { color: var(--bg); }
+
+  /* CLASSIFIEDS / EDITOR'S NOTE */
+  .classifieds {
+    padding: 36px 5vw 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--fg);
+    background: var(--bg);
+    position: relative;
+    z-index: 5;
+  }
+  .classified {
+    padding: 22px 26px;
+    border-right: 1px solid var(--line);
+    font-family: "Times New Roman", Georgia, serif;
+  }
+  .classified:last-child { border-right: none; }
+  .classified .h {
+    font-family: "Arial Black", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+  .classified p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .classified p .accent { color: var(--accent); font-weight: 700; }
+  .classified em { font-style: italic; color: var(--accent); }
+
+  /* CTA */
+  .cta-paper {
+    padding: 100px 5vw 130px;
+    text-align: center;
+    position: relative;
+    z-index: 5;
+  }
+  .cta-paper .label {
+    font-family: "Arial Black", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .cta-paper h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 9vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cta-paper h2 em { color: var(--accent); font-style: italic; }
+  .cta-paper p {
+    max-width: 620px;
+    margin: 0 auto 32px;
+    font-family: "Times New Roman", Georgia, serif;
+    font-style: italic;
+    font-size: clamp(16px, 1.3vw, 22px);
+    line-height: 1.5;
+    color: var(--fg);
+  }
+  .cta-paper .cta-button {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 22px 36px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 4px solid var(--accent);
+  }
+  .cta-paper .cta-button:hover { background: transparent; color: var(--accent); }
+
+  @media (max-width: 1100px) {
+    .front { grid-template-columns: 1fr; }
+    .col { border-right: none; border-bottom: 1px solid var(--line); }
+    .body-copy { column-count: 1; }
+    .stories { grid-template-columns: 1fr; }
+    .story { border-right: none; border-bottom: 1px solid var(--line); }
+    .classifieds { grid-template-columns: 1fr; }
+    .classified { border-right: none; border-bottom: 1px solid var(--line); }
+    .weather { grid-template-columns: repeat(2, 1fr); }
+    .weather .cell:nth-child(2n) { border-right: none; }
+    .weather .cell { border-bottom: 1px solid var(--line); }
+  }
+  @media (max-width: 700px) {
+    .top-bar nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html" class="curr">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<!-- ============ MASTHEAD ============ -->
+<section class="broadsheet">
+  <div class="nameplate">
+    <svg class="nameplate-svg" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="THE CHRSTPHR DAILY">
+      <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">
+        THE CHRSTPHR<tspan class="dot" dx="0.5">·</tspan>DAILY
+      </text>
+    </svg>
+    <div class="nameplate-tag"><span class="accent">"</span>The work, the weird, the worth-it.<span class="accent">"</span> — Established 2026, North Carolina.</div>
+  </div>
+
+  <div class="dateline">
+    <span class="l">Vol. 03 · No. 17 · <span class="accent">EARLY EDITION</span></span>
+    <span class="c">Friday, May 8, 2026</span>
+    <span class="r">All work, no filler · 04 stories</span>
+  </div>
+
+  <!-- Weather strip -->
+  <div class="weather">
+    <div class="cell">Outlook<strong class="accent">Booking</strong></div>
+    <div class="cell">Mood<strong>Maximalist</strong></div>
+    <div class="cell">Disciplines<strong class="accent">UX · AI</strong></div>
+    <div class="cell">Coffee level<strong>9 / 10</strong></div>
+    <div class="cell">Vowels<strong class="accent">None</strong></div>
+  </div>
+
+  <!-- Front page grid -->
+  <div class="front">
+
+    <!-- LEFT COLUMN -->
+    <aside class="col l">
+      <div class="kicker">Today's Index</div>
+      <h4>What's <em>inside</em> this edition</h4>
+      <ul>
+        <li><span class="pg">01</span><span class="ttl">A Mechanic Made of <em>Manuals</em></span><span class="arr">→</span></li>
+        <li><span class="pg">02</span><span class="ttl">246K Texts, <em>Diagnosed</em></span><span class="arr">→</span></li>
+        <li><span class="pg">03</span><span class="ttl">Pizza Shop on <em>Paper</em></span><span class="arr">→</span></li>
+        <li><span class="pg">04</span><span class="ttl">The Tuesday <em>Scoreboard</em></span><span class="arr">→</span></li>
+      </ul>
+
+      <div class="stamp">
+        Read &amp; Approved<br>
+        <strong>04 / 04</strong>
+        Solo-built · 2026
+      </div>
+
+      <div class="kicker">Filter the edition</div>
+      <ul style="margin-bottom:14px">
+        <li><span class="pg">A</span><span class="ttl">All <em>(04)</em></span><span class="arr">●</span></li>
+        <li><span class="pg">U</span><span class="ttl">UX/UI <em>(02)</em></span><span class="arr">○</span></li>
+        <li><span class="pg">I</span><span class="ttl">AI <em>(02)</em></span><span class="arr">○</span></li>
+      </ul>
+
+      <div class="ad">
+        <div class="small">— Sponsored Notice —</div>
+        <strong>Now Booking Selected Collabs.</strong>
+        <div class="small" style="margin-top:8px">Inquire within →</div>
+      </div>
+    </aside>
+
+    <!-- CENTER COLUMN -->
+    <article class="col c">
+      <div class="above">
+        <span>Front Page · Lead Story</span>
+        <span class="right">— Continued on Page 02</span>
+      </div>
+
+      <h1 class="lead-headline">A Mechanic Made of <em>Manuals</em>, Mostly.</h1>
+      <p class="lead-deck">
+        How one designer with no garage experience built a multi-modal RAG sidekick to keep a <span class="accent">1973 Corvette</span> on the road — and ate <span class="accent">$6,800</span> in shop labor in the process.
+      </p>
+      <div class="byline">
+        Filed by <strong>CHRSTPHR</strong> · Personal desk · <span class="accent">Solo Builder</span> · 2025 → ongoing
+      </div>
+
+      <div class="lead-photo"><span class="mark">↗↗↗</span></div>
+      <div class="photo-cap">
+        <span class="accent">FIG. 01</span> — The 1973 Corvette and its newly-installed digital assistant. <span class="accent">FastAPI · Claude · Supabase + pgvector.</span> Photo: every garage floor in North Carolina.
+      </div>
+
+      <div class="body-copy">
+        <p>The dream car arrived first. The competence to keep it running did not. Factory service manuals from 1972 are dense, opinionated, and 400 pages long. Forum threads are gold but unsearchable. The shop quotes were <span class="strike">brutal</span> educational.</p>
+
+        <p>So this designer did the only reasonable thing: built a <span class="accent">multi-modal RAG sidekick</span> from scratch. FastAPI on top, Claude in the middle, Supabase + pgvector underneath. Ingested gigabytes of manuals, threads, and repair logs. Now the answer fits in a pocket.</p>
+
+        <div class="pull-quote">
+          "Send it a photo of a mystery part. It tells you what it is, what it does, and when it was last replaced."
+        </div>
+
+        <p>The multi-modal layer is the thing. Type a description of a problem and you'll get a fine answer. Photograph it and you'll get a great one. The model identifies the component, cross-references the manual, and surfaces the relevant repair procedure, with citation.</p>
+
+        <p>Lessons: domain expertise doesn't have to live in a person. Structure the knowledge correctly — chunked, embedded, retrievable — and the model becomes <span class="accent">genuinely expert</span>. Not a chatbot. An expert.</p>
+
+        <p>If CHRSTPHR did this again: earlier investment in the photo-to-diagnosis pipeline. Text queries are fine. Photos are <span class="accent">magic</span>. The Corvette, meanwhile, runs.</p>
+
+        <div class="jump">
+          <a href="#">Continued on page 02 — read the full case study →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- RIGHT COLUMN -->
+    <aside class="col r">
+      <div class="kicker">By the Numbers</div>
+      <div class="ledger">
+        <div class="ledger-row"><span>Manuals ingested</span><strong>4 GB+</strong></div>
+        <div class="ledger-row"><span>Solo-built</span><strong>100%</strong></div>
+        <div class="ledger-row"><span>Saved on shop labor</span><strong>$6,800</strong></div>
+        <div class="ledger-row"><span>Disciplines on file</span><strong>02</strong></div>
+        <div class="ledger-row"><span>Available for hire</span><strong>YES</strong></div>
+      </div>
+
+      <div class="kicker">Also In This Edition</div>
+
+      <div class="brief">
+        <span class="meta">Page 02 · AI · 2026</span>
+        <h5><em>What Your Texting Really Says About You.</em></h5>
+        246,000 messages analyzed. Sentiment, topic modeling, an AI chat tab powered by Claude. Wrapped as a macOS app in PyQt6.
+      </div>
+
+      <div class="brief">
+        <span class="meta">Page 03 · UX/UI · Jan 2026</span>
+        <h5><em>The Pizza Shop That Still Runs On Paper.</em></h5>
+        Vision recognition reads paper tickets. Twilio texts customers their ETA. Built solo for a shop that refused a KDS.
+      </div>
+
+      <div class="brief">
+        <span class="meta">Page 04 · UX/UI · Mar 2026</span>
+        <h5><em>The Scoreboard the Boss Asked For.</em></h5>
+        Real-time sales, labor, transactions, voids — across 7 shops. Designed, built, deployed in three hours.
+      </div>
+    </aside>
+
+  </div>
+
+  <div class="continued-banner">
+    <span class="accent">Stories continue below the fold.</span> Pull-quotes are best read aloud, dramatically.
+  </div>
+</section>
+
+<!-- ============ BELOW THE FOLD ============ -->
+<section class="below-fold">
+  <div class="section-rule">
+    <span>Below the Fold · Selected Reportage</span>
+    <span class="right">Pages 02 — 04 / Continued from front</span>
+  </div>
+
+  <div class="stories">
+
+    <!-- STORY 02 -->
+    <a class="story" href="#">
+      <div class="label">Page 02 · Personal · 2026</div>
+      <h3>246K Texts, <em>Diagnosed.</em></h3>
+      <div class="deck">A wrapped macOS app reveals 20+ insights about how — and when — its owner texts.</div>
+      <div class="body-mini">
+        Analysis of nearly a quarter-million messages over more than a decade. Sentiment, topic modeling, and an AI chat tab powered by Claude. Bundled with PyQt6 as a desktop app you can hand to a friend without explaining a thing. Turns out: most active at 11am. And 2am.
+      </div>
+      <div class="credits-mini">CLIENT: PERSONAL · ROLE: SOLO BUILDER · STACK: PYQT6 · CLAUDE</div>
+      <div class="turn">↳ Continued on page 02 →</div>
+    </a>
+
+    <!-- STORY 03 -->
+    <a class="story" href="#">
+      <div class="label">Page 03 · Brenz Pizza Co · Jan 2026</div>
+      <h3>Pizza Shop on <em>Paper.</em></h3>
+      <div class="deck">A shop that refused a kitchen display system gets vision recognition and a Twilio text loop instead.</div>
+      <div class="body-mini">
+        Tickets stay paper. A camera reads the ticket at each stage of the make process. Customers get a text with their ETA. Two displays — one in the dining room, one visible from the parking lot — show the live queue. Staff can override any step from a single dashboard.
+      </div>
+      <div class="credits-mini">CLIENT: BRENZ PIZZA CO · ROLE: SOLO BUILDER · STACK: VISION · TWILIO</div>
+      <div class="turn">↳ Continued on page 03 →</div>
+    </a>
+
+    <!-- STORY 04 -->
+    <a class="story" href="#">
+      <div class="label">Page 04 · Brenz Pizza Co · Mar 2026</div>
+      <h3>The Tuesday <em>Scoreboard.</em></h3>
+      <div class="deck">A boss asked. Three hours later, a single dark display tracked real-time sales across seven shops.</div>
+      <div class="body-mini">
+        Transactions, labor, voids, sales — every figure across seven locations on one display. Designed, built, deployed in a single Tuesday afternoon with Claude Code. Currently in use, currently being argued about, currently keeping the boss honest.
+      </div>
+      <div class="credits-mini">CLIENT: BRENZ PIZZA CO · ROLE: SOLO BUILDER · STACK: REAL-TIME DASHBOARD</div>
+      <div class="turn">↳ Continued on page 04 →</div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ============ CLASSIFIEDS / EDITORIAL ============ -->
+<section class="classifieds">
+
+  <div class="classified">
+    <div class="h">Editor's Note</div>
+    <p>This edition was, like all editions, prepared in a single black room. We do not run beige stories. We do not endorse generic SaaS gradients. We are, however, fond of the <em>oxford comma</em>, large headlines, and people who reply in real sentences.</p>
+    <p class="accent">— The Editorial Desk.</p>
+  </div>
+
+  <div class="classified">
+    <div class="h">Letters Received</div>
+    <p>"<em>Read it cover to cover.</em>" — A Reader, somewhere.</p>
+    <p>"<em>Made me want to buy a Corvette.</em>" — Another Reader.</p>
+    <p>"<em>Send me the next edition.</em>" — A Future Client.</p>
+    <p class="accent">Submit your own at hello@ohchrstphr.com →</p>
+  </div>
+
+  <div class="classified">
+    <div class="h">Now Hiring (CHRSTPHR)</div>
+    <p>One (1) <em>interesting brief</em> required. Must include strong opinions, real people, and a willingness to ship.</p>
+    <p>Will trade: maximalist UX, AI-native experiments, brand systems with bite. <em>No infinity logos.</em></p>
+    <p class="accent">Inquiries: hello@ohchrstphr.com</p>
+  </div>
+
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta-paper">
+  <div class="label">— A Final Note from the Desk —</div>
+  <h2>Wanna work on something <em>cool</em> together?</h2>
+  <p>Right project, right timing, right opinions. Tell CHRSTPHR what you're working on — replies come in real sentences, set in real type, on a real black screen.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ FILE YOUR LETTER</a>
+</section>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px'; cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button, .story').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  console.log('%cTHE CHRSTPHR DAILY · VOL. 03 · NO. 17', 'font-size:32px;font-weight:900;color:#FF4500;font-family:Times New Roman,serif;');
+</script>
+
+<!-- ===== SITE FOOTER ===== -->
+<footer class="site-footer">
+  <svg class="footer-mark" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="CHRSTPHR">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">CHRSTPHR<tspan class="footer-mark-dot" dx="0.5">*</tspan></text>
+  </svg>
+  <hr class="footer-mark-rule">
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2 · OPTION 1A / BROADSHEET</span>
+      <span class="accent">Set in the dark. Printed for one.</span>
+    </div>
+    <div class="group">
+      <span>Page: work · variant A</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Work / Minimal B · Cards</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/global.css">
+<style>
+  /* ============================================================
+     MINIMAL B — STACK OF CARDS
+     Quiet 2x2 grid. Hover transforms each card.
+     ============================================================ */
+
+  .hero {
+    padding: 140px 7vw 0;
+    position: relative;
+    z-index: 5;
+  }
+  .pre {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 22px;
+  }
+  .pre .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .hero h1 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(40px, 7vw, 110px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    max-width: 14ch;
+    margin-bottom: 28px;
+  }
+  .hero h1 em { color: var(--accent); font-style: italic; }
+  .hero-rule {
+    border-top: 1px solid var(--line);
+    padding: 14px 0 0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+  }
+  .hero-rule .accent { color: var(--accent); }
+
+  .filters {
+    display: flex;
+    gap: 4px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .filters button {
+    background: transparent;
+    color: var(--fg-dim);
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 6px 0;
+    margin-right: 22px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .filters button:hover { color: var(--fg); }
+  .filters button.on { color: var(--accent); border-color: var(--accent); }
+  .filters button .count { color: var(--fg-dim); margin-left: 6px; font-weight: 500; }
+  .filters button.on .count { color: var(--accent); opacity: 0.8; }
+
+  /* GRID */
+  .grid-wrap {
+    padding: 60px 7vw 100px;
+    position: relative;
+    z-index: 5;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .grid:hover .card { opacity: 0.45; }
+  .grid:hover .card:hover { opacity: 1; }
+
+  .card {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    aspect-ratio: 16/10;
+    text-decoration: none;
+    color: inherit;
+    cursor: none;
+    padding: 30px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.65,0,0.35,1);
+  }
+  .card:hover { transform: translateY(-2px); }
+
+  /* the soft mark that swells in behind */
+  .card .ghost {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .card .ghost .mark {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(160px, 22vw, 380px);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    color: var(--accent);
+    opacity: 0;
+    transform: scale(0.8) rotate(-4deg);
+    transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.65,0,0.35,1);
+  }
+  .card:hover .ghost .mark { opacity: 0.18; transform: scale(1) rotate(-4deg); }
+
+  /* faint hover backdrop */
+  .card::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 28px, rgba(255,69,0,0.05) 28px, rgba(255,69,0,0.05) 29px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 28px, rgba(242,237,226,0.03) 28px, rgba(242,237,226,0.03) 29px);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 0;
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 2;
+  }
+  .card-top .num {
+    font-family: "Arial Black", sans-serif;
+    font-size: 14px;
+    color: var(--fg-dim);
+    letter-spacing: 0.3em;
+    transition: color 0.3s;
+  }
+  .card:hover .card-top .num { color: var(--accent); }
+
+  .card-top .tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    border: 1px solid var(--line);
+    padding: 4px 8px;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .card:hover .card-top .tag { color: var(--accent); border-color: var(--accent); }
+
+  .card-mid {
+    position: relative;
+    z-index: 2;
+  }
+  .card h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(26px, 3.4vw, 50px);
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    transition: transform 0.5s cubic-bezier(0.65,0,0.35,1);
+  }
+  .card:hover h3 { transform: translateX(4px); }
+  .card h3 em { color: var(--accent); font-style: italic; }
+
+  /* the description that fades up */
+  .card .desc {
+    margin-top: 14px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg);
+    max-width: 50ch;
+    transition: max-height 0.55s cubic-bezier(0.65,0,0.35,1), opacity 0.45s ease 0.05s, margin-top 0.5s;
+  }
+  .card:hover .desc {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: 14px;
+  }
+  .card .desc .accent { color: var(--accent); }
+
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 2;
+  }
+  .card-bottom .meta {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    transition: color 0.3s;
+  }
+  .card:hover .card-bottom .meta { color: var(--fg); }
+  .card-bottom .meta strong { color: var(--accent); }
+
+  .card-bottom .arrow {
+    font-family: "Arial Black", sans-serif;
+    font-size: 22px;
+    color: var(--fg-dim);
+    transition: color 0.3s, transform 0.3s;
+  }
+  .card:hover .card-bottom .arrow {
+    color: var(--accent);
+    transform: translate(4px, -4px);
+  }
+
+  /* corner ticks that appear on hover */
+  .card .corner {
+    position: absolute;
+    width: 14px; height: 14px;
+    border: 2px solid var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 3;
+  }
+  .card:hover .corner { opacity: 1; }
+  .card .corner.tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+  .card .corner.tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+  .card .corner.bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+  .card .corner.br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+
+  /* CTA */
+  .cta {
+    padding: 100px 7vw 130px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative;
+    z-index: 5;
+  }
+  .cta h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 9vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cta h2 em { color: var(--accent); font-style: italic; }
+  .cta p {
+    max-width: 600px;
+    margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-dim);
+  }
+  .cta-button {
+    display: inline-block;
+    background: transparent;
+    color: var(--fg);
+    text-decoration: none;
+    padding: 22px 36px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 2px solid var(--fg);
+  }
+  .cta-button:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  @media (max-width: 800px) {
+    .top-bar nav { display: none; }
+    .grid { grid-template-columns: 1fr; }
+    .card { aspect-ratio: auto; min-height: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html" class="curr">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="pre">
+    <span class="pulse"></span>
+    <span>Index 02 / Selected works · 2022 → present</span>
+  </div>
+  <h1>Stuff I made <em>that didn't</em> bore me.</h1>
+  <div class="hero-rule">
+    <span><span class="accent">04</span> projects · <span class="accent">02</span> disciplines · all solo-built</span>
+    <span>Hover any card</span>
+  </div>
+  <div class="filters">
+    <button class="on">All <span class="count">04</span></button>
+    <button>UX/UI <span class="count">02</span></button>
+    <button>AI <span class="count">02</span></button>
+  </div>
+</section>
+
+<section class="grid-wrap">
+  <div class="grid">
+
+    <a class="card" href="#">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="ghost"><span class="mark">↗↗↗</span></div>
+      <div class="card-top">
+        <span class="num">01</span>
+        <span class="tag">AI · Full-Stack</span>
+      </div>
+      <div class="card-mid">
+        <h3>1973 Corvette <em>Mechanic.</em></h3>
+        <p class="desc">A multi-modal <span class="accent">RAG sidekick</span> built on FastAPI, Claude, Supabase + pgvector. Diagnoses issues from photos. Tracks every bolt I've touched.</p>
+      </div>
+      <div class="card-bottom">
+        <span class="meta">Personal · 2025 · <strong>Featured</strong></span>
+        <span class="arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="card" href="#">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="ghost"><span class="mark">❤</span></div>
+      <div class="card-top">
+        <span class="num">02</span>
+        <span class="tag">AI · Mac App</span>
+      </div>
+      <div class="card-mid">
+        <h3>What Your Texting <em>Says.</em></h3>
+        <p class="desc">246K messages, 20+ insights. PyQt6 macOS app with sentiment analysis, topic modeling, and an <span class="accent">AI chat tab</span> powered by Claude.</p>
+      </div>
+      <div class="card-bottom">
+        <span class="meta">Personal · 2026</span>
+        <span class="arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="card" href="#">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="ghost"><span class="mark">🍕</span></div>
+      <div class="card-top">
+        <span class="num">03</span>
+        <span class="tag">UX/UI · Vision</span>
+      </div>
+      <div class="card-mid">
+        <h3>Pizza Shop on <em>Paper.</em></h3>
+        <p class="desc">Vision recognition reads paper tickets. <span class="accent">Twilio</span> texts customers their ETA. Two displays show the live queue. Built solo.</p>
+      </div>
+      <div class="card-bottom">
+        <span class="meta">Brenz Pizza Co · Jan 2026</span>
+        <span class="arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="card" href="#">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="ghost"><span class="mark">🏆</span></div>
+      <div class="card-top">
+        <span class="num">04</span>
+        <span class="tag">UX/UI · Dashboard</span>
+      </div>
+      <div class="card-mid">
+        <h3>The <em>Tuesday</em> Scoreboard.</h3>
+        <p class="desc">Real-time sales, labor, transactions, and voids across <span class="accent">7 shops</span> on a single dark display. Boss asked. Delivered in 3 hours.</p>
+      </div>
+      <div class="card-bottom">
+        <span class="meta">Brenz Pizza Co · Mar 2026</span>
+        <span class="arrow">↗</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Wanna work on something <em>cool</em>?</h2>
+  <p>Right project, right timing, right opinions. Tell me what you're working on.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  document.querySelectorAll('.filters button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.filters button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  console.log('%cWORK / MIN B — CARDS', 'font-size:30px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+
+<!-- ===== SITE FOOTER ===== -->
+<footer class="site-footer">
+  <svg class="footer-mark" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="CHRSTPHR">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">CHRSTPHR<tspan class="footer-mark-dot" dx="0.5">*</tspan></text>
+  </svg>
+  <hr class="footer-mark-rule">
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2 · MIN B / CARDS</span>
+      <span class="accent">Quiet on the page. Loud on the hover.</span>
+    </div>
+    <div class="group">
+      <span>Page: work · min B</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

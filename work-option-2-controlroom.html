@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Work / Option 2 · Control Room</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/global.css">
+<style>
+  /* ============================================================
+     OPTION 2 — CONTROL ROOM / TERMINAL HUD
+     ============================================================ */
+
+  /* scanlines on entire page background */
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(255,69,0,0.025) 3px, rgba(255,69,0,0.025) 4px);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* HERO — boot sequence */
+  .boot {
+    padding: 130px 7vw 30px;
+    position: relative;
+    z-index: 5;
+  }
+  .boot-line {
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    overflow: hidden;
+    border-right: 8px solid var(--accent);
+    white-space: nowrap;
+    width: 0;
+    animation: typeit 1.6s steps(40, end) forwards, blink 0.7s step-end infinite;
+  }
+  @keyframes typeit { to { width: 100%; max-width: 480px; } }
+  @keyframes blink { 50% { border-color: transparent; } }
+  .boot-headline {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(46px, 9vw, 150px);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin: 18px 0 14px;
+    max-width: 18ch;
+  }
+  .boot-headline em { color: var(--accent); font-style: italic; }
+  .boot-sub {
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    color: var(--fg-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .boot-sub .ok { color: var(--accent); }
+
+  /* CONSOLE BAR */
+  .console {
+    position: sticky;
+    top: 76px;
+    z-index: 40;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(10px) saturate(140%);
+    border-top: 1px solid var(--accent);
+    border-bottom: 1px solid var(--accent);
+    padding: 14px 7vw;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .console .prompt {
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .console .prompt .caret { color: var(--accent); animation: blink 1s step-end infinite; }
+  .console .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .console .chip {
+    background: transparent;
+    color: var(--fg-dim);
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.15s;
+  }
+  .console .chip:hover { color: var(--fg); border-color: var(--fg); }
+  .console .chip.on { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .console .toggle {
+    display: flex;
+    border: 1px solid var(--line);
+  }
+  .console .toggle button {
+    background: transparent;
+    color: var(--fg-dim);
+    border: none;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: none;
+    border-right: 1px solid var(--line);
+  }
+  .console .toggle button:last-child { border-right: none; }
+  .console .toggle button.on { background: var(--accent); color: var(--bg); }
+
+  .console .sort {
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    color: var(--fg-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: none;
+  }
+  .console .sort .accent { color: var(--accent); }
+
+  /* ACTIVE TRANSMISSION (featured) */
+  .transmission {
+    margin: 50px 7vw 30px;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+  .transmission .corner {
+    position: absolute;
+    width: 14px; height: 14px;
+    border: 2px solid var(--accent);
+    z-index: 3;
+  }
+  .transmission .corner.tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+  .transmission .corner.tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
+  .transmission .corner.bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
+  .transmission .corner.br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+
+  .transmission-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 22px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 800;
+  }
+  .transmission-head .live {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .transmission-head .live .rec {
+    width: 10px; height: 10px;
+    background: var(--bg);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  .transmission-body {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 0;
+  }
+  .transmission-mark {
+    position: relative;
+    border-right: 2px solid var(--accent);
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .transmission-mark::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 22px, rgba(255,69,0,0.08) 22px, rgba(255,69,0,0.08) 23px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 22px, rgba(242,237,226,0.04) 22px, rgba(242,237,226,0.04) 23px),
+      radial-gradient(circle at 30% 40%, rgba(255,69,0,0.18), transparent 55%);
+  }
+  .transmission-mark .mk {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(120px, 18vw, 260px);
+    color: var(--accent);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    transform: rotate(-4deg);
+    position: relative;
+    z-index: 1;
+  }
+  .transmission-mark .filename {
+    position: absolute;
+    top: 14px; left: 14px;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    padding: 4px 8px;
+    z-index: 2;
+  }
+  .transmission-info { padding: 30px 32px; display: flex; flex-direction: column; gap: 18px; justify-content: space-between; }
+  .transmission-info h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(26px, 3vw, 44px);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .transmission-info h2 em { color: var(--accent); font-style: italic; }
+  .transmission-info .desc { font-size: 14px; line-height: 1.5; color: var(--fg-dim); }
+  .transmission-info .desc .accent { color: var(--accent); }
+
+  .ticker {
+    border-top: 1px dashed var(--accent);
+    border-bottom: 1px dashed var(--accent);
+    overflow: hidden;
+    background: rgba(255,69,0,0.05);
+  }
+  .ticker-track {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: tick 22s linear infinite;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    text-transform: uppercase;
+    padding: 10px 0;
+    font-weight: 800;
+  }
+  .ticker-track span { padding: 0 36px; }
+  .ticker-track span::before { content: "● "; }
+  @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .transmission-cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 16px 24px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    cursor: none;
+    transition: all 0.25s;
+    border-top: 2px solid var(--accent);
+  }
+  .transmission-cta:hover { background: var(--bg); color: var(--accent); }
+
+  /* TELEMETRY GRID */
+  .grid-wrap {
+    padding: 30px 7vw 100px;
+  }
+  .grid-label {
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    color: var(--fg-dim);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .grid-label .accent { color: var(--accent); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+  }
+  .panel {
+    grid-column: span 2;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    cursor: none;
+    transition: border-color 0.25s, transform 0.25s;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel.lg { grid-column: span 3; }
+  .panel:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .panel::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(255,69,0,0.03) 3px, rgba(255,69,0,0.03) 4px);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1;
+  }
+  .panel:hover::before { opacity: 1; }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  .panel-head .id { color: var(--accent); }
+  .panel-head .status {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .panel-head .status .dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  .panel-stage {
+    aspect-ratio: 16/10;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+  .panel-stage::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 28px, rgba(255,69,0,0.06) 28px, rgba(255,69,0,0.06) 29px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 28px, rgba(242,237,226,0.04) 28px, rgba(242,237,226,0.04) 29px);
+  }
+  .panel-stage .mk {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(60px, 8vw, 130px);
+    color: var(--accent);
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    transform: rotate(-3deg);
+    position: relative;
+    z-index: 1;
+  }
+  .panel-stage .corner-tag {
+    position: absolute;
+    bottom: 10px; right: 10px;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    padding: 3px 7px;
+    z-index: 2;
+  }
+  .panel-stage .meter {
+    position: absolute;
+    bottom: 10px; left: 10px;
+    width: 90px; height: 6px;
+    border: 1px solid var(--accent);
+    background: var(--bg);
+    overflow: hidden;
+    z-index: 2;
+  }
+  .panel-stage .meter::after {
+    content: "";
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    width: var(--w, 80%);
+  }
+
+  .panel-body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .panel-body h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: 18px;
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: -0.015em;
+  }
+  .panel-body .meta {
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    color: var(--fg-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .panel-body .desc {
+    font-size: 12px;
+    color: var(--fg-dim);
+    line-height: 1.45;
+  }
+  .panel-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-top: 1px solid var(--line);
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .panel-foot .blink { animation: blink 1s step-end infinite; }
+
+  /* TIMELINE VIEW */
+  .timeline {
+    display: none;
+    padding: 60px 7vw;
+  }
+  .timeline.on { display: block; }
+  .timeline-track {
+    position: relative;
+    border-top: 2px solid var(--accent);
+    margin: 80px 0 60px;
+  }
+  .timeline-years {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    color: var(--fg-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .timeline-nodes {
+    position: relative;
+    height: 200px;
+    padding-top: 24px;
+  }
+  .timeline-node {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    cursor: none;
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+  }
+  .timeline-node .dot {
+    width: 22px; height: 22px;
+    background: var(--bg);
+    border: 3px solid var(--accent);
+    border-radius: 50%;
+    margin: 0 auto;
+    transition: all 0.25s;
+  }
+  .timeline-node:hover .dot { background: var(--accent); transform: scale(1.3); }
+  .timeline-node .stick { width: 1px; height: 30px; background: var(--accent); margin: 0 auto; }
+  .timeline-node .label {
+    margin-top: 8px;
+    width: 180px;
+    margin-left: -80px;
+    transform: translateX(0);
+  }
+  .timeline-node h4 {
+    font-family: "Arial Black", sans-serif;
+    font-size: 14px;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .timeline-node .when {
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 45;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--accent);
+    padding: 10px 7vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+  }
+  .status-bar .group { display: flex; gap: 18px; flex-wrap: wrap; }
+  .status-bar .accent { color: var(--accent); }
+  .status-bar .live-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  /* CTA */
+  .cta {
+    padding: 100px 7vw 160px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative;
+    z-index: 5;
+  }
+  .cta h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 9vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cta h2 em { color: var(--accent); font-style: italic; }
+  .cta p {
+    max-width: 600px;
+    margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-dim);
+  }
+  .cta-button {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 26px 44px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 4px solid var(--accent);
+  }
+  .cta-button:hover { background: transparent; color: var(--accent); }
+
+  @media (max-width: 1100px) {
+    .console { grid-template-columns: 1fr; gap: 12px; }
+    .transmission-body { grid-template-columns: 1fr; }
+    .transmission-mark { border-right: none; border-bottom: 2px solid var(--accent); }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .panel, .panel.lg { grid-column: span 1; }
+  }
+  @media (max-width: 700px) {
+    .top-bar nav { display: none; }
+    .grid { grid-template-columns: 1fr; }
+    .timeline-node .label { width: 120px; margin-left: -60px; }
+    .timeline-node h4 { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html" class="curr">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<!-- ============ BOOT HERO ============ -->
+<section class="boot">
+  <div class="boot-line">&gt; INITIALIZING WORK_INDEX.exe</div>
+  <h1 class="boot-headline">Stuff CHRSTPHR made <em>that didn't</em> bore anyone.</h1>
+  <div class="boot-sub">04 ENTRIES · 02 DISCIPLINES · <span class="ok">SIGNAL: STRONG ●</span></div>
+</section>
+
+<!-- ============ CONSOLE ============ -->
+<div class="console">
+  <div class="prompt">
+    <span class="caret">▸</span>
+    <span>filter projects</span>
+    <span style="color:var(--accent)">--tag=</span>
+  </div>
+  <div class="chips">
+    <button class="chip on">All · 04</button>
+    <button class="chip">UX/UI · 02</button>
+    <button class="chip">AI · 02</button>
+    <button class="chip">2026</button>
+    <button class="chip">2025</button>
+    <button class="chip">Client</button>
+    <button class="chip">Personal</button>
+  </div>
+  <div class="toggle" id="viewToggle">
+    <button class="on" data-view="grid">[ GRID ]</button>
+    <button data-view="timeline">[ TIME ]</button>
+  </div>
+  <div class="sort">↓ NEWEST · <span class="accent">A→Z</span> · BY IMPACT</div>
+</div>
+
+<!-- ============ ACTIVE TRANSMISSION ============ -->
+<div class="transmission" id="featured">
+  <span class="corner tl"></span><span class="corner tr"></span>
+  <span class="corner bl"></span><span class="corner br"></span>
+
+  <div class="transmission-head">
+    <span class="live"><span class="rec"></span> ACTIVE TRANSMISSION · PROJECT_01</span>
+    <span>FEATURED · 2025 → ONGOING</span>
+  </div>
+  <div class="transmission-body">
+    <div class="transmission-mark">
+      <span class="filename">PROJECT_01 // CORVETTE.exe</span>
+      <span class="mk">↗↗↗</span>
+    </div>
+    <div class="transmission-info">
+      <h2>My Own Personal 1973 Corvette Mechanic <em>(and he's a genius!)</em></h2>
+      <p class="desc">Scratch-built a multi-modal RAG sidekick on <span class="accent">FastAPI, Claude, Supabase + pgvector.</span> Ingested gigabytes of factory manuals, forum threads, and repair docs. Diagnoses issues from photos. Tracks every bolt touched.</p>
+      <div class="meta" style="font-family:'Courier New',monospace;font-size:11px;color:var(--accent);letter-spacing:0.18em;text-transform:uppercase;">
+        CLIENT: PERSONAL · YEAR: 2025 · ROLE: SOLO BUILDER
+      </div>
+    </div>
+  </div>
+  <div class="ticker">
+    <div class="ticker-track">
+      <span>4GB+ DOCS INGESTED</span>
+      <span>100% SOLO BUILT</span>
+      <span>$6,800 SAVED IN LABOR</span>
+      <span>MULTI-MODAL RAG</span>
+      <span>LIVE</span>
+      <span>4GB+ DOCS INGESTED</span>
+      <span>100% SOLO BUILT</span>
+      <span>$6,800 SAVED IN LABOR</span>
+      <span>MULTI-MODAL RAG</span>
+      <span>LIVE</span>
+    </div>
+  </div>
+  <a class="transmission-cta" href="#">
+    <span>↳ OPEN_FILE / READ THE WHOLE STORY</span>
+    <span>↗</span>
+  </a>
+</div>
+
+<!-- ============ GRID VIEW ============ -->
+<section class="grid-wrap" id="gridView">
+  <div class="grid-label"><span class="accent">▸</span> /WORK_INDEX/ — Showing <span class="accent">04</span> of 04 panels</div>
+
+  <div class="grid">
+
+    <!-- panel 1 (large) -->
+    <a class="panel lg" href="#">
+      <div class="panel-head">
+        <span class="id">PROJECT_01</span>
+        <span class="status"><span class="dot"></span>ONGOING</span>
+      </div>
+      <div class="panel-stage">
+        <span class="corner-tag">AI · FULL-STACK</span>
+        <span class="meter" style="--w:88%"></span>
+        <span class="mk">↗↗↗</span>
+      </div>
+      <div class="panel-body">
+        <div class="meta">PERSONAL // 2025 // SOLO BUILDER</div>
+        <h3>1973 Corvette Mechanic</h3>
+        <p class="desc">Multi-modal RAG sidekick. FastAPI + Claude + Supabase + pgvector. Diagnoses issues from photos.</p>
+      </div>
+      <div class="panel-foot">
+        <span>↗ OPEN_FILE</span>
+        <span class="blink">●</span>
+      </div>
+    </a>
+
+    <!-- panel 2 -->
+    <a class="panel" href="#">
+      <div class="panel-head">
+        <span class="id">PROJECT_02</span>
+        <span class="status"><span class="dot"></span>SHIPPED</span>
+      </div>
+      <div class="panel-stage">
+        <span class="corner-tag">AI · MAC APP</span>
+        <span class="meter" style="--w:100%"></span>
+        <span class="mk">❤</span>
+      </div>
+      <div class="panel-body">
+        <div class="meta">PERSONAL // 2026 // SOLO</div>
+        <h3>Texting Insights</h3>
+        <p class="desc">246K messages analyzed. Sentiment + topic modeling. PyQt6 macOS app.</p>
+      </div>
+      <div class="panel-foot">
+        <span>↗ OPEN_FILE</span>
+        <span class="blink">●</span>
+      </div>
+    </a>
+
+    <!-- panel 3 (large) -->
+    <a class="panel lg" href="#">
+      <div class="panel-head">
+        <span class="id">PROJECT_03</span>
+        <span class="status"><span class="dot"></span>LIVE</span>
+      </div>
+      <div class="panel-stage">
+        <span class="corner-tag">UX/UI · VISION</span>
+        <span class="meter" style="--w:100%"></span>
+        <span class="mk">🍕</span>
+      </div>
+      <div class="panel-body">
+        <div class="meta">BRENZ PIZZA CO // JAN 2026 // CLIENT</div>
+        <h3>Paper-Ticket Order Intel</h3>
+        <p class="desc">Vision recognition reads paper tickets. Twilio ETA texts. Two live displays. Built solo for a shop that refused a KDS.</p>
+      </div>
+      <div class="panel-foot">
+        <span>↗ OPEN_FILE</span>
+        <span class="blink">●</span>
+      </div>
+    </a>
+
+    <!-- panel 4 -->
+    <a class="panel" href="#">
+      <div class="panel-head">
+        <span class="id">PROJECT_04</span>
+        <span class="status"><span class="dot"></span>LIVE</span>
+      </div>
+      <div class="panel-stage">
+        <span class="corner-tag">UX/UI · DASHBOARD</span>
+        <span class="meter" style="--w:100%"></span>
+        <span class="mk">🏆</span>
+      </div>
+      <div class="panel-body">
+        <div class="meta">BRENZ PIZZA CO // MAR 2026 // CLIENT</div>
+        <h3>The Tuesday Scoreboard</h3>
+        <p class="desc">Real-time sales · labor · transactions across 7 shops. Designed, built, deployed in 3 hours with Claude Code.</p>
+      </div>
+      <div class="panel-foot">
+        <span>↗ OPEN_FILE</span>
+        <span class="blink">●</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ============ TIMELINE VIEW ============ -->
+<section class="timeline" id="timelineView">
+  <div class="grid-label"><span class="accent">▸</span> /TIMELINE_VIEW/ — Drag the line, click any node</div>
+
+  <div class="timeline-track">
+    <div class="timeline-years">
+      <span>2022</span><span>2023</span><span>2024</span><span>2025</span><span>2026</span>
+    </div>
+    <div class="timeline-nodes">
+      <a class="timeline-node" href="#" style="left:62%">
+        <span class="dot"></span><span class="stick"></span>
+        <div class="label">
+          <h4>1973 Corvette Mechanic</h4>
+          <span class="when">2025 · AI</span>
+        </div>
+      </a>
+      <a class="timeline-node" href="#" style="left:78%">
+        <span class="dot"></span><span class="stick"></span>
+        <div class="label">
+          <h4>Texting Insights</h4>
+          <span class="when">2026 · AI</span>
+        </div>
+      </a>
+      <a class="timeline-node" href="#" style="left:84%">
+        <span class="dot"></span><span class="stick"></span>
+        <div class="label">
+          <h4>Pizza Order Intel</h4>
+          <span class="when">JAN 2026 · UX</span>
+        </div>
+      </a>
+      <a class="timeline-node" href="#" style="left:92%">
+        <span class="dot"></span><span class="stick"></span>
+        <div class="label">
+          <h4>Tuesday Scoreboard</h4>
+          <span class="when">MAR 2026 · UX</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta">
+  <h2>Wanna work on something <em>cool</em> together?</h2>
+  <p>Right project, right timing, right opinions. Tell CHRSTPHR what you're working on — replies come in real sentences.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<!-- ============ STATUS BAR ============ -->
+<div class="status-bar">
+  <div class="group">
+    <span><span class="live-dot"></span><span class="accent">SYS:</span> ONLINE</span>
+    <span>4 PROJECTS LOADED</span>
+    <span>2 DISCIPLINES</span>
+  </div>
+  <div class="group">
+    <span>LAST UPDATE: <span class="accent">2026.05.04</span></span>
+    <span>v3.2</span>
+    <span class="accent">SIGNAL: STRONG</span>
+  </div>
+</div>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px'; cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button, .panel').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  // View toggle (Grid / Timeline)
+  const gridView = document.getElementById('gridView');
+  const timelineView = document.getElementById('timelineView');
+  document.querySelectorAll('#viewToggle button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#viewToggle button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      const v = b.dataset.view;
+      if (v === 'timeline') {
+        gridView.style.display = 'none';
+        timelineView.classList.add('on');
+      } else {
+        gridView.style.display = 'block';
+        timelineView.classList.remove('on');
+      }
+    });
+  });
+
+  // Filter chips
+  document.querySelectorAll('.console .chip').forEach(c => {
+    c.addEventListener('click', () => c.classList.toggle('on'));
+  });
+
+  console.log('%cWORK / OPTION 02 — CONTROL ROOM', 'font-size:36px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+
+<!-- ===== SITE FOOTER ===== -->
+<footer class="site-footer" style="margin-bottom: 40px;">
+  <svg class="footer-mark" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="CHRSTPHR">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">CHRSTPHR<tspan class="footer-mark-dot" dx="0.5">*</tspan></text>
+  </svg>
+  <hr class="footer-mark-rule">
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2 · OPTION 02 / CONTROL ROOM</span>
+      <span class="accent">This site was literally prompted to existence from scratch in 10.67 hours.</span>
+    </div>
+    <div class="group">
+      <span>Page: work · option 2</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

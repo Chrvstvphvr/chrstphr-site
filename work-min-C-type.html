@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Work / Minimal C · Type</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/global.css">
+<style>
+  /* ============================================================
+     MINIMAL C — TYPE-DRIVEN
+     One giant line per project. Spotlight gradient on hover.
+     Image plate follows cursor.
+     ============================================================ */
+
+  .hero {
+    padding: 140px 7vw 0;
+    position: relative;
+    z-index: 5;
+  }
+  .pre {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 22px;
+  }
+  .pre .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .hero h1 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(36px, 5vw, 72px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    max-width: 18ch;
+    color: var(--fg-dim);
+  }
+  .hero h1 em { color: var(--accent); font-style: italic; }
+  .hero-rule {
+    margin-top: 30px;
+    border-top: 1px solid var(--line);
+    padding: 14px 0 0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+  }
+  .hero-rule .accent { color: var(--accent); }
+
+  .filters {
+    display: flex;
+    gap: 4px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .filters button {
+    background: transparent;
+    color: var(--fg-dim);
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 6px 0;
+    margin-right: 22px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .filters button:hover { color: var(--fg); }
+  .filters button.on { color: var(--accent); border-color: var(--accent); }
+  .filters button .count { color: var(--fg-dim); margin-left: 6px; font-weight: 500; }
+  .filters button.on .count { color: var(--accent); opacity: 0.8; }
+
+  /* THE TYPE LINES */
+  .stack {
+    padding: 80px 0 140px;
+    position: relative;
+    z-index: 5;
+  }
+  .stack:hover .ln { color: rgba(242, 237, 226, 0.18); }
+  .stack:hover .ln:hover { color: var(--fg); }
+
+  .ln {
+    display: block;
+    text-decoration: none;
+    color: var(--fg);
+    cursor: none;
+    border-top: 1px solid var(--line);
+    padding: 50px 7vw;
+    position: relative;
+    transition: color 0.4s ease, padding 0.6s cubic-bezier(0.65,0,0.35,1);
+    --mx: 50%;
+    --my: 50%;
+  }
+  .ln:last-child { border-bottom: 1px solid var(--line); }
+  .ln:hover { padding-left: calc(7vw + 30px); }
+
+  .ln .ln-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .ln:hover .ln-meta { color: var(--accent); }
+  .ln .ln-meta .num { font-family: "Arial Black", sans-serif; font-size: 12px; }
+
+  .ln .ln-title {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(40px, 9vw, 150px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    transition: background-position 0.4s, letter-spacing 0.5s;
+    user-select: none;
+  }
+  .ln .ln-title em { font-style: italic; }
+  .ln:hover .ln-title { letter-spacing: -0.04em; }
+
+  /* spotlight gradient on hover */
+  .ln:hover .ln-title {
+    background: radial-gradient(
+      circle 240px at var(--mx) var(--my),
+      var(--accent) 0%,
+      var(--accent) 25%,
+      var(--fg) 65%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* tiny tag block on the right side that fades in */
+  .ln .ln-tag {
+    position: absolute;
+    right: 7vw;
+    bottom: 50px;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    border: 1px solid var(--accent);
+    padding: 6px 10px;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .ln:hover .ln-tag { opacity: 1; transform: translateY(0); }
+
+  /* image plate follows cursor on hover */
+  .plate {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9990;
+    width: 320px;
+    aspect-ratio: 4/3;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    overflow: hidden;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+    transition: opacity 0.25s ease, transform 0.4s cubic-bezier(0.65,0,0.35,1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .plate.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .plate::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 22px, rgba(255,69,0,0.08) 22px, rgba(255,69,0,0.08) 23px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 22px, rgba(242,237,226,0.04) 22px, rgba(242,237,226,0.04) 23px),
+      radial-gradient(circle at 30% 40%, rgba(255,69,0,0.18), transparent 55%);
+  }
+  .plate .mark {
+    font-family: "Arial Black", sans-serif;
+    font-size: 160px;
+    color: var(--accent);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    transform: rotate(-4deg);
+    position: relative;
+    z-index: 1;
+  }
+  .plate .corner-tag {
+    position: absolute;
+    top: 10px; left: 10px;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    padding: 3px 7px;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+  .plate .corner-meta {
+    position: absolute;
+    bottom: 10px; left: 10px; right: 10px;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 6px 8px;
+    text-transform: uppercase;
+    z-index: 2;
+    line-height: 1.4;
+    display: flex;
+    justify-content: space-between;
+  }
+  .plate .corner-meta .accent { color: var(--accent); }
+
+  /* CTA */
+  .cta {
+    padding: 100px 7vw 130px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative;
+    z-index: 5;
+  }
+  .cta h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 9vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cta h2 em { color: var(--accent); font-style: italic; }
+  .cta p {
+    max-width: 600px;
+    margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-dim);
+  }
+  .cta-button {
+    display: inline-block;
+    background: transparent;
+    color: var(--fg);
+    text-decoration: none;
+    padding: 22px 36px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 2px solid var(--fg);
+  }
+  .cta-button:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  @media (max-width: 800px) {
+    .top-bar nav { display: none; }
+    .ln { padding: 30px 7vw; }
+    .ln .ln-tag { position: static; opacity: 1; transform: none; margin-top: 16px; display: inline-block; }
+    .plate { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html" class="curr">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="pre">
+    <span class="pulse"></span>
+    <span>Index 02 / Selected works · 2022 → present</span>
+  </div>
+  <h1>Four projects. <em>Hover</em> any of them.</h1>
+  <div class="hero-rule">
+    <span><span class="accent">04</span> projects · <span class="accent">02</span> disciplines</span>
+    <span>Move slowly</span>
+  </div>
+  <div class="filters">
+    <button class="on">All <span class="count">04</span></button>
+    <button>UX/UI <span class="count">02</span></button>
+    <button>AI <span class="count">02</span></button>
+  </div>
+</section>
+
+<section class="stack" id="stack">
+
+  <a class="ln" href="#" data-mark="↗↗↗" data-tag="AI · FULL-STACK" data-meta="PERSONAL · 2025">
+    <div class="ln-meta">
+      <span><span class="num">01</span> · Personal · 2025</span>
+      <span>↗</span>
+    </div>
+    <span class="ln-title">1973 Corvette <em>Mechanic.</em></span>
+    <span class="ln-tag">↳ AI · FULL-STACK</span>
+  </a>
+
+  <a class="ln" href="#" data-mark="❤" data-tag="AI · MAC APP" data-meta="PERSONAL · 2026">
+    <div class="ln-meta">
+      <span><span class="num">02</span> · Personal · 2026</span>
+      <span>↗</span>
+    </div>
+    <span class="ln-title">What Your <em>Texting</em> Says.</span>
+    <span class="ln-tag">↳ AI · MAC APP</span>
+  </a>
+
+  <a class="ln" href="#" data-mark="🍕" data-tag="UX · VISION" data-meta="BRENZ · JAN 2026">
+    <div class="ln-meta">
+      <span><span class="num">03</span> · Brenz Pizza Co · Jan 2026</span>
+      <span>↗</span>
+    </div>
+    <span class="ln-title">Pizza on <em>Paper.</em></span>
+    <span class="ln-tag">↳ UX/UI · VISION</span>
+  </a>
+
+  <a class="ln" href="#" data-mark="🏆" data-tag="UX · DASHBOARD" data-meta="BRENZ · MAR 2026">
+    <div class="ln-meta">
+      <span><span class="num">04</span> · Brenz Pizza Co · Mar 2026</span>
+      <span>↗</span>
+    </div>
+    <span class="ln-title">The <em>Tuesday</em> Scoreboard.</span>
+    <span class="ln-tag">↳ UX/UI · DASHBOARD</span>
+  </a>
+
+</section>
+
+<!-- floating image plate -->
+<div class="plate" id="plate">
+  <span class="corner-tag" id="plateTag">PROJECT</span>
+  <span class="mark" id="plateMark">↗</span>
+  <div class="corner-meta">
+    <span id="plateMeta"></span>
+    <span class="accent">↗ open</span>
+  </div>
+</div>
+
+<section class="cta">
+  <h2>Wanna work on something <em>cool</em>?</h2>
+  <p>Right project, right timing, right opinions. Tell me what you're working on.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  // Spotlight gradient: track cursor inside the title
+  document.querySelectorAll('.ln').forEach(ln => {
+    ln.addEventListener('mousemove', e => {
+      const r = ln.getBoundingClientRect();
+      ln.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      ln.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  });
+
+  // Plate that follows cursor
+  const plate = document.getElementById('plate');
+  const plateMark = document.getElementById('plateMark');
+  const plateTag = document.getElementById('plateTag');
+  const plateMeta = document.getElementById('plateMeta');
+  let plateX = 0, plateY = 0, targetX = 0, targetY = 0;
+  document.addEventListener('mousemove', e => {
+    targetX = e.clientX + 200;
+    targetY = e.clientY;
+  });
+  (function platelo() {
+    plateX += (targetX - plateX) * 0.18;
+    plateY += (targetY - plateY) * 0.18;
+    plate.style.left = plateX + 'px';
+    plate.style.top = plateY + 'px';
+    requestAnimationFrame(platelo);
+  })();
+  document.querySelectorAll('.ln').forEach(r => {
+    r.addEventListener('mouseenter', () => {
+      plateMark.textContent = r.dataset.mark || '↗';
+      plateTag.textContent = r.dataset.tag || '';
+      plateMeta.textContent = r.dataset.meta || '';
+      plate.classList.add('show');
+    });
+    r.addEventListener('mouseleave', () => plate.classList.remove('show'));
+  });
+
+  // Filters
+  document.querySelectorAll('.filters button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.filters button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  console.log('%cWORK / MIN C — TYPE', 'font-size:30px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+
+<!-- ===== SITE FOOTER ===== -->
+<footer class="site-footer">
+  <svg class="footer-mark" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="CHRSTPHR">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">CHRSTPHR<tspan class="footer-mark-dot" dx="0.5">*</tspan></text>
+  </svg>
+  <hr class="footer-mark-rule">
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2 · MIN C / TYPE</span>
+      <span class="accent">Quiet on the page. Loud on the hover.</span>
+    </div>
+    <div class="group">
+      <span>Page: work · min C</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Work / Option 3 · Stack</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/global.css">
+<style>
+  /* ============================================================
+     OPTION 3 — THE STACK / VERTICAL FILMSTRIP
+     ============================================================ */
+  html { scroll-behavior: smooth; scroll-snap-type: y proximity; }
+
+  /* INTRO — full-viewport cold open */
+  .intro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 7vw;
+    position: relative;
+    z-index: 5;
+    scroll-snap-align: start;
+    overflow: hidden;
+  }
+  .intro .pre {
+    position: absolute;
+    top: 120px;
+    left: 7vw;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+  }
+  .intro .pre .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .intro .word {
+    font-family: "Arial Black", sans-serif;
+    font-weight: 900;
+    font-size: clamp(120px, 32vw, 600px);
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    cursor: none;
+    --mx: 50%; --my: 50%;
+    background: radial-gradient(
+      circle 260px at var(--mx) var(--my),
+      var(--accent) 0%,
+      var(--accent) 22%,
+      var(--fg) 60%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    user-select: none;
+  }
+  .intro .meta {
+    margin-top: 32px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    font-weight: 700;
+    display: flex;
+    gap: 28px;
+  }
+  .intro .meta .accent { color: var(--accent); }
+  .intro .scroll-cue {
+    position: absolute;
+    bottom: 60px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .intro .scroll-cue .arrow { animation: bob 1.6s ease-in-out infinite; color: var(--accent); }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+  /* CHAPTER */
+  .chapter {
+    position: relative;
+    min-height: 100vh;
+    padding: 120px 7vw 100px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    scroll-snap-align: start;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+  }
+  .chapter.alt {
+    grid-template-columns: 1fr 1fr;
+    direction: rtl;
+  }
+  .chapter.alt > * { direction: ltr; }
+
+  /* the giant ghost number behind everything */
+  .chapter .ghost-num {
+    position: absolute;
+    z-index: 0;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(280px, 60vw, 1100px);
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    color: var(--fg);
+    opacity: 0.04;
+    pointer-events: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
+  .chapter-side { position: relative; z-index: 2; }
+
+  .chapter .stage {
+    position: relative;
+    aspect-ratio: 4/4;
+    border: 2px solid var(--fg);
+    background: var(--bg);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chapter .stage::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 36px, rgba(255,69,0,0.06) 36px, rgba(255,69,0,0.06) 37px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 36px, rgba(242,237,226,0.04) 36px, rgba(242,237,226,0.04) 37px),
+      radial-gradient(circle at 30% 40%, rgba(255,69,0,0.18), transparent 55%);
+  }
+  .chapter .stage .mark {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(150px, 22vw, 400px);
+    color: var(--accent);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    transform: rotate(-4deg);
+    position: relative;
+    z-index: 1;
+  }
+  .chapter .stage .corner-tag {
+    position: absolute;
+    bottom: 18px; left: 18px;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 5px 10px;
+    z-index: 2;
+  }
+  .chapter .stage .corner-num {
+    position: absolute;
+    top: 18px; right: 18px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 56px;
+    color: var(--fg);
+    line-height: 1;
+    z-index: 2;
+  }
+  .chapter .stage .sticker {
+    position: absolute;
+    top: -16px; left: -16px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 8px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    transform: rotate(-7deg);
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
+    z-index: 3;
+  }
+
+  .chapter-info { padding: 0 6%; }
+  .chapter-info .credits {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    font-weight: 800;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .chapter-info .credits .accent { color: var(--accent); }
+  .chapter-info h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(40px, 6vw, 92px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .chapter-info h2 em { color: var(--accent); font-style: italic; }
+  .chapter-info .pull {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 1.6vw, 24px);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-left: 4px solid var(--accent);
+    padding-left: 18px;
+    margin: 28px 0;
+    font-style: italic;
+  }
+  .chapter-info .read-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 18px 28px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s, gap 0.25s;
+    border: 4px solid var(--accent);
+    margin-top: 16px;
+  }
+  .chapter-info .read-cta:hover { background: transparent; color: var(--accent); gap: 22px; }
+
+  /* INTERSTITIAL — between chapters */
+  .interstitial {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 7vw;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 5;
+    scroll-snap-align: start;
+    background: var(--bg);
+  }
+  .interstitial-inner {
+    max-width: 1400px;
+    text-align: center;
+  }
+  .interstitial-inner .label {
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  .interstitial-inner h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(40px, 8vw, 130px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
+  .interstitial-inner h3 em { color: var(--accent); font-style: italic; }
+
+  /* SIDE PROGRESS RAIL */
+  .rail {
+    position: fixed;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: flex-end;
+  }
+  .rail .rail-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .rail-dot {
+    width: 12px; height: 12px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: var(--bg);
+    cursor: none;
+    transition: all 0.25s;
+    position: relative;
+    text-decoration: none;
+  }
+  .rail-dot::before {
+    content: attr(data-num);
+    position: absolute;
+    right: 24px; top: 50%;
+    transform: translateY(-50%);
+    font-family: "Arial Black", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .rail-dot:hover::before { opacity: 1; color: var(--accent); }
+  .rail-dot.tick { width: 8px; height: 1px; border-radius: 0; background: var(--fg-dim); border: none; }
+  .rail-dot.active { background: var(--accent); transform: scale(1.4); }
+
+  /* FLOATING FILTER BUTTON */
+  .filter-fab {
+    position: fixed;
+    bottom: 22px;
+    left: 22px;
+    z-index: 50;
+    background: var(--bg);
+    color: var(--fg);
+    border: 2px solid var(--accent);
+    padding: 12px 18px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .filter-fab:hover { background: var(--accent); color: var(--bg); }
+  .filter-fab .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+
+  .filter-panel {
+    position: fixed;
+    bottom: 70px;
+    left: 22px;
+    z-index: 49;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    padding: 18px;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+  }
+  .filter-panel.show { display: flex; }
+  .filter-panel button {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--line);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 800;
+    padding: 10px 12px;
+    cursor: none;
+    text-align: left;
+    transition: all 0.15s;
+  }
+  .filter-panel button:hover { color: var(--accent); border-color: var(--accent); }
+  .filter-panel button.on { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* CLOSING CHAPTER (CTA) */
+  .closing {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 100px 7vw;
+    border-top: 1px solid var(--line);
+    scroll-snap-align: start;
+    position: relative;
+    z-index: 5;
+  }
+  .closing .pre {
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .closing h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(56px, 11vw, 200px);
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .closing h2 em { color: var(--accent); font-style: italic; }
+  .closing p {
+    max-width: 600px;
+    margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-dim);
+  }
+  .closing .cta-button {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 26px 44px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 4px solid var(--accent);
+  }
+  .closing .cta-button:hover { background: transparent; color: var(--accent); }
+
+  @media (max-width: 1100px) {
+    .chapter, .chapter.alt { grid-template-columns: 1fr; gap: 30px; padding: 100px 7vw 80px; }
+    .chapter.alt { direction: ltr; }
+    .chapter-info { padding: 0; }
+    .rail { display: none; }
+  }
+  @media (max-width: 700px) {
+    .top-bar nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html" class="curr">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<!-- ============ INTRO / COLD OPEN ============ -->
+<section class="intro" id="ch-intro">
+  <div class="pre">
+    <span class="pulse"></span>
+    <span>Vol. 03 · 04 stories · scroll to start</span>
+  </div>
+  <h1 class="word" id="introWord">WORK</h1>
+  <div class="meta">
+    <span>2022 → 2026</span>
+    <span class="accent">04 STORIES</span>
+    <span>02 DISCIPLINES</span>
+  </div>
+  <div class="scroll-cue">
+    <span>Scroll · or don't</span>
+    <span class="arrow">↓</span>
+  </div>
+</section>
+
+<!-- ============ CHAPTER 01 ============ -->
+<section class="chapter" id="ch-01">
+  <div class="ghost-num">01</div>
+  <div class="chapter-side">
+    <div class="stage">
+      <div class="sticker">FEATURED · № 01 OF 04</div>
+      <span class="corner-num">01</span>
+      <span class="corner-tag">PERSONAL · FULL-STACK · AI</span>
+      <span class="mark">↗↗↗</span>
+    </div>
+  </div>
+  <div class="chapter-side chapter-info">
+    <div class="credits">
+      <span>Client: <span class="accent">Personal</span></span>
+      <span>Year: 2025</span>
+      <span>Role: <span class="accent">Solo Builder</span></span>
+    </div>
+    <h2>My Own Personal 1973 Corvette Mechanic <em>(and he's a genius!)</em></h2>
+    <div class="pull">"Send it a photo of a mystery part. It tells you what it is, what it does, and when it was last replaced."</div>
+    <a class="read-cta" href="#">↳ Read the case study <span>↗</span></a>
+  </div>
+</section>
+
+<!-- INTERSTITIAL -->
+<section class="interstitial">
+  <div class="interstitial-inner">
+    <div class="label">// INTERSTITIAL · 01</div>
+    <h3>4GB of manuals. <em>Zero</em> boring ones.</h3>
+  </div>
+</section>
+
+<!-- ============ CHAPTER 02 ============ -->
+<section class="chapter alt" id="ch-02">
+  <div class="ghost-num">02</div>
+  <div class="chapter-side">
+    <div class="stage">
+      <div class="sticker">№ 02 OF 04</div>
+      <span class="corner-num">02</span>
+      <span class="corner-tag">PERSONAL · MAC APP · AI</span>
+      <span class="mark">❤</span>
+    </div>
+  </div>
+  <div class="chapter-side chapter-info">
+    <div class="credits">
+      <span>Client: <span class="accent">Personal</span></span>
+      <span>Year: 2026</span>
+      <span>Role: <span class="accent">Solo</span></span>
+    </div>
+    <h2>What Your Texting <em>Really</em> Says About You.</h2>
+    <div class="pull">"246,000 messages. 20+ insights. Turns out you text most at 11am — and 2am."</div>
+    <a class="read-cta" href="#">↳ Read the case study <span>↗</span></a>
+  </div>
+</section>
+
+<!-- INTERSTITIAL -->
+<section class="interstitial">
+  <div class="interstitial-inner">
+    <div class="label">// INTERSTITIAL · 02</div>
+    <h3>You text most at 11am. <em>And</em> 2am.</h3>
+  </div>
+</section>
+
+<!-- ============ CHAPTER 03 ============ -->
+<section class="chapter" id="ch-03">
+  <div class="ghost-num">03</div>
+  <div class="chapter-side">
+    <div class="stage">
+      <div class="sticker">№ 03 OF 04</div>
+      <span class="corner-num">03</span>
+      <span class="corner-tag">CLIENT · UX/UI · VISION</span>
+      <span class="mark">🍕</span>
+    </div>
+  </div>
+  <div class="chapter-side chapter-info">
+    <div class="credits">
+      <span>Client: <span class="accent">Brenz Pizza Co</span></span>
+      <span>Year: Jan 2026</span>
+      <span>Role: <span class="accent">Solo Builder</span></span>
+    </div>
+    <h2>Order Intel for a Pizza Shop That <em>Still Runs on Paper.</em></h2>
+    <div class="pull">"Vision recognition reads paper tickets. Twilio texts the ETA. Built solo for a shop that refused a KDS."</div>
+    <a class="read-cta" href="#">↳ Read the case study <span>↗</span></a>
+  </div>
+</section>
+
+<!-- INTERSTITIAL -->
+<section class="interstitial">
+  <div class="interstitial-inner">
+    <div class="label">// INTERSTITIAL · 03</div>
+    <h3>Designed, built, deployed — <em>in 3 hours.</em></h3>
+  </div>
+</section>
+
+<!-- ============ CHAPTER 04 ============ -->
+<section class="chapter alt" id="ch-04">
+  <div class="ghost-num">04</div>
+  <div class="chapter-side">
+    <div class="stage">
+      <div class="sticker">№ 04 OF 04</div>
+      <span class="corner-num">04</span>
+      <span class="corner-tag">CLIENT · UX/UI · DASHBOARD</span>
+      <span class="mark">🏆</span>
+    </div>
+  </div>
+  <div class="chapter-side chapter-info">
+    <div class="credits">
+      <span>Client: <span class="accent">Brenz Pizza Co</span></span>
+      <span>Year: Mar 2026</span>
+      <span>Role: <span class="accent">Solo Builder</span></span>
+    </div>
+    <h2>The <em>Scoreboard</em> the Boss Asked For on a Tuesday.</h2>
+    <div class="pull">"Real-time sales, labor, transactions, and voids across 7 shops. On a single dark display."</div>
+    <a class="read-cta" href="#">↳ Read the case study <span>↗</span></a>
+  </div>
+</section>
+
+<!-- ============ CLOSING ============ -->
+<section class="closing" id="ch-end">
+  <div class="pre">// END OF REEL</div>
+  <h2>Wanna work on something <em>cool</em> together?</h2>
+  <p>Right project, right timing, right opinions. Tell CHRSTPHR what you're working on — replies come in real sentences.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<!-- ============ SIDE RAIL ============ -->
+<nav class="rail">
+  <div class="rail-label">Reel · 04</div>
+  <a class="rail-dot" href="#ch-intro" data-num="00 · INTRO"></a>
+  <span class="rail-dot tick"></span>
+  <a class="rail-dot active" href="#ch-01" data-num="01 · CORVETTE"></a>
+  <a class="rail-dot" href="#ch-02" data-num="02 · TEXTING"></a>
+  <a class="rail-dot" href="#ch-03" data-num="03 · PIZZA"></a>
+  <a class="rail-dot" href="#ch-04" data-num="04 · SCOREBOARD"></a>
+  <span class="rail-dot tick"></span>
+  <a class="rail-dot" href="#ch-end" data-num="05 · END"></a>
+</nav>
+
+<!-- ============ FILTER FAB ============ -->
+<button class="filter-fab" id="filterFab">
+  <span class="dot"></span>
+  <span>Filter · ALL</span>
+</button>
+<div class="filter-panel" id="filterPanel">
+  <button class="on">All · 04</button>
+  <button>UX/UI · 02</button>
+  <button>AI · 02</button>
+  <button>Client · 02</button>
+  <button>Personal · 02</button>
+</div>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px'; cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button, .stage').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  // Intro WORD spotlight follows cursor
+  const introWord = document.getElementById('introWord');
+  document.getElementById('ch-intro').addEventListener('mousemove', e => {
+    const r = introWord.getBoundingClientRect();
+    introWord.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    introWord.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+
+  // Active rail dot based on which chapter is in view
+  const dots = document.querySelectorAll('.rail-dot[href]');
+  const sections = ['ch-intro','ch-01','ch-02','ch-03','ch-04','ch-end'].map(id => document.getElementById(id));
+  function updateRail() {
+    const y = innerHeight / 2;
+    let activeIdx = 0;
+    sections.forEach((s, i) => {
+      const r = s.getBoundingClientRect();
+      if (r.top <= y && r.bottom >= y) activeIdx = i;
+    });
+    dots.forEach(d => d.classList.remove('active'));
+    if (dots[activeIdx]) dots[activeIdx].classList.add('active');
+  }
+  window.addEventListener('scroll', updateRail, { passive: true });
+  updateRail();
+
+  // Filter panel toggle
+  const fab = document.getElementById('filterFab');
+  const panel = document.getElementById('filterPanel');
+  fab.addEventListener('click', () => panel.classList.toggle('show'));
+  panel.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      panel.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      fab.querySelector('span:last-child').textContent = 'Filter · ' + b.textContent.split(' ·')[0].toUpperCase();
+    });
+  });
+
+  console.log('%cWORK / OPTION 03 — STACK', 'font-size:36px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+
+<!-- ===== SITE FOOTER ===== -->
+<footer class="site-footer">
+  <svg class="footer-mark" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="CHRSTPHR">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">CHRSTPHR<tspan class="footer-mark-dot" dx="0.5">*</tspan></text>
+  </svg>
+  <hr class="footer-mark-rule">
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2 · OPTION 03 / STACK</span>
+      <span class="accent">This site was literally prompted to existence from scratch in 10.67 hours.</span>
+    </div>
+    <div class="group">
+      <span>Page: work · option 3</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

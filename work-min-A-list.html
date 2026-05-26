@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Work / Minimal A · List</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/global.css">
+<style>
+  /* ============================================================
+     MINIMAL A — THE LIST
+     Empty by default. Each row: just the title.
+     Hover reveals everything else.
+     ============================================================ */
+
+  .hero {
+    padding: 140px 7vw 0;
+    position: relative;
+    z-index: 5;
+  }
+  .pre {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 22px;
+  }
+  .pre .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .hero h1 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(40px, 7vw, 110px);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    max-width: 14ch;
+    margin-bottom: 30px;
+  }
+  .hero h1 em { color: var(--accent); font-style: italic; }
+  .hero-rule {
+    border-top: 1px solid var(--line);
+    padding: 14px 0 0;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+  }
+  .hero-rule .accent { color: var(--accent); }
+
+  /* small filter row — quiet */
+  .filters {
+    display: flex;
+    gap: 4px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  .filters button {
+    background: transparent;
+    color: var(--fg-dim);
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 6px 0;
+    margin-right: 22px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .filters button:hover { color: var(--fg); }
+  .filters button.on { color: var(--accent); border-color: var(--accent); }
+  .filters button .count { color: var(--fg-dim); margin-left: 6px; font-weight: 500; }
+  .filters button.on .count { color: var(--accent); opacity: 0.8; }
+
+  /* THE LIST */
+  .list-wrap {
+    padding: 70px 7vw 120px;
+    position: relative;
+    z-index: 5;
+  }
+  .list {
+    border-top: 1px solid var(--line);
+  }
+  .list:hover .row { opacity: 0.35; }
+  .list:hover .row:hover { opacity: 1; }
+
+  .row {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: none;
+    border-bottom: 1px solid var(--line);
+    padding: 32px 0 0;
+    transition: opacity 0.4s ease, padding 0.5s cubic-bezier(0.65,0,0.35,1);
+    position: relative;
+  }
+  .row:hover { padding-left: 24px; padding-right: 24px; }
+
+  .row .title-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .row .num {
+    font-family: "Arial Black", sans-serif;
+    font-size: 14px;
+    color: var(--fg-dim);
+    letter-spacing: 0.3em;
+    transition: color 0.3s;
+    flex: 0 0 auto;
+  }
+  .row:hover .num { color: var(--accent); }
+  .row h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(28px, 4.6vw, 76px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    flex: 1 1 auto;
+    transition: transform 0.5s cubic-bezier(0.65,0,0.35,1);
+  }
+  .row h3 em {
+    color: var(--accent);
+    font-style: italic;
+    transition: color 0.3s;
+  }
+  .row .year {
+    font-family: "Arial Black", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    transition: color 0.3s;
+    flex: 0 0 auto;
+  }
+  .row:hover .year { color: var(--accent); }
+
+  /* the orange underline that draws in on hover */
+  .row::after {
+    content: "";
+    display: block;
+    height: 2px;
+    background: var(--accent);
+    margin-top: 20px;
+    margin-bottom: 0;
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.6s cubic-bezier(0.65,0,0.35,1);
+  }
+  .row:hover::after { transform: scaleX(1); }
+
+  /* hidden detail row — fades down on hover */
+  .row .reveal {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.55s cubic-bezier(0.65,0,0.35,1), opacity 0.45s ease 0.05s, padding 0.5s;
+    padding-top: 0;
+  }
+  .row:hover .reveal {
+    max-height: 200px;
+    opacity: 1;
+    padding-top: 18px;
+  }
+  .row .reveal-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 40px;
+    padding-bottom: 20px;
+  }
+  .row .reveal p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--fg);
+    max-width: 56ch;
+  }
+  .row .reveal p .accent { color: var(--accent); }
+  .row .reveal .meta {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--fg-dim);
+    align-self: end;
+    justify-content: flex-end;
+  }
+  .row .reveal .meta strong { color: var(--accent); display: block; margin-top: 4px; font-size: 12px; letter-spacing: 0.05em; font-family: "Arial Black", sans-serif; }
+
+  /* image plate that follows cursor */
+  .plate {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9990;
+    width: 280px;
+    aspect-ratio: 4/3;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    overflow: hidden;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+    transition: opacity 0.25s ease, transform 0.4s cubic-bezier(0.65,0,0.35,1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .plate.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .plate::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 22px, rgba(255,69,0,0.08) 22px, rgba(255,69,0,0.08) 23px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 22px, rgba(242,237,226,0.04) 22px, rgba(242,237,226,0.04) 23px),
+      radial-gradient(circle at 30% 40%, rgba(255,69,0,0.18), transparent 55%);
+  }
+  .plate .mark {
+    font-family: "Arial Black", sans-serif;
+    font-size: 140px;
+    color: var(--accent);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    transform: rotate(-4deg);
+    position: relative;
+    z-index: 1;
+  }
+  .plate .corner-tag {
+    position: absolute;
+    bottom: 10px; left: 10px;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    padding: 3px 7px;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  /* CTA */
+  .cta {
+    padding: 100px 7vw 130px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative;
+    z-index: 5;
+  }
+  .cta h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 9vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cta h2 em { color: var(--accent); font-style: italic; }
+  .cta p {
+    max-width: 600px;
+    margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-dim);
+  }
+  .cta-button {
+    display: inline-block;
+    background: transparent;
+    color: var(--fg);
+    text-decoration: none;
+    padding: 22px 36px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 2px solid var(--fg);
+  }
+  .cta-button:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  @media (max-width: 800px) {
+    .top-bar nav { display: none; }
+    .row .reveal-grid { grid-template-columns: 1fr; gap: 14px; }
+    .row .reveal .meta { justify-content: flex-start; }
+    .plate { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html" class="curr">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="pre">
+    <span class="pulse"></span>
+    <span>Index 02 / Selected works · 2022 → present</span>
+  </div>
+  <h1>Stuff I made <em>that didn't</em> bore me.</h1>
+  <div class="hero-rule">
+    <span><span class="accent">04</span> projects · <span class="accent">02</span> disciplines · all solo-built</span>
+    <span>Hover any title</span>
+  </div>
+  <div class="filters">
+    <button class="on">All <span class="count">04</span></button>
+    <button>UX/UI <span class="count">02</span></button>
+    <button>AI <span class="count">02</span></button>
+  </div>
+</section>
+
+<section class="list-wrap">
+  <div class="list" id="list">
+
+    <a class="row" href="#"
+       data-mark="↗↗↗"
+       data-tag="AI · FULL-STACK">
+      <div class="title-line">
+        <span class="num">01</span>
+        <h3>1973 Corvette <em>Mechanic.</em></h3>
+        <span class="year">2025 / AI</span>
+      </div>
+      <div class="reveal">
+        <div class="reveal-grid">
+          <p>A multi-modal <span class="accent">RAG sidekick</span> built on FastAPI, Claude, Supabase + pgvector. Diagnoses issues from photos. Tracks every bolt I've touched.</p>
+          <div class="meta">
+            <span>Client<strong>Personal</strong></span>
+            <span>Role<strong>Solo</strong></span>
+            <span>Stack<strong>FastAPI · Claude</strong></span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a class="row" href="#"
+       data-mark="❤"
+       data-tag="AI · MAC APP">
+      <div class="title-line">
+        <span class="num">02</span>
+        <h3>What Your Texting <em>Says.</em></h3>
+        <span class="year">2026 / AI</span>
+      </div>
+      <div class="reveal">
+        <div class="reveal-grid">
+          <p>246K messages, 20+ insights. A wrapped macOS app with PyQt6, sentiment analysis, topic modeling, and an <span class="accent">AI chat tab</span> powered by Claude.</p>
+          <div class="meta">
+            <span>Client<strong>Personal</strong></span>
+            <span>Role<strong>Solo</strong></span>
+            <span>Stack<strong>PyQt6 · Claude</strong></span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a class="row" href="#"
+       data-mark="🍕"
+       data-tag="UX/UI · VISION">
+      <div class="title-line">
+        <span class="num">03</span>
+        <h3>Pizza Shop on <em>Paper.</em></h3>
+        <span class="year">JAN 2026 / UX</span>
+      </div>
+      <div class="reveal">
+        <div class="reveal-grid">
+          <p>Vision recognition reads paper tickets. <span class="accent">Twilio</span> texts customers their ETA. Two displays show the live queue. Built solo for a shop that refused a KDS.</p>
+          <div class="meta">
+            <span>Client<strong>Brenz Pizza Co</strong></span>
+            <span>Role<strong>Solo</strong></span>
+            <span>Stack<strong>Vision · Twilio</strong></span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a class="row" href="#"
+       data-mark="🏆"
+       data-tag="UX/UI · DASHBOARD">
+      <div class="title-line">
+        <span class="num">04</span>
+        <h3>The <em>Tuesday</em> Scoreboard.</h3>
+        <span class="year">MAR 2026 / UX</span>
+      </div>
+      <div class="reveal">
+        <div class="reveal-grid">
+          <p>Real-time sales, labor, transactions, and voids across <span class="accent">7 shops</span> on a single dark display. Boss asked. Delivered in 3 hours with Claude Code.</p>
+          <div class="meta">
+            <span>Client<strong>Brenz Pizza Co</strong></span>
+            <span>Role<strong>Solo</strong></span>
+            <span>Time to ship<strong>3 hrs</strong></span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- floating plate that follows cursor -->
+<div class="plate" id="plate">
+  <span class="corner-tag" id="plateTag">PROJECT</span>
+  <span class="mark" id="plateMark">↗</span>
+</div>
+
+<section class="cta">
+  <h2>Wanna work on something <em>cool</em>?</h2>
+  <p>Right project, right timing, right opinions. Tell me what you're working on.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.22; cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  // Plate that follows cursor over rows
+  const plate = document.getElementById('plate');
+  const plateMark = document.getElementById('plateMark');
+  const plateTag = document.getElementById('plateTag');
+  let plateX = 0, plateY = 0, targetX = 0, targetY = 0;
+  document.addEventListener('mousemove', e => {
+    targetX = e.clientX + 160;
+    targetY = e.clientY;
+  });
+  (function platelo() {
+    plateX += (targetX - plateX) * 0.16;
+    plateY += (targetY - plateY) * 0.16;
+    plate.style.left = plateX + 'px';
+    plate.style.top = plateY + 'px';
+    requestAnimationFrame(platelo);
+  })();
+  document.querySelectorAll('.row').forEach(r => {
+    r.addEventListener('mouseenter', () => {
+      plateMark.textContent = r.dataset.mark || '↗';
+      plateTag.textContent = r.dataset.tag || '';
+      plate.classList.add('show');
+    });
+    r.addEventListener('mouseleave', () => plate.classList.remove('show'));
+  });
+
+  // Filter buttons
+  document.querySelectorAll('.filters button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.filters button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  console.log('%cWORK / MIN A — LIST', 'font-size:30px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+
+<!-- ===== SITE FOOTER ===== -->
+<footer class="site-footer">
+  <svg class="footer-mark" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="CHRSTPHR">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">CHRSTPHR<tspan class="footer-mark-dot" dx="0.5">*</tspan></text>
+  </svg>
+  <hr class="footer-mark-rule">
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2 · MIN A / LIST</span>
+      <span class="accent">Quiet on the page. Loud on the hover.</span>
+    </div>
+    <div class="group">
+      <span>Page: work · min A</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

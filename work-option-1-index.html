@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHRSTPHR — Work / Option 1 · Index</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="stylesheet" href="assets/css/global.css">
+<style>
+  /* ============================================================
+     OPTION 1 — THE INDEX / EDITORIAL DOSSIER
+     ============================================================ */
+
+  /* MASTHEAD */
+  .masthead {
+    padding: 140px 7vw 30px;
+    position: relative;
+    z-index: 5;
+  }
+  .masthead .pre {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 22px;
+  }
+  .masthead .pre .pulse {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .masthead-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+  }
+  .masthead-svg text {
+    font-family: "Arial Black", "Helvetica Neue", Impact, sans-serif;
+    font-weight: 900;
+    font-style: italic;
+    fill: var(--fg);
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+  }
+  .masthead-svg .dot { fill: var(--accent); font-style: normal; }
+  .masthead-rule {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 4px solid var(--fg);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 0;
+    margin-top: 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .masthead-rule .accent { color: var(--accent); }
+
+  /* STAT RIBBON */
+  .stat-ribbon {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 5;
+  }
+  .stat-ribbon .stat {
+    padding: 32px 26px;
+    border-right: 1px solid var(--line);
+  }
+  .stat-ribbon .stat:last-child { border-right: none; }
+  .stat-ribbon .stat .num {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(34px, 4.5vw, 62px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+  .stat-ribbon .stat .num.accent { color: var(--accent); }
+  .stat-ribbon .stat .lbl {
+    margin-top: 10px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+  }
+
+  /* BODY WITH SPINE FILTER */
+  .body-wrap {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    position: relative;
+    z-index: 5;
+  }
+
+  .spine {
+    position: sticky;
+    top: 76px;
+    align-self: start;
+    height: calc(100vh - 76px);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 0;
+    gap: 24px;
+  }
+  .spine .spine-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--fg-dim);
+    font-weight: 800;
+  }
+  .spine .spine-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+  .spine .filter-btn {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--fg-dim);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 14px 6px;
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .spine .filter-btn:hover { color: var(--fg); border-color: var(--fg); }
+  .spine .filter-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .spine .filter-btn .count { display: block; margin-top: 6px; color: var(--accent); font-size: 9px; }
+  .spine .filter-btn.active .count { color: var(--bg); opacity: 0.8; }
+  .spine .spine-tally {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+  }
+  .spine .spine-tally .accent { color: var(--accent); }
+
+  .body-content {
+    padding: 40px 7vw 80px 40px;
+  }
+
+  .body-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .body-label::before { content: "§"; color: var(--accent); }
+
+  /* INDEX ROWS */
+  .index-list {
+    border-top: 1px solid var(--fg);
+  }
+  .index-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 240px 60px;
+    gap: 24px;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding: 28px 22px;
+    text-decoration: none;
+    color: inherit;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+    transition: padding 0.4s cubic-bezier(0.65,0,0.35,1), color 0.3s;
+  }
+  .index-row::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.5s cubic-bezier(0.65,0,0.35,1);
+    z-index: 0;
+  }
+  .index-row > * { position: relative; z-index: 1; }
+  .index-row:hover::before { transform: translateX(0); }
+  .index-row:hover { color: var(--bg); padding-left: 40px; }
+  .index-row .num {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(36px, 4vw, 56px);
+    color: var(--fg-dim);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+  .index-row:hover .num { color: var(--bg); }
+  .index-row h3 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(22px, 2.4vw, 36px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .index-row h3 em { color: var(--accent); font-style: italic; transition: color 0.3s; }
+  .index-row:hover h3 em { color: var(--bg); }
+  .index-row .credits {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: left;
+  }
+  .index-row .credits strong { color: var(--fg); display: block; }
+  .index-row:hover .credits, .index-row:hover .credits strong { color: var(--bg); }
+  .index-row .arrow {
+    font-family: "Arial Black", sans-serif;
+    font-size: 32px;
+    color: var(--accent);
+    text-align: right;
+    transition: transform 0.3s, color 0.3s;
+  }
+  .index-row:hover .arrow { color: var(--bg); transform: translateX(8px); }
+
+  /* preview that slides in from right on hover */
+  .index-row .preview {
+    position: absolute;
+    top: 50%;
+    right: -360px;
+    transform: translateY(-50%);
+    width: 320px;
+    aspect-ratio: 4/3;
+    background: var(--bg);
+    border: 2px solid var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: right 0.5s cubic-bezier(0.65,0,0.35,1);
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .index-row .preview::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0px, transparent 24px, rgba(255,69,0,0.08) 24px, rgba(255,69,0,0.08) 25px),
+      repeating-linear-gradient(90deg, transparent 0px, transparent 24px, rgba(242,237,226,0.04) 24px, rgba(242,237,226,0.04) 25px);
+  }
+  .index-row .preview .mark {
+    font-family: "Arial Black", sans-serif;
+    font-size: 140px;
+    color: var(--accent);
+    line-height: 0.85;
+    transform: rotate(-4deg);
+    position: relative;
+    z-index: 1;
+  }
+  .index-row:hover .preview { right: 24px; }
+
+  /* FEATURED SPREAD — sits between index entries */
+  .spread {
+    margin: 60px 0;
+    border-top: 4px double var(--fg);
+    border-bottom: 4px double var(--fg);
+    padding: 60px 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .spread::before {
+    content: "FEATURED";
+    position: absolute;
+    top: 14px; right: 24px;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    font-weight: 800;
+  }
+  .spread::after {
+    content: "READ THE WHOLE THING ↘";
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: left top;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .spread .spread-left {
+    padding-left: 50px;
+  }
+  .spread .spread-quote {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(28px, 3.4vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .spread .spread-quote em { color: var(--accent); font-style: italic; }
+  .spread .spread-meta {
+    margin-top: 30px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+    line-height: 1.7;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    max-width: 420px;
+  }
+  .spread .spread-meta strong { color: var(--fg); }
+  .spread .spread-meta .accent { color: var(--accent); }
+  .spread .spread-cta {
+    display: inline-block;
+    margin-top: 24px;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 14px 22px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    cursor: none;
+    border: 3px solid var(--accent);
+    transition: all 0.25s;
+  }
+  .spread .spread-cta:hover { background: transparent; color: var(--accent); }
+  .spread .spread-right {
+    position: relative;
+    aspect-ratio: 4/3;
+    background: var(--bg);
+    border: 2px solid var(--fg);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .spread .spread-right::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(45deg, transparent 0px, transparent 18px, rgba(255,69,0,0.06) 18px, rgba(255,69,0,0.06) 19px),
+      radial-gradient(circle at 30% 40%, rgba(255, 69, 0, 0.15), transparent 55%);
+  }
+  .spread .spread-mark {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(120px, 16vw, 240px);
+    color: var(--accent);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    transform: rotate(-4deg);
+    position: relative;
+    z-index: 1;
+  }
+  .spread .spread-num {
+    position: absolute;
+    top: 16px; left: 18px;
+    font-family: "Arial Black", sans-serif;
+    font-size: 36px;
+    color: var(--fg);
+    z-index: 2;
+  }
+  .spread .spread-tag {
+    position: absolute;
+    bottom: 16px; left: 18px;
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    padding: 5px 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  /* COLOPHON */
+  .colophon {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .colophon .col {
+    padding: 22px 24px;
+    border-right: 1px solid var(--line);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--fg-dim);
+    font-weight: 700;
+  }
+  .colophon .col:last-child { border-right: none; }
+  .colophon .col strong { color: var(--fg); display: block; margin-top: 8px; font-size: 13px; letter-spacing: 0.05em; }
+  .colophon .col .accent { color: var(--accent); }
+
+  /* CTA */
+  .cta {
+    padding: 100px 7vw 130px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative;
+    z-index: 5;
+  }
+  .cta h2 {
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(48px, 9vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .cta h2 em { color: var(--accent); font-style: italic; }
+  .cta p {
+    max-width: 600px;
+    margin: 0 auto 36px;
+    font-size: clamp(16px, 1.3vw, 20px);
+    line-height: 1.5;
+    color: var(--fg-dim);
+  }
+  .cta-button {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    text-decoration: none;
+    padding: 26px 44px;
+    font-family: "Arial Black", sans-serif;
+    font-size: clamp(18px, 2vw, 28px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: none;
+    transition: all 0.25s;
+    border: 4px solid var(--accent);
+  }
+  .cta-button:hover { background: transparent; color: var(--accent); }
+
+  @media (max-width: 1100px) {
+    .stat-ribbon { grid-template-columns: repeat(2, 1fr); }
+    .stat-ribbon .stat:nth-child(2n) { border-right: none; }
+    .stat-ribbon .stat { border-bottom: 1px solid var(--line); }
+    .body-wrap { grid-template-columns: 1fr; }
+    .spine { display: none; }
+    .body-content { padding: 40px 7vw 80px; }
+    .index-row { grid-template-columns: 60px 1fr 60px; }
+    .index-row .credits { display: none; }
+    .index-row .preview { display: none; }
+    .spread { grid-template-columns: 1fr; padding: 40px 18px; }
+    .spread .spread-left { padding-left: 30px; }
+    .colophon { grid-template-columns: 1fr 1fr; }
+    .colophon .col:nth-child(2n) { border-right: none; }
+    .colophon .col { border-bottom: 1px solid var(--line); }
+  }
+  @media (max-width: 700px) {
+    .top-bar nav { display: none; }
+    .colophon { grid-template-columns: 1fr; }
+    .colophon .col { border-right: none; }
+    .index-row { grid-template-columns: 50px 1fr 40px; padding: 22px 14px; }
+    .index-row h3 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span class="star">✱</span> CHRSTPHR / WORK</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="work.html" class="curr">Work</a>
+    <a href="experience.html">Experience</a>
+    <a href="skills.html">Skills</a>
+    <a href="how-i-work.html">How I Work</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div>
+
+<!-- ============ MASTHEAD ============ -->
+<section class="masthead">
+  <div class="pre">
+    <span class="pulse"></span>
+    <span>Vol. 03 / Selected works · 2022 → Present</span>
+  </div>
+
+  <svg class="masthead-svg" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="WORK INDEX">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">
+      W<tspan class="dot">·</tspan>RK INDEX
+    </text>
+  </svg>
+
+  <div class="masthead-rule">
+    <span>The CHRSTPHR Quarterly</span>
+    <span class="accent">No. 03 / 2026 EDITION</span>
+    <span>04 entries · 02 disciplines</span>
+    <span>$0.00 · Read free, fight me</span>
+  </div>
+</section>
+
+<!-- ============ STAT RIBBON ============ -->
+<div class="stat-ribbon">
+  <div class="stat"><div class="num">04</div><div class="lbl">Projects shipped</div></div>
+  <div class="stat"><div class="num accent">02</div><div class="lbl">Disciplines crossed</div></div>
+  <div class="stat"><div class="num">246K</div><div class="lbl">Texts analyzed</div></div>
+  <div class="stat"><div class="num accent">4GB+</div><div class="lbl">Manuals ingested</div></div>
+  <div class="stat"><div class="num">$6.8K</div><div class="lbl">Saved at the shop</div></div>
+</div>
+
+<!-- ============ BODY ============ -->
+<div class="body-wrap">
+
+  <aside class="spine">
+    <div class="spine-label">Filter / Sort</div>
+    <div class="spine-filters">
+      <button class="filter-btn active">All <span class="count">04</span></button>
+      <button class="filter-btn">UX/UI <span class="count">02</span></button>
+      <button class="filter-btn">AI <span class="count">02</span></button>
+    </div>
+    <div class="spine-tally">Showing <span class="accent">04</span> of 04</div>
+  </aside>
+
+  <div class="body-content">
+    <div class="body-label">The Index / All entries listed below</div>
+
+    <div class="index-list">
+
+      <!-- Row 01 (featured) -->
+      <a class="index-row" href="#">
+        <div class="num">№ 01</div>
+        <h3>My Own Personal 1973 Corvette Mechanic <em>(and he's a genius!)</em></h3>
+        <div class="credits">
+          <strong>Personal Project</strong>
+          2025 · ONGOING
+          <br>SOLO BUILDER
+          <br>FULL-STACK · AI
+        </div>
+        <span class="arrow">↗</span>
+        <div class="preview"><span class="mark">↗↗↗</span></div>
+      </a>
+
+      <!-- The featured spread interrupts the list -->
+      <div class="spread">
+        <div class="spread-left">
+          <div class="spread-quote">
+            "Send it a photo of a mystery part. <em>It tells you what it is, what it does, and when it was last replaced.</em>"
+          </div>
+          <div class="spread-meta">
+            <span>FROM ENTRY № 01 / <strong>1973 Corvette Mechanic</strong></span><br>
+            <span>FastAPI · Claude · Supabase · pgvector</span><br>
+            <span class="accent">Featured project of the quarter</span>
+          </div>
+          <a class="spread-cta" href="#">↳ Read the whole story</a>
+        </div>
+        <div class="spread-right">
+          <span class="spread-num">01</span>
+          <span class="spread-mark">↗↗↗</span>
+          <span class="spread-tag">PERSONAL · FULL-STACK · AI</span>
+        </div>
+      </div>
+
+      <!-- Row 02 -->
+      <a class="index-row" href="#">
+        <div class="num">№ 02</div>
+        <h3>What Your Texting <em>Really</em> Says About You.</h3>
+        <div class="credits">
+          <strong>Personal · macOS App</strong>
+          2026
+          <br>SOLO BUILDER
+          <br>AI · DESKTOP
+        </div>
+        <span class="arrow">↗</span>
+        <div class="preview"><span class="mark">❤</span></div>
+      </a>
+
+      <!-- Row 03 -->
+      <a class="index-row" href="#">
+        <div class="num">№ 03</div>
+        <h3>Order Intel for a Pizza Shop That <em>Still Runs on Paper.</em></h3>
+        <div class="credits">
+          <strong>Brenz Pizza Co</strong>
+          JAN 2026
+          <br>SOLO BUILDER
+          <br>UX/UI · VISION · TWILIO
+        </div>
+        <span class="arrow">↗</span>
+        <div class="preview"><span class="mark">🍕</span></div>
+      </a>
+
+      <!-- Row 04 -->
+      <a class="index-row" href="#">
+        <div class="num">№ 04</div>
+        <h3>The <em>Scoreboard</em> the Boss Asked For on a Tuesday.</h3>
+        <div class="credits">
+          <strong>Brenz Pizza Co</strong>
+          MAR 2026
+          <br>SOLO BUILDER
+          <br>UX/UI · DASHBOARD
+        </div>
+        <span class="arrow">↗</span>
+        <div class="preview"><span class="mark">🏆</span></div>
+      </a>
+
+    </div>
+
+    <!-- Colophon -->
+    <div class="colophon">
+      <div class="col">Typeface<strong>Arial Black + Helvetica</strong></div>
+      <div class="col">Palette<strong class="accent">Black · Cream · Blood Orange</strong></div>
+      <div class="col">Built<strong>10.67 hrs · prompted</strong></div>
+      <div class="col">Edition<strong>v3.2 · 2026</strong></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Wanna work on something <em>cool</em> together?</h2>
+  <p>Right project, right timing, right opinions. Tell CHRSTPHR what you're working on — replies come in real sentences.</p>
+  <a class="cta-button" href="mailto:hi@chrstphr.studio">↳ START SOMETHING</a>
+</section>
+
+<div class="cursor" id="cursor"></div>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  let mx = innerWidth/2, my = innerHeight/2, cx = mx, cy = my;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  (function loop() {
+    cx += (mx - cx) * 0.22;
+    cy += (my - cy) * 0.22;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('a, button, .index-row').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+  document.addEventListener('mousedown', () => cursor.classList.add('click'));
+  document.addEventListener('mouseup', () => cursor.classList.remove('click'));
+
+  // Filters
+  document.querySelectorAll('.spine .filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.spine .filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  console.log('%cWORK / OPTION 01 — INDEX', 'font-size:36px;font-weight:900;color:#FF4500;font-family:Arial Black,sans-serif;');
+</script>
+
+<!-- ===== SITE FOOTER ===== -->
+<footer class="site-footer">
+  <svg class="footer-mark" viewBox="0 0 100 18" preserveAspectRatio="xMidYMid meet" aria-label="CHRSTPHR">
+    <text x="0" y="15" textLength="100" lengthAdjust="spacingAndGlyphs" font-size="20" letter-spacing="-0.5">CHRSTPHR<tspan class="footer-mark-dot" dx="0.5">*</tspan></text>
+  </svg>
+  <hr class="footer-mark-rule">
+  <div class="footer-strip">
+    <div class="footer-strip-track">
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+      <span>HUMAN-MADE / AI-ASSISTED</span><span class="star">✦</span>
+      <span>NO TEMPLATES, NO TRENDS, NO EXCUSES</span><span class="star">✦</span>
+      <span>BUILT IN THE DARK</span><span class="star">✦</span>
+      <span>NOW BOOKING — SELECTED COLLABS</span><span class="star">✦</span>
+    </div>
+  </div>
+  <div class="footer-cta">
+    <a href="mailto:hello@ohchrstphr.com"><span>Say hello</span><span class="arrow">→</span></a>
+    <a class="up" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;"><span>Back to top</span><span class="arrow">↑</span></a>
+  </div>
+  <div class="footer-meta">
+    <div class="group">
+      <span>© <span data-year>2026</span> CHRSTPHR</span>
+      <span>v3.2 · OPTION 01 / INDEX</span>
+      <span class="accent">This site was literally prompted to existence from scratch in 10.67 hours.</span>
+    </div>
+    <div class="group">
+      <span>Page: work · option 1</span>
+      <span>Made on a black screen</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
