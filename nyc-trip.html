@@ -461,6 +461,68 @@
     padding-top: 16px;
   }
   .brief-card .meta strong { color: var(--white); }
+
+  /* ============ INFO CARDS (Heads Up) ============ */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0;
+    border: 1px solid var(--gray-line);
+  }
+  .info-card {
+    background: var(--gray-1);
+    padding: 40px 32px;
+    border-right: 1px solid var(--gray-line);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: background 0.2s;
+  }
+  .info-card:last-child { border-right: none; }
+  .info-card:hover { background: var(--gray-2); }
+  .info-card.highlight {
+    background: var(--volt);
+    color: var(--black);
+  }
+  .info-card.highlight:hover { background: var(--volt); }
+  .info-icon {
+    font-size: 40px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .info-card .info-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--volt);
+    font-weight: 700;
+  }
+  .info-card.highlight .info-label { color: var(--black); opacity: 0.7; }
+  .info-card .info-title {
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(28px, 3.5vw, 40px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+  }
+  .info-card .info-body {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--white);
+  }
+  .info-card.highlight .info-body { color: var(--black); }
+  .info-card .info-body strong {
+    color: var(--volt);
+    font-weight: 700;
+  }
+  .info-card.highlight .info-body strong {
+    color: var(--black);
+    background: rgba(0,0,0,0.08);
+    padding: 0 4px;
+  }
   .brief-card .airline-badge {
     display: inline-flex;
     align-items: center;
@@ -868,6 +930,9 @@
     .locked-card:last-child { border-bottom: none; }
     .brief-card { border-right: none; border-bottom: 1px solid var(--gray-line); }
     .brief-card:last-child { border-bottom: none; }
+    .info-grid { grid-template-columns: 1fr; }
+    .info-card { border-right: none; border-bottom: 1px solid var(--gray-line); }
+    .info-card:last-child { border-bottom: none; }
     .photo-plate { height: 50vh; }
   }
   @media (max-width: 600px) {
@@ -959,7 +1024,7 @@
   <div class="container">
     <div class="section-head">
       <h2 class="display">Mission<br>Brief<span class="punkt">.</span></h2>
-      <div class="index">01 / 04<br><strong>LOCKED &amp; LOADED</strong></div>
+      <div class="index">01 / 05<br><strong>LOCKED &amp; LOADED</strong></div>
     </div>
     <div class="brief-grid">
       <div class="brief-card">
@@ -1023,8 +1088,40 @@
 <section class="section">
   <div class="container">
     <div class="section-head">
+      <h2 class="display">Heads<br>Up<span class="punkt">.</span></h2>
+      <div class="index">02 / 05<br><strong>GENERAL INFO</strong></div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-icon">👟</div>
+        <div class="info-label">Getting Around</div>
+        <h3 class="info-title">Walk, run, bike, subway.</h3>
+        <p class="info-body">We're going to be on our feet a lot. Walking everywhere we can, subway for the longer hops, and bikes through Central Park. Bring shoes you can actually move in all day — not the cute ones that look great for fifteen minutes. Your feet will thank you on Day 2.</p>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">🚴</div>
+        <div class="info-label">My Setup</div>
+        <h3 class="info-title">Flying with the bike.</h3>
+        <p class="info-body">I'm going to attempt bringing my own bike on the plane, plus some bouldering gear in case we hit Brooklyn Boulders. Means I'll be the one with the bigger luggage situation. If something goes sideways with bike check-in, plan B is renting Citi Bikes — equally fine.</p>
+      </div>
+
+      <div class="info-card highlight">
+        <div class="info-icon">💸</div>
+        <div class="info-label">The Money Bit</div>
+        <h3 class="info-title">I've got the necessities.</h3>
+        <p class="info-body">Food, drinks, snacks, supplies, transit, all the in-the-moment stuff — on me. Don't worry about any of it. <strong>And if you're cool with it, I'd also love to give you a fun-money budget to spend on whatever catches your eye out there — shopping, souvenirs, whatever you want.</strong> Let me know what feels right.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
       <h2 class="display">The<br>Plan<span style="color:var(--gray-fg); font-weight:700; font-size:0.5em; vertical-align:middle; letter-spacing:0;"> (ish)</span><span class="punkt">.</span></h2>
-      <div class="index">02 / 04<br><strong>DAY BY DAY</strong></div>
+      <div class="index">03 / 05<br><strong>DAY BY DAY</strong></div>
     </div>
 
     <div class="day">
@@ -1108,7 +1205,7 @@
   <div class="container">
     <div class="section-head">
       <h2 class="display">No<br>Negotiation<span class="punkt">.</span></h2>
-      <div class="index">03 / 04<br><strong>MUST DO</strong></div>
+      <div class="index">04 / 05<br><strong>MUST DO</strong></div>
     </div>
     <div class="locked-grid">
       <div class="locked-card">
@@ -1139,7 +1236,7 @@
   <div class="container">
     <div class="section-head">
       <h2 class="display">First<br>Impressions<span class="punkt">.</span></h2>
-      <div class="index">04 / 04<br><strong>JADYN, BE HONEST</strong></div>
+      <div class="index">05 / 05<br><strong>JADYN, BE HONEST</strong></div>
     </div>
 
     <p class="picks-intro">The menu. <span class="slash">/</span> Tap "this looks cool" on anything that appeals — I'm building the schedule around what excites you. No wrong answers.</p>
@@ -1293,11 +1390,35 @@
           </div>
         </button>
 
+        <button class="pick-option" data-id="walk-macys">
+          <div class="opt-photo" style="background-image: url('./assets/img/macys-herald-square.jpg')"></div>
+          <div class="opt-body">
+            <span class="opt-name">Macy's Herald Square</span>
+            <span class="opt-note">The world's largest department store — over a million square feet, ten stories, on 34th &amp; Broadway. It's the parade one. The miracle-on-34th-street one. Wood escalators from 1902 still creaking their way up. More of a landmark than a shop at this point, but you can absolutely still wreck a credit card on the way through.</span>
+            <span class="opt-footer">
+              <span class="opt-status">this looks cool ✨</span>
+              <span class="opt-count hidden">+0</span>
+            </span>
+          </div>
+        </button>
+
         <button class="pick-option" data-id="walk-dylans">
           <div class="opt-photo" style="background-image: url('./assets/img/dylans-candy-bar.jpg')"></div>
           <div class="opt-body">
             <span class="opt-name">Dylan's Candy Bar</span>
             <span class="opt-note">Three floors of pure sugar maximalism on the Upper East Side near Bloomingdale's. Wall-to-wall bins of every candy you forgot existed, walk-up sundae bar, life-size chocolate sculptures, the works. Founded by Ralph Lauren's daughter — yes, that Dylan. Equal parts museum, store, and bad decision waiting to happen.</span>
+            <span class="opt-footer">
+              <span class="opt-status">this looks cool ✨</span>
+              <span class="opt-count hidden">+0</span>
+            </span>
+          </div>
+        </button>
+
+        <button class="pick-option" data-id="walk-earthroom">
+          <div class="opt-photo" style="background-image: url('./assets/img/new-york-earth-room.jpg')"></div>
+          <div class="opt-body">
+            <span class="opt-name">The New York Earth Room</span>
+            <span class="opt-note">A 3,600 sq ft SoHo loft filled with 280,000 pounds of dirt. That's the whole piece. Walter De Maria installed it in 1977 and a guy has been raking and moistening it ever since. No photos allowed, free to visit, smells like a forest in the middle of Manhattan. Hidden up a flight of stairs on Wooster St — you'd walk past it ten times and never know.</span>
             <span class="opt-footer">
               <span class="opt-status">this looks cool ✨</span>
               <span class="opt-count hidden">+0</span>
@@ -1397,6 +1518,18 @@
           </div>
         </button>
 
+        <button class="pick-option" data-id="big-bkb">
+          <div class="opt-photo" style="background-image: url('./assets/img/brooklyn-boulders.webp')"></div>
+          <div class="opt-body">
+            <span class="opt-name">Brooklyn Boulders</span>
+            <span class="opt-note">18,000 square feet of climbing — the biggest gym in the five boroughs. Walls topping 30 feet, a scale replica of the Brooklyn Bridge tower you can actually climb, and a 45° overhang for the people who like suffering. Lessons, rentals, gear shop on-site, so we can show up with nothing but shoes. A TRC field trip, basically.</span>
+            <span class="opt-footer">
+              <span class="opt-status">this looks cool ✨</span>
+              <span class="opt-count hidden">+0</span>
+            </span>
+          </div>
+        </button>
+
         <button class="pick-option" data-id="big-moma">
           <div class="opt-photo" style="background-image: url('./assets/img/moma.jpg')"></div>
           <div class="opt-body">
@@ -1443,7 +1576,7 @@
       <div><div class="label">Operation</div><div class="val">NYC '26</div></div>
       <div><div class="label">Window</div><div class="val">07.08–07.11.2026</div></div>
       <div><div class="label">Conf</div><div class="val">B0BYZL</div></div>
-      <div><div class="label">Version</div><div class="val">v4.4 — assets path</div></div>
+      <div><div class="label">Version</div><div class="val">v4.5 — heads up</div></div>
     </div>
   </div>
 </footer>
