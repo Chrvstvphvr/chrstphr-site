@@ -185,6 +185,43 @@
     margin-top: 4px;
     display: block;
   }
+  .cal-btn {
+    margin-top: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--volt);
+    color: var(--black);
+    border: 2px solid var(--black);
+    padding: 12px 18px;
+    font-family: 'Big Shoulders Display', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 4px 4px 0 var(--black);
+    text-decoration: none;
+  }
+  .cal-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--black);
+  }
+  .cal-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--black);
+  }
+  .cal-btn.added {
+    background: var(--black);
+    color: var(--volt);
+    border-color: var(--volt);
+    box-shadow: 4px 4px 0 var(--volt);
+  }
+  .cal-btn-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
   .stamp {
     position: absolute;
     font-family: 'Big Shoulders Display', sans-serif;
@@ -1008,6 +1045,10 @@
     <div class="dates">
       DEPARTURE → RETURN
       <span class="big">07.08 → 07.11.2026</span>
+      <button class="cal-btn" id="add-to-cal" type="button">
+        <span class="cal-btn-icon">📅</span>
+        <span class="cal-btn-text">Add to Calendar</span>
+      </button>
     </div>
   </div>
 </section>
@@ -1587,12 +1628,60 @@
       <div><div class="label">Operation</div><div class="val">NYC '26</div></div>
       <div><div class="label">Window</div><div class="val">07.08–07.11.2026</div></div>
       <div><div class="label">Conf</div><div class="val">B0BYZL</div></div>
-      <div><div class="label">Version</div><div class="val">v4.5 — heads up</div></div>
+      <div><div class="label">Version</div><div class="val">v4.6 — calendar button</div></div>
     </div>
   </div>
 </footer>
 
 <script>
+  // ============ ADD TO CALENDAR ============
+  // Generates an iCalendar (.ics) file on the fly and triggers a download.
+  // Works in Apple Calendar, Google Calendar, Outlook, etc.
+  // For all-day events, DTEND is the day AFTER the last day (per RFC 5545).
+  document.getElementById('add-to-cal').addEventListener('click', function() {
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//ohchrstphr//NYC Trip 2026//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      'UID:nyc-trip-2026@ohchrstphr.com',
+      'DTSTAMP:20260101T000000Z',
+      'DTSTART;VALUE=DATE:20260708',
+      'DTEND;VALUE=DATE:20260712',
+      'SUMMARY:NYC Trip',
+      'DESCRIPTION:Four days in Manhattan with Jadyn. UA 1525 RDU → EWR (Wed Jul 8\\, 6:00 AM) / UA 1975 EWR → RDU (Sat Jul 11\\, 4:55 PM). Conf B0BYZL.',
+      'LOCATION:New York\\, NY',
+      'STATUS:CONFIRMED',
+      'TRANSP:OPAQUE',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'nyc-trip-2026.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    // Visual feedback
+    const btn = this;
+    btn.classList.add('added');
+    btn.querySelector('.cal-btn-text').textContent = 'Downloaded ✓';
+    btn.querySelector('.cal-btn-icon').textContent = '✨';
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.querySelector('.cal-btn-text').textContent = 'Add to Calendar';
+      btn.querySelector('.cal-btn-icon').textContent = '📅';
+    }, 3000);
+  });
+
+
   // ============ COUNTDOWN ============
   const TRIP_START = new Date('2026-07-08T06:00:00-04:00');
   const cdEls = {
