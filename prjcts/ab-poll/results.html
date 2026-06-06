@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Poll Results</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --muted:#94a3b8;
+    --accent:#6366f1; --bar-bg:#334155;
+    --c0:#6366f1; --c1:#14b8a6; --c2:#f59e0b; --c3:#ec4899; --c4:#8b5cf6;
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 800px at 50% -10%, #1e293b 0%, var(--bg) 60%);
+    color:var(--text);
+    min-height:100dvh;
+    padding:clamp(20px,4vh,48px) clamp(16px,4vw,56px) 60px;
+  }
+  .page { max-width:min(1100px,94vw); margin:0 auto; }
+
+  /* ---- Current (large) ---- */
+  .hero { margin-bottom:clamp(32px,6vh,64px); }
+  .eyebrow {
+    text-align:center; color:var(--accent); font-weight:700;
+    font-size:clamp(1.1rem,3vmin,1.8rem); margin:0 0 clamp(6px,1.2vh,14px);
+  }
+  .hero-q {
+    text-align:center; font-weight:800; letter-spacing:-.02em; line-height:1.08;
+    font-size:clamp(2.2rem,6.5vmin,4.4rem); margin:0 0 clamp(20px,4vh,44px);
+  }
+  .big-row { margin-bottom:clamp(16px,3vh,30px); }
+  .big-top {
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:clamp(1.3rem,3.6vmin,2.2rem); font-weight:600; margin-bottom:clamp(6px,1.2vh,12px);
+  }
+  .big-top .pct { font-weight:800; font-variant-numeric:tabular-nums; }
+  .big-bar { height:clamp(20px,3.2vmin,34px); background:var(--bar-bg); border-radius:999px; overflow:hidden; }
+  .big-fill { height:100%; width:0; border-radius:999px; transition:width .6s cubic-bezier(.22,1,.36,1); }
+  .hero-total { text-align:center; color:var(--muted); margin-top:clamp(10px,2vh,20px); font-size:clamp(1rem,2.4vmin,1.4rem); }
+
+  /* ---- Past (smaller, scrollable list) ---- */
+  .past-head {
+    font-size:clamp(1.1rem,2.6vmin,1.5rem); font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.06em; margin:0 0 14px; padding-bottom:10px;
+    border-bottom:1px solid var(--bar-bg);
+  }
+  .past-list { display:flex; flex-direction:column; gap:14px; max-height:55vh; overflow-y:auto; padding-right:6px; }
+  .past-list::-webkit-scrollbar { width:8px; }
+  .past-list::-webkit-scrollbar-thumb { background:#334155; border-radius:999px; }
+  .past-card { background:var(--card); border-radius:14px; padding:16px 18px; }
+  .past-q { font-weight:700; font-size:1.05rem; margin-bottom:2px; }
+  .past-date { color:var(--muted); font-size:.8rem; margin-bottom:12px; }
+  .mini-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:.95rem; }
+  .mini-label { flex:0 0 34%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mini-bar { flex:1; height:9px; background:var(--bg); border-radius:999px; overflow:hidden; }
+  .mini-fill { height:100%; border-radius:999px; }
+  .mini-pct { flex:0 0 48px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+
+  .empty { text-align:center; color:var(--muted); padding:32px 0; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero" id="hero">
+      <div class="empty">Loading…</div>
+    </section>
+
+    <section>
+      <h2 class="past-head">Past results</h2>
+      <div class="past-list" id="pastList"><div class="empty">Loading…</div></div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const { SUPABASE_URL, SUPABASE_KEY } = window.POLL_CONFIG;
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const COLORS = ["#6366f1","#14b8a6","#f59e0b","#ec4899","#8b5cf6"];
+
+    const heroEl = document.getElementById("hero");
+    const pastEl = document.getElementById("pastList");
+
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+    const pct = (c, t) => (!t ? 0 : Math.round((c / t) * 100));
+
+    async function rpc(fn, args) {
+      const { data, error } = await sb.rpc(fn, args || {});
+      if (error) throw error;
+      return data;
+    }
+
+    async function loadCurrent() {
+      try {
+        const [title, poll, results] = await Promise.all([
+          rpc("get_poll_title"), rpc("get_active_poll"), rpc("get_active_results")
+        ]);
+        if (!poll) {
+          heroEl.innerHTML = `<div class="empty">No active poll right now.</div>`;
+          return;
+        }
+        const total = (results && results.total) || 0;
+        const rows = poll.options.map((o, i) => {
+          const c = (results && results.counts && results.counts[i]) || 0;
+          const p = pct(c, total);
+          return `<div class="big-row">
+            <div class="big-top"><span>${esc(o)}</span><span class="pct">${p}%</span></div>
+            <div class="big-bar"><div class="big-fill" style="width:${p}%;background:${COLORS[i % COLORS.length]}"></div></div>
+          </div>`;
+        }).join("");
+        heroEl.innerHTML = `
+          <p class="eyebrow">${esc(title || "Current results")}</p>
+          <h1 class="hero-q">${esc(poll.question)}</h1>
+          ${rows}
+          <p class="hero-total">${total} vote${total === 1 ? "" : "s"} so far</p>`;
+      } catch (e) {
+        heroEl.innerHTML = `<div class="empty">Could not load current results.</div>`;
+      }
+    }
+
+    async function loadPast() {
+      try {
+        const past = await rpc("get_past_polls");
+        if (!past || !past.length) { pastEl.innerHTML = `<div class="empty">No past polls yet.</div>`; return; }
+        pastEl.innerHTML = past.map(p => {
+          const r = p.results || { counts: [], total: 0 };
+          const total = r.total || 0;
+          const rows = p.options.map((o, i) => {
+            const c = (r.counts && r.counts[i]) || 0;
+            const pp = pct(c, total);
+            return `<div class="mini-row">
+              <span class="mini-label">${esc(o)}</span>
+              <span class="mini-bar"><span class="mini-fill" style="width:${pp}%;background:${COLORS[i % COLORS.length]}"></span></span>
+              <span class="mini-pct">${pp}%</span>
+            </div>`;
+          }).join("");
+          const d = p.closed_at ? new Date(p.closed_at).toLocaleDateString() : "";
+          return `<div class="past-card">
+            <div class="past-q">${esc(p.question)}</div>
+            <div class="past-date">Closed ${esc(d)} · ${total} votes</div>
+            ${rows}
+          </div>`;
+        }).join("");
+      } catch (e) {
+        pastEl.innerHTML = `<div class="empty">Could not load past results.</div>`;
+      }
+    }
+
+    loadCurrent();
+    loadPast();
+    setInterval(loadCurrent, 5000);
+    setInterval(loadPast, 20000);
+  </script>
+</body>
+</html>

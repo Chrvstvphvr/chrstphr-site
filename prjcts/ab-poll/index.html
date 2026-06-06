@@ -26,37 +26,52 @@
     color: var(--text);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-height: 100%;
-    padding: 4vh 20px 60px;
+    min-height: 100dvh;
   }
-  .wrap { width: 100%; max-width: 760px; }
+  .wrap {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: min(1100px, 94vw);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 clamp(16px, 3vw, 40px) clamp(24px, 5vh, 60px);
+  }
+  /* The voting/results area fills the viewport and is vertically centered. */
+  .stage {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(8px, 1.5vh, 18px);
+    padding: clamp(16px, 3vh, 40px) 0;
+  }
   .title {
     text-align: center;
     color: var(--accent);
-    font-size: clamp(1rem, 3vw, 1.4rem);
+    font-size: clamp(1.2rem, 3.4vmin, 2.2rem);
     font-weight: 700;
     letter-spacing: .01em;
-    margin: 0 0 1vh;
+    margin: 0 0 clamp(8px, 1.6vh, 20px);
   }
   .question {
-    font-size: clamp(2rem, 5.5vw, 3.4rem);
+    font-size: clamp(2.4rem, 7vmin, 5rem);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.08;
     letter-spacing: -0.02em;
     text-align: center;
-    margin: 2vh 0 4vh;
+    margin: 0 0 clamp(20px, 4vh, 48px);
   }
-  .options { display: flex; flex-direction: column; gap: 16px; }
+  .options { display: flex; flex-direction: column; gap: clamp(12px, 2vh, 22px); }
   .opt {
     appearance: none;
-    border: 2px solid transparent;
+    border: 3px solid transparent;
     background: var(--card);
     color: var(--text);
-    font-size: clamp(1.1rem, 2.6vw, 1.6rem);
+    font-size: clamp(1.5rem, 4vmin, 2.4rem);
     font-weight: 600;
-    padding: 22px 26px;
-    border-radius: 18px;
+    padding: clamp(20px, 3.4vmin, 38px) clamp(24px, 4vmin, 40px);
+    border-radius: clamp(16px, 2.4vmin, 24px);
     cursor: pointer;
     text-align: left;
     transition: transform .08s ease, border-color .15s ease, background .15s ease;
@@ -68,48 +83,37 @@
   .opt[data-i="2"]:hover { border-color: var(--c2); }
 
   /* Results */
-  .result-row { margin-bottom: 18px; }
+  .result-row { margin-bottom: clamp(14px, 2.4vh, 26px); }
   .result-top {
     display: flex; justify-content: space-between; align-items: baseline;
-    font-size: clamp(1rem, 2.4vw, 1.35rem); font-weight: 600; margin-bottom: 8px;
+    font-size: clamp(1.3rem, 3.4vmin, 2rem); font-weight: 600; margin-bottom: clamp(6px, 1.2vh, 12px);
   }
   .pct { font-variant-numeric: tabular-nums; font-weight: 800; }
-  .bar { height: 16px; background: var(--bar-bg); border-radius: 999px; overflow: hidden; }
+  .bar { height: clamp(18px, 2.8vmin, 30px); background: var(--bar-bg); border-radius: 999px; overflow: hidden; }
   .fill { height: 100%; width: 0; border-radius: 999px; transition: width .6s cubic-bezier(.22,1,.36,1); }
   .fill0 { background: var(--c0);} .fill1 { background: var(--c1);} .fill2 { background: var(--c2);}
   .fill3 { background: var(--c3);} .fill4 { background: var(--c4);}
 
-  .meta { text-align: center; color: var(--muted); margin-top: 6px; font-size: .95rem; }
-  .thanks { text-align:center; font-size: clamp(1.2rem,3vw,1.7rem); font-weight:700; margin: 0 0 2vh; }
+  .meta { text-align: center; color: var(--muted); margin-top: clamp(8px,1.5vh,16px); font-size: clamp(1rem, 2.4vmin, 1.4rem); }
+  .thanks { text-align:center; font-size: clamp(1.4rem,3.6vmin,2.2rem); font-weight:700; margin: 0 0 clamp(16px,2.5vh,28px); }
   .nextbtn {
-    display:block; margin: 28px auto 0; background: var(--accent); color:#fff; border:none;
-    font-size: 1.1rem; font-weight:700; padding: 16px 34px; border-radius: 999px; cursor:pointer;
+    display:block; margin: clamp(20px,3vh,36px) auto 0; background: var(--accent); color:#fff; border:none;
+    font-size: clamp(1.1rem, 2.8vmin, 1.6rem); font-weight:700;
+    padding: clamp(14px,2vh,20px) clamp(28px,5vw,48px); border-radius: 999px; cursor:pointer;
   }
   .nextbtn:active { transform: scale(.97); }
 
-  .past { margin-top: 8vh; }
-  .past summary {
-    cursor: pointer; color: var(--muted); font-weight: 600; font-size: 1rem;
-    list-style: none; text-align:center; padding: 12px;
-  }
-  .past summary::-webkit-details-marker { display:none; }
-  .past-card { background: var(--card); border-radius: 16px; padding: 20px 22px; margin: 16px 0; }
-  .past-q { font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; }
-  .past-date { color: var(--muted); font-size: .85rem; margin-bottom: 14px; }
   .empty { text-align:center; color: var(--muted); padding: 40px 0; }
   .toast { color: #fca5a5; text-align:center; min-height: 1.2em; margin-top: 10px; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div id="title" class="title"></div>
-    <div id="app"><div class="empty">Loading…</div></div>
-    <div id="toast" class="toast"></div>
-
-    <details class="past">
-      <summary>▾ Past results</summary>
-      <div id="past"></div>
-    </details>
+    <div class="stage">
+      <div id="title" class="title"></div>
+      <div id="app"><div class="empty">Loading…</div></div>
+      <div id="toast" class="toast"></div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -121,7 +125,6 @@
 
     const appEl = document.getElementById("app");
     const titleEl = document.getElementById("title");
-    const pastEl = document.getElementById("past");
     const toastEl = document.getElementById("toast");
 
     let currentPollId = null;
@@ -225,44 +228,11 @@
       } catch (e) {}
     }
 
-    async function loadPast() {
-      try {
-        const past = await rpc("get_past_polls");
-        if (!past || !past.length) {
-          pastEl.innerHTML = `<div class="empty">No past polls yet.</div>`;
-          return;
-        }
-        pastEl.innerHTML = past.map(p => {
-          const r = p.results || { counts: [], total: 0 };
-          const total = r.total || 0;
-          const rows = p.options.map((o, i) => {
-            const c = (r.counts && r.counts[i]) || 0;
-            const pp = pct(c, total);
-            return `
-              <div class="result-row">
-                <div class="result-top"><span>${esc(o)}</span><span class="pct">${pp}%</span></div>
-                <div class="bar"><div class="fill fill${i}" style="width:${pp}%"></div></div>
-              </div>`;
-          }).join("");
-          const d = p.closed_at ? new Date(p.closed_at).toLocaleString() : "";
-          return `<div class="past-card">
-            <div class="past-q">${esc(p.question)}</div>
-            <div class="past-date">Closed ${esc(d)} · ${total} votes</div>
-            ${rows}
-          </div>`;
-        }).join("");
-      } catch (e) {
-        pastEl.innerHTML = `<div class="empty">Could not load past results.</div>`;
-      }
-    }
-
     load(true);
     loadTitle();
-    loadPast();
     // Poll for changes so the kiosk updates if the admin swaps the question.
     setInterval(() => { if (mode === "vote") load(false); }, 5000);
     setInterval(loadTitle, 15000);
-    setInterval(loadPast, 15000);
   </script>
 </body>
 </html>
