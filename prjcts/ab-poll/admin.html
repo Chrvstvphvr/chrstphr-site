@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Poll Admin</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --line:#334155; --text:#f8fafc; --muted:#94a3b8;
+    --accent:#6366f1; --green:#16a34a; --red:#dc2626; --amber:#d97706;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); padding:32px 18px 80px;
+  }
+  .wrap { max-width:780px; margin:0 auto; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 28px; font-size:.95rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:22px; }
+  .card h2 { margin:0 0 16px; font-size:1.1rem; }
+  label { display:block; font-size:.85rem; color:var(--muted); margin:0 0 6px; }
+  input[type=text], input[type=password] {
+    width:100%; background:#0f172a; border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:12px 14px; font-size:1rem; margin-bottom:14px;
+  }
+  input:focus { outline:none; border-color:var(--accent); }
+  .opt-row { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
+  .opt-row input { margin-bottom:0; }
+  .opt-row .swatch { width:14px; height:14px; border-radius:4px; flex:0 0 14px; }
+  .icon-btn {
+    background:transparent; border:1px solid var(--line); color:var(--muted);
+    border-radius:8px; width:38px; height:42px; cursor:pointer; font-size:1.1rem;
+  }
+  button.btn {
+    border:none; border-radius:10px; padding:12px 18px; font-size:.95rem; font-weight:600;
+    cursor:pointer; color:#fff;
+  }
+  .btn.primary { background:var(--accent); }
+  .btn.green { background:var(--green); }
+  .btn.red { background:var(--red); }
+  .btn.amber { background:var(--amber); }
+  .btn.ghost { background:transparent; border:1px solid var(--line); color:var(--text); }
+  .btn-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+  .add-link { background:none; border:none; color:var(--accent); cursor:pointer; font-size:.9rem; padding:4px 0; }
+
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); font-size:.95rem; }
+  th { color:var(--muted); font-weight:600; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .barcell { width:40%; }
+  .minibar { height:10px; background:#0f172a; border-radius:999px; overflow:hidden; }
+  .minifill { height:100%; }
+  .total { color:var(--muted); font-size:.9rem; margin-top:12px; }
+  .msg { min-height:1.2em; font-size:.9rem; margin-top:10px; }
+  .msg.ok { color:#86efac; } .msg.err { color:#fca5a5; }
+  .hidden { display:none !important; }
+  .gate { max-width:380px; margin:14vh auto 0; }
+  .pill { display:inline-block; background:#0f172a; border:1px solid var(--line); color:var(--muted);
+          border-radius:999px; padding:4px 12px; font-size:.8rem; }
+  a.link { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Login gate -->
+  <div id="gate" class="card gate">
+    <h2>Admin sign in</h2>
+    <label>Password</label>
+    <input type="password" id="pw" placeholder="Enter admin password" />
+    <button class="btn primary" id="loginBtn" style="width:100%">Sign in</button>
+    <div id="gateMsg" class="msg err"></div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dash" class="hidden">
+    <h1>Poll Admin</h1>
+    <p class="sub">Set the question &amp; answers, watch live results, and export a report.
+      <a class="link" href="index.html" target="_blank">Open public poll ↗</a></p>
+
+    <!-- Editor -->
+    <div class="card">
+      <h2 id="editorTitle">Current poll</h2>
+      <label>Page title (shown above every question)</label>
+      <div style="display:flex; gap:8px; align-items:flex-start">
+        <input type="text" id="pageTitle" placeholder="Climbing question of the day:" />
+        <button class="btn ghost" id="saveTitle" style="white-space:nowrap">Save title</button>
+      </div>
+      <div id="titleMsg" class="msg"></div>
+      <label>Question</label>
+      <input type="text" id="q" placeholder="Type your question…" />
+      <label>Answer options</label>
+      <div id="opts"></div>
+      <button class="add-link" id="addOpt">+ Add option</button>
+      <div class="btn-row">
+        <button class="btn green" id="saveEdits">Save changes (keep votes)</button>
+        <button class="btn primary" id="publishNew">Publish as new poll</button>
+      </div>
+      <div id="editMsg" class="msg"></div>
+      <p class="sub" style="margin:14px 0 0">
+        <strong>Save changes</strong> edits the live poll and keeps existing votes.
+        <strong>Publish as new poll</strong> archives the current one into Past results and starts fresh at 0.
+      </p>
+    </div>
+
+    <!-- Live results -->
+    <div class="card">
+      <h2>Live results <span class="pill" id="livePill">—</span></h2>
+      <div id="liveResults"><p class="sub">No active poll.</p></div>
+      <div class="btn-row">
+        <button class="btn amber" id="resetVotes">Reset votes</button>
+        <button class="btn red" id="closePoll">Close poll</button>
+        <button class="btn ghost" id="refresh">Refresh</button>
+      </div>
+      <div id="liveMsg" class="msg"></div>
+    </div>
+
+    <!-- Export -->
+    <div class="card">
+      <h2>Export</h2>
+      <p class="sub" style="margin-top:0">Download a clean PDF of the current poll and all past results for sharing with managers.</p>
+      <button class="btn primary" id="exportPdf">Download PDF report</button>
+    </div>
+
+    <!-- Past -->
+    <div class="card">
+      <h2>Past results</h2>
+      <div id="pastResults"><p class="sub">None yet.</p></div>
+    </div>
+
+    <!-- Settings -->
+    <div class="card">
+      <h2>Change password</h2>
+      <label>New password</label>
+      <input type="password" id="newpw" placeholder="At least 4 characters" />
+      <button class="btn ghost" id="savePw">Update password</button>
+      <button class="btn ghost" id="logout" style="float:right">Sign out</button>
+      <div id="pwMsg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="config.js"></script>
+<script>
+  const { SUPABASE_URL, SUPABASE_KEY } = window.POLL_CONFIG;
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const COLORS = ["#6366f1","#14b8a6","#f59e0b","#ec4899","#8b5cf6"];
+  let PW = sessionStorage.getItem("poll_admin_pw") || null;
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  const pct = (c, t) => (!t ? 0 : Math.round((c / t) * 100));
+
+  async function rpc(fn, args) {
+    const { data, error } = await sb.rpc(fn, args || {});
+    if (error) throw error;
+    return data;
+  }
+  function flash(el, text, ok) {
+    el.textContent = text; el.className = "msg " + (ok ? "ok" : "err");
+    if (text) setTimeout(() => { if (el.textContent === text) el.textContent = ""; }, 4000);
+  }
+
+  // ---------- Login ----------
+  async function doLogin(pw) {
+    const ok = await rpc("admin_login", { p_password: pw });
+    if (!ok) throw new Error("Wrong password");
+    PW = pw;
+    sessionStorage.setItem("poll_admin_pw", pw);
+    $("gate").classList.add("hidden");
+    $("dash").classList.remove("hidden");
+    await refreshAll();
+  }
+  $("loginBtn").addEventListener("click", async () => {
+    try { await doLogin($("pw").value); }
+    catch (e) { flash($("gateMsg"), e.message || "Login failed", false); }
+  });
+  $("pw").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+
+  // ---------- Option editor ----------
+  function optRow(value, i) {
+    const div = document.createElement("div");
+    div.className = "opt-row";
+    div.innerHTML = `
+      <span class="swatch" style="background:${COLORS[i % COLORS.length]}"></span>
+      <input type="text" value="${esc(value || "")}" placeholder="Option ${i + 1}" />
+      <button class="icon-btn" title="Remove">✕</button>`;
+    div.querySelector(".icon-btn").addEventListener("click", () => {
+      div.remove(); recolor();
+    });
+    return div;
+  }
+  function recolor() {
+    [...$("opts").children].forEach((row, i) => {
+      row.querySelector(".swatch").style.background = COLORS[i % COLORS.length];
+      row.querySelector("input").placeholder = "Option " + (i + 1);
+    });
+  }
+  function setOptions(list) {
+    $("opts").innerHTML = "";
+    (list && list.length ? list : ["", "", ""]).forEach((v, i) =>
+      $("opts").appendChild(optRow(v, i)));
+  }
+  function readOptions() {
+    return [...$("opts").querySelectorAll("input")]
+      .map(i => i.value.trim()).filter(Boolean);
+  }
+  $("addOpt").addEventListener("click", () => {
+    $("opts").appendChild(optRow("", $("opts").children.length)); recolor();
+  });
+
+  // ---------- Results rendering ----------
+  function resultsTable(options, results) {
+    const total = (results && results.total) || 0;
+    const rows = options.map((o, i) => {
+      const c = (results && results.counts && results.counts[i]) || 0;
+      const p = pct(c, total);
+      return `<tr>
+        <td><span class="swatch" style="display:inline-block;background:${COLORS[i % COLORS.length]}"></span> ${esc(o)}</td>
+        <td class="barcell"><div class="minibar"><div class="minifill" style="width:${p}%;background:${COLORS[i % COLORS.length]}"></div></div></td>
+        <td class="num">${c}</td>
+        <td class="num"><strong>${p}%</strong></td>
+      </tr>`;
+    }).join("");
+    return `<table>
+      <thead><tr><th>Answer</th><th></th><th class="num">Votes</th><th class="num">Share</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <div class="total">${total} total vote${total === 1 ? "" : "s"}</div>`;
+  }
+
+  let activePoll = null;
+
+  async function refreshAll() {
+    try { $("pageTitle").value = await rpc("get_poll_title") || ""; } catch (e) {}
+    activePoll = await rpc("get_active_poll");
+    if (activePoll) {
+      $("q").value = activePoll.question;
+      setOptions(activePoll.options);
+      $("editorTitle").textContent = "Current poll";
+      const results = await rpc("get_active_results");
+      $("livePill").textContent = "live";
+      $("liveResults").innerHTML = resultsTable(activePoll.options, results);
+    } else {
+      $("editorTitle").textContent = "Create a poll";
+      $("livePill").textContent = "none";
+      $("liveResults").innerHTML = `<p class="sub">No active poll. Fill in the question above and Publish.</p>`;
+    }
+    await renderPast();
+  }
+
+  async function refreshLiveOnly() {
+    if (!activePoll) return;
+    try {
+      const results = await rpc("get_active_results");
+      $("liveResults").innerHTML = resultsTable(activePoll.options, results);
+    } catch (e) {}
+  }
+
+  async function renderPast() {
+    const past = await rpc("get_past_polls");
+    if (!past || !past.length) { $("pastResults").innerHTML = `<p class="sub">None yet.</p>`; return; }
+    $("pastResults").innerHTML = past.map(p => {
+      const d = p.closed_at ? new Date(p.closed_at).toLocaleString() : "";
+      return `<div style="margin-bottom:22px">
+        <div style="font-weight:700;margin-bottom:2px">${esc(p.question)}</div>
+        <div class="sub" style="margin:0 0 8px">Closed ${esc(d)}</div>
+        ${resultsTable(p.options, p.results)}
+      </div>`;
+    }).join("");
+  }
+
+  // ---------- Actions ----------
+  $("saveTitle").addEventListener("click", async () => {
+    try {
+      await rpc("admin_set_title", { p_password: PW, p_title: $("pageTitle").value.trim() });
+      flash($("titleMsg"), "Title saved.", true);
+    } catch (e) { flash($("titleMsg"), e.message, false); }
+  });
+
+  $("saveEdits").addEventListener("click", async () => {
+    const q = $("q").value.trim(), opts = readOptions();
+    if (!q) return flash($("editMsg"), "Question is required", false);
+    if (opts.length < 2) return flash($("editMsg"), "Add at least 2 options", false);
+    try {
+      if (activePoll) {
+        await rpc("admin_update_active", { p_password: PW, p_question: q, p_options: opts });
+        flash($("editMsg"), "Saved. Votes kept.", true);
+      } else {
+        await rpc("admin_set_poll", { p_password: PW, p_question: q, p_options: opts });
+        flash($("editMsg"), "Poll created.", true);
+      }
+      await refreshAll();
+    } catch (e) { flash($("editMsg"), e.message, false); }
+  });
+
+  $("publishNew").addEventListener("click", async () => {
+    const q = $("q").value.trim(), opts = readOptions();
+    if (!q) return flash($("editMsg"), "Question is required", false);
+    if (opts.length < 2) return flash($("editMsg"), "Add at least 2 options", false);
+    if (activePoll && !confirm("Archive the current poll and start a new one at 0 votes?")) return;
+    try {
+      await rpc("admin_set_poll", { p_password: PW, p_question: q, p_options: opts });
+      flash($("editMsg"), "New poll published.", true);
+      await refreshAll();
+    } catch (e) { flash($("editMsg"), e.message, false); }
+  });
+
+  $("resetVotes").addEventListener("click", async () => {
+    if (!confirm("Delete all votes for the current poll?")) return;
+    try { await rpc("admin_reset_votes", { p_password: PW }); flash($("liveMsg"), "Votes reset.", true); await refreshLiveOnly(); }
+    catch (e) { flash($("liveMsg"), e.message, false); }
+  });
+
+  $("closePoll").addEventListener("click", async () => {
+    if (!confirm("Close the current poll and move it to Past results?")) return;
+    try { await rpc("admin_close_poll", { p_password: PW }); flash($("liveMsg"), "Poll closed.", true); await refreshAll(); }
+    catch (e) { flash($("liveMsg"), e.message, false); }
+  });
+
+  $("refresh").addEventListener("click", refreshLiveOnly);
+
+  $("savePw").addEventListener("click", async () => {
+    const np = $("newpw").value;
+    try {
+      await rpc("admin_set_password", { p_password: PW, p_new: np });
+      PW = np; sessionStorage.setItem("poll_admin_pw", np);
+      $("newpw").value = ""; flash($("pwMsg"), "Password updated.", true);
+    } catch (e) { flash($("pwMsg"), e.message, false); }
+  });
+
+  $("logout").addEventListener("click", () => {
+    sessionStorage.removeItem("poll_admin_pw"); PW = null;
+    $("dash").classList.add("hidden"); $("gate").classList.remove("hidden"); $("pw").value = "";
+  });
+
+  // ---------- PDF export ----------
+  $("exportPdf").addEventListener("click", async () => {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const M = 48;
+      let y = 56;
+
+      doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+      doc.text("Poll Results Report", M, y); y += 22;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(120);
+      doc.text("Generated " + new Date().toLocaleString(), M, y);
+      doc.setTextColor(20); y += 26;
+
+      function section(title) {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+        doc.text(title, M, y); y += 8;
+      }
+      function pollBlock(poll, results, subtitle) {
+        if (y > 720) { doc.addPage(); y = 56; }
+        doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+        const qlines = doc.splitTextToSize(poll.question, 515);
+        doc.text(qlines, M, y); y += qlines.length * 16 + 2;
+        if (subtitle) {
+          doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(120);
+          doc.text(subtitle, M, y); doc.setTextColor(20); y += 6;
+        }
+        const total = (results && results.total) || 0;
+        const body = poll.options.map((o, i) => {
+          const c = (results && results.counts && results.counts[i]) || 0;
+          return [o, String(c), pct(c, total) + "%"];
+        });
+        doc.autoTable({
+          startY: y + 6,
+          head: [["Answer", "Votes", "Share"]],
+          body,
+          foot: [["Total", String(total), "100%"]],
+          margin: { left: M, right: M },
+          styles: { fontSize: 11, cellPadding: 6 },
+          headStyles: { fillColor: [99, 102, 241] },
+          footStyles: { fillColor: [241, 245, 249], textColor: 20, fontStyle: "bold" },
+          columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
+        });
+        y = doc.lastAutoTable.finalY + 24;
+      }
+
+      const active = await rpc("get_active_poll");
+      if (active) {
+        const results = await rpc("get_active_results");
+        section("Current poll"); y += 8;
+        pollBlock(active, results, "Status: live");
+      }
+
+      const past = await rpc("get_past_polls");
+      if (past && past.length) {
+        if (y > 700) { doc.addPage(); y = 56; }
+        section("Past polls"); y += 8;
+        past.forEach(p => {
+          const d = p.closed_at ? new Date(p.closed_at).toLocaleString() : "";
+          pollBlock(p, p.results, "Closed " + d);
+        });
+      }
+
+      doc.save("poll-results-" + new Date().toISOString().slice(0, 10) + ".pdf");
+    } catch (e) {
+      flash($("liveMsg"), "PDF export failed: " + e.message, false);
+    }
+  });
+
+  // ---------- Boot ----------
+  if (PW) {
+    doLogin(PW).catch(() => {
+      sessionStorage.removeItem("poll_admin_pw"); PW = null;
+      $("gate").classList.remove("hidden");
+    });
+  }
+  setInterval(() => { if (PW && !$("dash").classList.contains("hidden")) refreshLiveOnly(); }, 5000);
+</script>
+</body>
+</html>

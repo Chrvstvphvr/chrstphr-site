@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Quick Poll</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --bar-bg: #334155;
+    --c0: #6366f1;
+    --c1: #14b8a6;
+    --c2: #f59e0b;
+    --c3: #ec4899;
+    --c4: #8b5cf6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 800px at 50% -10%, #1e293b 0%, var(--bg) 60%);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100%;
+    padding: 4vh 20px 60px;
+  }
+  .wrap { width: 100%; max-width: 760px; }
+  .title {
+    text-align: center;
+    color: var(--accent);
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    font-weight: 700;
+    letter-spacing: .01em;
+    margin: 0 0 1vh;
+  }
+  .question {
+    font-size: clamp(2rem, 5.5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-align: center;
+    margin: 2vh 0 4vh;
+  }
+  .options { display: flex; flex-direction: column; gap: 16px; }
+  .opt {
+    appearance: none;
+    border: 2px solid transparent;
+    background: var(--card);
+    color: var(--text);
+    font-size: clamp(1.1rem, 2.6vw, 1.6rem);
+    font-weight: 600;
+    padding: 22px 26px;
+    border-radius: 18px;
+    cursor: pointer;
+    text-align: left;
+    transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  .opt:hover { border-color: var(--accent); }
+  .opt:active { transform: scale(.98); }
+  .opt[data-i="0"]:hover { border-color: var(--c0); }
+  .opt[data-i="1"]:hover { border-color: var(--c1); }
+  .opt[data-i="2"]:hover { border-color: var(--c2); }
+
+  /* Results */
+  .result-row { margin-bottom: 18px; }
+  .result-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: clamp(1rem, 2.4vw, 1.35rem); font-weight: 600; margin-bottom: 8px;
+  }
+  .pct { font-variant-numeric: tabular-nums; font-weight: 800; }
+  .bar { height: 16px; background: var(--bar-bg); border-radius: 999px; overflow: hidden; }
+  .fill { height: 100%; width: 0; border-radius: 999px; transition: width .6s cubic-bezier(.22,1,.36,1); }
+  .fill0 { background: var(--c0);} .fill1 { background: var(--c1);} .fill2 { background: var(--c2);}
+  .fill3 { background: var(--c3);} .fill4 { background: var(--c4);}
+
+  .meta { text-align: center; color: var(--muted); margin-top: 6px; font-size: .95rem; }
+  .thanks { text-align:center; font-size: clamp(1.2rem,3vw,1.7rem); font-weight:700; margin: 0 0 2vh; }
+  .nextbtn {
+    display:block; margin: 28px auto 0; background: var(--accent); color:#fff; border:none;
+    font-size: 1.1rem; font-weight:700; padding: 16px 34px; border-radius: 999px; cursor:pointer;
+  }
+  .nextbtn:active { transform: scale(.97); }
+
+  .past { margin-top: 8vh; }
+  .past summary {
+    cursor: pointer; color: var(--muted); font-weight: 600; font-size: 1rem;
+    list-style: none; text-align:center; padding: 12px;
+  }
+  .past summary::-webkit-details-marker { display:none; }
+  .past-card { background: var(--card); border-radius: 16px; padding: 20px 22px; margin: 16px 0; }
+  .past-q { font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; }
+  .past-date { color: var(--muted); font-size: .85rem; margin-bottom: 14px; }
+  .empty { text-align:center; color: var(--muted); padding: 40px 0; }
+  .toast { color: #fca5a5; text-align:center; min-height: 1.2em; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="title" class="title"></div>
+    <div id="app"><div class="empty">Loading…</div></div>
+    <div id="toast" class="toast"></div>
+
+    <details class="past">
+      <summary>▾ Past results</summary>
+      <div id="past"></div>
+    </details>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const { SUPABASE_URL, SUPABASE_KEY } = window.POLL_CONFIG;
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const COLORS = ["#6366f1","#14b8a6","#f59e0b","#ec4899","#8b5cf6"];
+
+    const appEl = document.getElementById("app");
+    const titleEl = document.getElementById("title");
+    const pastEl = document.getElementById("past");
+    const toastEl = document.getElementById("toast");
+
+    let currentPollId = null;
+    let mode = "vote"; // "vote" | "results"
+    let lastResults = null;
+    let resetTimer = null;
+
+    function pct(count, total) {
+      if (!total) return 0;
+      return Math.round((count / total) * 100);
+    }
+
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+    }
+
+    async function rpc(fn, args) {
+      const { data, error } = await sb.rpc(fn, args || {});
+      if (error) throw error;
+      return data;
+    }
+
+    function renderVote(poll) {
+      const opts = poll.options.map((o, i) =>
+        `<button class="opt" data-i="${i}">${esc(o)}</button>`).join("");
+      appEl.innerHTML = `
+        <h1 class="question">${esc(poll.question)}</h1>
+        <div class="options">${opts}</div>`;
+      appEl.querySelectorAll(".opt").forEach(b => {
+        b.addEventListener("click", () => vote(parseInt(b.dataset.i, 10)));
+      });
+    }
+
+    function renderResults(poll, results) {
+      const total = results.total || 0;
+      const rows = poll.options.map((o, i) => {
+        const c = (results.counts && results.counts[i]) || 0;
+        const p = pct(c, total);
+        return `
+          <div class="result-row">
+            <div class="result-top"><span>${esc(o)}</span><span class="pct">${p}%</span></div>
+            <div class="bar"><div class="fill fill${i}" style="width:${p}%"></div></div>
+          </div>`;
+      }).join("");
+      appEl.innerHTML = `
+        <h1 class="question">${esc(poll.question)}</h1>
+        <p class="thanks">Thanks for voting!</p>
+        ${rows}
+        <p class="meta">${total} vote${total === 1 ? "" : "s"} so far</p>
+        <button class="nextbtn" id="next">Next person ›</button>`;
+      document.getElementById("next").addEventListener("click", backToVote);
+    }
+
+    function backToVote() {
+      clearTimeout(resetTimer);
+      mode = "vote";
+      toastEl.textContent = "";
+      load(true);
+    }
+
+    async function vote(i) {
+      try {
+        const results = await rpc("cast_vote", { p_option_index: i });
+        lastResults = results;
+        mode = "results";
+        const poll = await rpc("get_active_poll");
+        renderResults(poll, results);
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(backToVote, 8000); // auto-reset for the next voter
+      } catch (e) {
+        toastEl.textContent = e.message || "Could not record vote.";
+      }
+    }
+
+    async function load(force) {
+      try {
+        const poll = await rpc("get_active_poll");
+        if (!poll) {
+          appEl.innerHTML = `<div class="empty">No active poll right now.</div>`;
+          currentPollId = null;
+          return;
+        }
+        // If the admin changed the poll, always jump back to voting view.
+        if (poll.id !== currentPollId) {
+          currentPollId = poll.id;
+          mode = "vote";
+        }
+        if (mode === "vote" || force) {
+          mode = "vote";
+          renderVote(poll);
+        }
+      } catch (e) {
+        appEl.innerHTML = `<div class="empty">Connection problem. Retrying…</div>`;
+      }
+    }
+
+    async function loadTitle() {
+      try {
+        const t = await rpc("get_poll_title");
+        titleEl.textContent = t || "";
+      } catch (e) {}
+    }
+
+    async function loadPast() {
+      try {
+        const past = await rpc("get_past_polls");
+        if (!past || !past.length) {
+          pastEl.innerHTML = `<div class="empty">No past polls yet.</div>`;
+          return;
+        }
+        pastEl.innerHTML = past.map(p => {
+          const r = p.results || { counts: [], total: 0 };
+          const total = r.total || 0;
+          const rows = p.options.map((o, i) => {
+            const c = (r.counts && r.counts[i]) || 0;
+            const pp = pct(c, total);
+            return `
+              <div class="result-row">
+                <div class="result-top"><span>${esc(o)}</span><span class="pct">${pp}%</span></div>
+                <div class="bar"><div class="fill fill${i}" style="width:${pp}%"></div></div>
+              </div>`;
+          }).join("");
+          const d = p.closed_at ? new Date(p.closed_at).toLocaleString() : "";
+          return `<div class="past-card">
+            <div class="past-q">${esc(p.question)}</div>
+            <div class="past-date">Closed ${esc(d)} · ${total} votes</div>
+            ${rows}
+          </div>`;
+        }).join("");
+      } catch (e) {
+        pastEl.innerHTML = `<div class="empty">Could not load past results.</div>`;
+      }
+    }
+
+    load(true);
+    loadTitle();
+    loadPast();
+    // Poll for changes so the kiosk updates if the admin swaps the question.
+    setInterval(() => { if (mode === "vote") load(false); }, 5000);
+    setInterval(loadTitle, 15000);
+    setInterval(loadPast, 15000);
+  </script>
+</body>
+</html>
