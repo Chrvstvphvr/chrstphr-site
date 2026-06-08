@@ -12,6 +12,8 @@
     --muted: #94a3b8;
     --accent: #6366f1;
     --bar-bg: #334155;
+    /* Title is always the biggest text; question is derived at 75% of it. */
+    --title-size: clamp(2.6rem, 9vmin, 7rem);
     --c0: #6366f1;
     --c1: #14b8a6;
     --c2: #f59e0b;
@@ -20,6 +22,11 @@
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
+  /* Invisible tap target (top-left) to reach the kiosk admin page. */
+  .kiosk-tap {
+    position: fixed; top: 0; left: 0; width: 10vw; height: 10vw;
+    z-index: 50; opacity: 0; -webkit-tap-highlight-color: transparent;
+  }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: radial-gradient(1200px 800px at 50% -10%, #1e293b 0%, var(--bg) 60%);
@@ -49,13 +56,15 @@
   .title {
     text-align: center;
     color: var(--accent);
-    font-size: clamp(1.2rem, 3.4vmin, 2.2rem);
-    font-weight: 700;
+    font-size: var(--title-size);
+    font-weight: 800;
+    line-height: 1.04;
     letter-spacing: .01em;
-    margin: 0 0 clamp(8px, 1.6vh, 20px);
+    text-transform: uppercase;
+    margin: 0 0 clamp(14px, 2.6vh, 32px);
   }
   .question {
-    font-size: clamp(2.4rem, 7vmin, 5rem);
+    font-size: calc(var(--title-size) * 0.75);
     font-weight: 800;
     line-height: 1.08;
     letter-spacing: -0.02em;
@@ -103,11 +112,16 @@
   }
   .nextbtn:active { transform: scale(.97); }
 
+  .qr-block { display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:clamp(18px,3vh,32px); }
+  .qr-block img { width:clamp(120px,18vmin,180px); height:auto; border-radius:12px; background:#fff; padding:10px; display:block; }
+  .qr-cap { color:var(--muted); font-size:clamp(.95rem,2.2vmin,1.3rem); font-weight:600; }
+
   .empty { text-align:center; color: var(--muted); padding: 40px 0; }
   .toast { color: #fca5a5; text-align:center; min-height: 1.2em; margin-top: 10px; }
 </style>
 </head>
 <body>
+  <a href="kiosk-admin.html" class="kiosk-tap" aria-hidden="true" tabindex="-1"></a>
   <div class="wrap">
     <div class="stage">
       <div id="title" class="title"></div>
@@ -117,11 +131,14 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
   <script src="config.js"></script>
   <script>
     const { SUPABASE_URL, SUPABASE_KEY } = window.POLL_CONFIG;
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const COLORS = ["#6366f1","#14b8a6","#f59e0b","#ec4899","#8b5cf6"];
+    const RESULTS_URL = (window.POLL_CONFIG.RESULTS_URL || "").trim()
+      || new URL("results.html", window.location.href).href;
 
     const appEl = document.getElementById("app");
     const titleEl = document.getElementById("title");
@@ -174,8 +191,26 @@
         <p class="thanks">Thanks for voting!</p>
         ${rows}
         <p class="meta">${total} vote${total === 1 ? "" : "s"} so far</p>
+        <div class="qr-block" id="qrBlock">
+          <span class="qr-cap">Scan to see full results</span>
+        </div>
         <button class="nextbtn" id="next">Next person ›</button>`;
       document.getElementById("next").addEventListener("click", backToVote);
+      renderQR();
+    }
+
+    function renderQR() {
+      const block = document.getElementById("qrBlock");
+      if (!block || typeof qrcode === "undefined") return;
+      try {
+        const qr = qrcode(0, "M");
+        qr.addData(RESULTS_URL);
+        qr.make();
+        const img = document.createElement("img");
+        img.src = qr.createDataURL(8);
+        img.alt = "QR code to results page";
+        block.insertBefore(img, block.firstChild);
+      } catch (e) {}
     }
 
     function backToVote() {
@@ -187,7 +222,10 @@
 
     async function vote(i) {
       try {
-        const results = await rpc("cast_vote", { p_option_index: i });
+        const results = await rpc("cast_vote", {
+          p_option_index: i,
+          p_location_id: localStorage.getItem("kioskLocationId") || null,
+        });
         lastResults = results;
         mode = "results";
         const poll = await rpc("get_active_poll");
@@ -231,8 +269,8 @@
     load(true);
     loadTitle();
     // Poll for changes so the kiosk updates if the admin swaps the question.
-    setInterval(() => { if (mode === "vote") load(false); }, 5000);
-    setInterval(loadTitle, 15000);
+    setInterval(() => { if (mode === "vote") load(false); }, 3000);
+    setInterval(loadTitle, 10000);
   </script>
 </body>
 </html>

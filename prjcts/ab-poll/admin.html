@@ -129,6 +129,30 @@
       <div id="pastResults"><p class="sub">None yet.</p></div>
     </div>
 
+    <!-- Locations -->
+    <div class="card">
+      <h2>Locations</h2>
+      <p class="sub" style="margin-top:0">Each tablet picks one of these on its kiosk settings page. Votes are tagged with the location.</p>
+      <div id="locList"><p class="sub">Loading…</p></div>
+      <div style="display:flex; gap:8px; align-items:flex-start; margin-top:10px">
+        <input type="text" id="newLoc" placeholder="New location name" />
+        <button class="btn primary" id="addLoc" style="white-space:nowrap">Add</button>
+      </div>
+      <div id="locMsg" class="msg"></div>
+    </div>
+
+    <!-- Kiosk passcode -->
+    <div class="card">
+      <h2>Kiosk passcode</h2>
+      <p class="sub" style="margin-top:0">The 4-digit code staff enter to open a tablet's kiosk settings. Shared across all tablets.</p>
+      <label>Passcode (4 digits)</label>
+      <div style="display:flex; gap:8px; align-items:flex-start">
+        <input type="text" id="kioskPass" inputmode="numeric" maxlength="4" placeholder="0000" />
+        <button class="btn ghost" id="saveKiosk" style="white-space:nowrap">Save passcode</button>
+      </div>
+      <div id="kioskMsg" class="msg"></div>
+    </div>
+
     <!-- Settings -->
     <div class="card">
       <h2>Change password</h2>
@@ -250,7 +274,70 @@
       $("liveResults").innerHTML = `<p class="sub">No active poll. Fill in the question above and Publish.</p>`;
     }
     await renderPast();
+    await renderLocations();
+    await loadKioskPass();
   }
+
+  // ---------- Locations ----------
+  async function renderLocations() {
+    try {
+      const locs = await rpc("get_locations");
+      if (!locs || !locs.length) {
+        $("locList").innerHTML = `<p class="sub">No locations yet. Add one below.</p>`;
+        return;
+      }
+      $("locList").innerHTML = locs.map(l => `
+        <div class="opt-row" data-id="${esc(l.id)}">
+          <input type="text" class="loc-name" value="${esc(l.name)}" />
+          <button class="icon-btn loc-save" title="Rename">✓</button>
+          <button class="icon-btn loc-del" title="Delete">✕</button>
+        </div>`).join("");
+      $("locList").querySelectorAll(".opt-row").forEach(row => {
+        const id = row.dataset.id;
+        row.querySelector(".loc-save").addEventListener("click", async () => {
+          const name = row.querySelector(".loc-name").value.trim();
+          if (!name) return flash($("locMsg"), "Name can't be empty", false);
+          try { await rpc("admin_rename_location", { p_password: PW, p_id: id, p_name: name });
+            flash($("locMsg"), "Renamed.", true); }
+          catch (e) { flash($("locMsg"), e.message, false); }
+        });
+        row.querySelector(".loc-del").addEventListener("click", async () => {
+          if (!confirm("Delete this location? Existing votes keep their data but lose the tag.")) return;
+          try { await rpc("admin_delete_location", { p_password: PW, p_id: id });
+            flash($("locMsg"), "Deleted.", true); await renderLocations(); }
+          catch (e) { flash($("locMsg"), e.message, false); }
+        });
+      });
+    } catch (e) {
+      $("locList").innerHTML = `<p class="sub">Could not load locations.</p>`;
+    }
+  }
+
+  $("addLoc").addEventListener("click", async () => {
+    const name = $("newLoc").value.trim();
+    if (!name) return flash($("locMsg"), "Enter a location name", false);
+    try {
+      await rpc("admin_add_location", { p_password: PW, p_name: name });
+      $("newLoc").value = "";
+      flash($("locMsg"), "Location added.", true);
+      await renderLocations();
+    } catch (e) { flash($("locMsg"), e.message, false); }
+  });
+  $("newLoc").addEventListener("keydown", e => { if (e.key === "Enter") $("addLoc").click(); });
+
+  // ---------- Kiosk passcode ----------
+  async function loadKioskPass() {
+    try { $("kioskPass").value = await rpc("admin_get_kiosk_passcode", { p_password: PW }) || ""; }
+    catch (e) {}
+  }
+  $("saveKiosk").addEventListener("click", async () => {
+    const code = $("kioskPass").value.trim();
+    if (!/^[0-9]{4}$/.test(code)) return flash($("kioskMsg"), "Passcode must be exactly 4 digits", false);
+    try {
+      await rpc("admin_set_kiosk_passcode", { p_password: PW, p_passcode: code });
+      flash($("kioskMsg"), "Passcode saved.", true);
+    } catch (e) { flash($("kioskMsg"), e.message, false); }
+  });
 
   async function refreshLiveOnly() {
     if (!activePoll) return;
@@ -413,7 +500,7 @@
       $("gate").classList.remove("hidden");
     });
   }
-  setInterval(() => { if (PW && !$("dash").classList.contains("hidden")) refreshLiveOnly(); }, 5000);
+  setInterval(() => { if (PW && !$("dash").classList.contains("hidden")) refreshLiveOnly(); }, 3000);
 </script>
 </body>
 </html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Kiosk Settings</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --muted:#94a3b8;
+    --accent:#6366f1; --bar-bg:#334155; --danger:#fca5a5;
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 800px at 50% -10%, #1e293b 0%, var(--bg) 60%);
+    color:var(--text); min-height:100dvh;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:clamp(20px,5vh,60px) clamp(16px,4vw,40px);
+  }
+  .panel { width:100%; max-width:520px; }
+  h1 { font-size:1.6rem; font-weight:800; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 24px; font-size:.95rem; }
+  .card {
+    background:var(--card); border-radius:16px; padding:22px 20px; margin-bottom:18px;
+  }
+  label { display:block; font-weight:600; margin-bottom:8px; }
+  input, select {
+    width:100%; font-size:1.1rem; padding:14px 16px; border-radius:12px;
+    border:2px solid var(--bar-bg); background:var(--bg); color:var(--text); outline:none;
+  }
+  input:focus, select:focus { border-color:var(--accent); }
+  input.code { letter-spacing:.5em; text-align:center; font-size:1.6rem; font-weight:700; }
+  button {
+    appearance:none; border:none; cursor:pointer; font-weight:700;
+    background:var(--accent); color:#fff; font-size:1.05rem;
+    padding:14px 20px; border-radius:12px; width:100%; margin-top:14px;
+  }
+  button:active { transform:scale(.98); }
+  button.secondary { background:var(--bar-bg); color:var(--text); }
+  .toast { color:var(--danger); min-height:1.3em; margin-top:12px; text-align:center; }
+  .ok { color:#86efac; }
+  .current {
+    background:var(--bg); border-radius:12px; padding:14px 16px; margin-bottom:16px;
+    color:var(--muted); font-size:.95rem;
+  }
+  .current b { color:var(--text); }
+  .note { color:var(--muted); font-size:.85rem; margin-top:10px; line-height:1.4; }
+  .links { text-align:center; margin-top:8px; }
+  .links a { color:var(--muted); text-decoration:none; font-size:.9rem; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <h1>Kiosk settings</h1>
+    <p class="sub">Set which location this tablet is recording votes for.</p>
+
+    <!-- Passcode gate -->
+    <div class="card" id="gate">
+      <label for="code">Enter 4-digit passcode</label>
+      <input id="code" class="code" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="••••" />
+      <button id="unlock">Unlock</button>
+      <div class="toast" id="gateToast"></div>
+    </div>
+
+    <!-- Settings (after unlock) -->
+    <div class="card hidden" id="settings">
+      <div class="current" id="current">No location selected yet.</div>
+      <label for="loc">This tablet's location</label>
+      <select id="loc"><option value="">Loading…</option></select>
+      <button id="save">Save location</button>
+      <div class="toast" id="saveToast"></div>
+      <p class="note">Locations are managed from the main admin page. If a location
+        is missing, add it there first.</p>
+      <hr style="border:none; border-top:1px solid var(--bar-bg); margin:22px 0" />
+      <button class="secondary" id="hardRefresh">Hard refresh poll page</button>
+      <p class="note">Reloads the poll with the latest design, bypassing the browser
+        cache. Use this after the app has been updated.</p>
+    </div>
+
+    <div class="links"><a href="index.html">← Back to poll</a></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const { SUPABASE_URL, SUPABASE_KEY } = window.POLL_CONFIG;
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const gate = document.getElementById("gate");
+    const settings = document.getElementById("settings");
+    const codeEl = document.getElementById("code");
+    const gateToast = document.getElementById("gateToast");
+    const locEl = document.getElementById("loc");
+    const saveToast = document.getElementById("saveToast");
+    const currentEl = document.getElementById("current");
+
+    const esc = s => String(s).replace(/[&<>"]/g,
+      c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+    async function rpc(fn, args) {
+      const { data, error } = await sb.rpc(fn, args || {});
+      if (error) throw error;
+      return data;
+    }
+
+    function showCurrent() {
+      const name = localStorage.getItem("kioskLocationName");
+      currentEl.innerHTML = name
+        ? `Currently recording votes for <b>${esc(name)}</b>.`
+        : "No location selected yet.";
+    }
+
+    async function loadLocations() {
+      try {
+        const locs = await rpc("get_locations");
+        const saved = localStorage.getItem("kioskLocationId") || "";
+        const opts = ['<option value="">— Select a location —</option>']
+          .concat((locs || []).map(l =>
+            `<option value="${esc(l.id)}"${l.id === saved ? " selected" : ""}>${esc(l.name)}</option>`));
+        locEl.innerHTML = opts.join("");
+        if (!locs || !locs.length) {
+          locEl.innerHTML = '<option value="">No locations yet — add one in main admin</option>';
+        }
+      } catch (e) {
+        locEl.innerHTML = '<option value="">Could not load locations</option>';
+      }
+    }
+
+    function unlock() {
+      gate.classList.add("hidden");
+      settings.classList.remove("hidden");
+      showCurrent();
+      loadLocations();
+    }
+
+    document.getElementById("unlock").addEventListener("click", async () => {
+      const code = codeEl.value.trim();
+      gateToast.textContent = "";
+      if (!/^[0-9]{4}$/.test(code)) {
+        gateToast.textContent = "Enter the 4-digit passcode.";
+        return;
+      }
+      try {
+        const ok = await rpc("kiosk_login", { p_passcode: code });
+        if (ok) { unlock(); }
+        else { gateToast.textContent = "Incorrect passcode."; }
+      } catch (e) {
+        gateToast.textContent = "Could not verify. Check connection.";
+      }
+    });
+
+    codeEl.addEventListener("keydown", e => {
+      if (e.key === "Enter") document.getElementById("unlock").click();
+    });
+
+    document.getElementById("hardRefresh").addEventListener("click", () => {
+      // Cache-busting query string forces a fresh fetch of the HTML (and its inline CSS).
+      window.location.replace("index.html?v=" + Date.now());
+    });
+
+    document.getElementById("save").addEventListener("click", () => {
+      saveToast.textContent = "";
+      const id = locEl.value;
+      const name = locEl.options[locEl.selectedIndex]?.text || "";
+      if (!id) { saveToast.textContent = "Pick a location first."; return; }
+      localStorage.setItem("kioskLocationId", id);
+      localStorage.setItem("kioskLocationName", name);
+      showCurrent();
+      saveToast.className = "toast ok";
+      saveToast.textContent = "Saved. This tablet is set.";
+    });
+  </script>
+</body>
+</html>
