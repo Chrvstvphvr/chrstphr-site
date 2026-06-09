@@ -336,11 +336,36 @@
       } catch (e) {}
     }
 
+    function deviceId() {
+      let id = localStorage.getItem("kioskDeviceId");
+      if (!id) {
+        id = (crypto.randomUUID && crypto.randomUUID()) ||
+          "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+          });
+        localStorage.setItem("kioskDeviceId", id);
+      }
+      return id;
+    }
+
+    async function ping() {
+      try {
+        await rpc("device_ping", {
+          p_device_id: deviceId(),
+          p_location_id: localStorage.getItem("kioskLocationId") || null,
+          p_name: localStorage.getItem("kioskDeviceName") || null,
+        });
+      } catch (e) {}
+    }
+
     load(true);
     loadTitle();
+    ping();
     // Poll for changes so the kiosk updates if the admin swaps the question.
     setInterval(() => { if (mode === "vote") load(false); }, 3000);
     setInterval(loadTitle, 10000);
+    setInterval(ping, 60000); // heartbeat so admin can see this tablet is online
   </script>
 </body>
 </html>
