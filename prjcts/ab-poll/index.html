@@ -42,7 +42,7 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    padding: 0 clamp(16px, 3vw, 40px) clamp(24px, 5vh, 60px);
+    padding: 0 clamp(16px, 3vw, 40px) clamp(80px, 11vh, 110px);
   }
   /* The voting/results area fills the viewport and is vertically centered. */
   .stage {
@@ -118,6 +118,28 @@
 
   .empty { text-align:center; color: var(--muted); padding: 40px 0; }
   .toast { color: #fca5a5; text-align:center; min-height: 1.2em; margin-top: 10px; }
+
+  /* Peek-at-results button + popup */
+  .peek-btn {
+    position: fixed; left: 50%; bottom: clamp(12px, 2.5vh, 28px); transform: translateX(-50%);
+    background: var(--card); color: var(--muted); border: 1px solid var(--bar-bg);
+    font-size: clamp(.95rem, 2vmin, 1.2rem); font-weight: 600;
+    padding: 10px 22px; border-radius: 999px; cursor: pointer; z-index: 40;
+  }
+  .peek-btn:active { transform: translateX(-50%) scale(.97); }
+  .peek-overlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, .82);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    z-index: 60; opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .peek-overlay.show { opacity: 1; pointer-events: auto; }
+  .peek-card {
+    background: var(--card); border-radius: 20px; padding: clamp(22px, 4vmin, 40px);
+    width: min(620px, 92vw); max-height: 86vh; overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
+  }
+  .peek-card h2 { margin: 0 0 18px; font-size: clamp(1.4rem, 4vmin, 2.2rem); font-weight: 800; text-align: center; }
+  .peek-meta { text-align: center; color: var(--muted); margin-top: 14px; font-size: clamp(.95rem, 2.2vmin, 1.3rem); }
 </style>
 </head>
 <body>
@@ -128,6 +150,11 @@
       <div id="app"><div class="empty">Loading…</div></div>
       <div id="toast" class="toast"></div>
     </div>
+  </div>
+
+  <button class="peek-btn" id="peekBtn">Peek at results</button>
+  <div class="peek-overlay" id="peekOverlay" aria-hidden="true">
+    <div class="peek-card" id="peekCard"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -143,6 +170,10 @@
     const appEl = document.getElementById("app");
     const titleEl = document.getElementById("title");
     const toastEl = document.getElementById("toast");
+    const peekBtn = document.getElementById("peekBtn");
+    const peekOverlay = document.getElementById("peekOverlay");
+    const peekCard = document.getElementById("peekCard");
+    let peekTimer = null;
 
     let currentPollId = null;
     let mode = "vote"; // "vote" | "results"
@@ -173,7 +204,44 @@
       appEl.querySelectorAll(".opt").forEach(b => {
         b.addEventListener("click", () => vote(parseInt(b.dataset.i, 10)));
       });
+      peekBtn.style.display = "";
     }
+
+    function resultRows(options, results) {
+      const total = (results && results.total) || 0;
+      return options.map((o, i) => {
+        const c = (results && results.counts && results.counts[i]) || 0;
+        const p = pct(c, total);
+        return `
+          <div class="result-row">
+            <div class="result-top"><span>${esc(o)}</span><span class="pct">${p}%</span></div>
+            <div class="bar"><div class="fill fill${i}" style="width:${p}%"></div></div>
+          </div>`;
+      }).join("");
+    }
+
+    async function showPeek() {
+      try {
+        const [poll, results] = await Promise.all([
+          rpc("get_active_poll"), rpc("get_active_results")
+        ]);
+        if (!poll) return;
+        const total = (results && results.total) || 0;
+        peekCard.innerHTML = `
+          <h2>${esc(poll.question)}</h2>
+          ${resultRows(poll.options, results)}
+          <p class="peek-meta">${total} vote${total === 1 ? "" : "s"} so far</p>`;
+        peekOverlay.classList.add("show");
+        clearTimeout(peekTimer);
+        peekTimer = setTimeout(hidePeek, 5000);
+      } catch (e) {}
+    }
+    function hidePeek() {
+      clearTimeout(peekTimer);
+      peekOverlay.classList.remove("show");
+    }
+    peekBtn.addEventListener("click", showPeek);
+    peekOverlay.addEventListener("click", hidePeek);
 
     function renderResults(poll, results) {
       const total = results.total || 0;
@@ -197,6 +265,8 @@
         <button class="nextbtn" id="next">Next person ›</button>`;
       document.getElementById("next").addEventListener("click", backToVote);
       renderQR();
+      hidePeek();
+      peekBtn.style.display = "none";
     }
 
     function renderQR() {
