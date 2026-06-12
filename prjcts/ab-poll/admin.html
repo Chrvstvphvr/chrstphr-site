@@ -71,6 +71,17 @@
   .dev-status { font-size:.85rem; font-weight:700; white-space:nowrap; }
   .dev-status.on { color:#86efac; }
   .dev-status.off { color:#fca5a5; }
+
+  /* Votes-by-hour chart */
+  .hour-chart { margin:0 0 26px; }
+  .hour-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .hour-head .sub { margin:0; }
+  .hour-bars { display:flex; align-items:flex-end; gap:3px; height:120px; }
+  .hour-col { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; min-width:0; }
+  .hour-bar { width:100%; min-height:2px; background:var(--accent); border-radius:3px 3px 0 0; transition:height .3s ease; }
+  .hour-bar.peak { background:#818cf8; }
+  .hour-bar.empty { background:var(--line); }
+  .hour-axis { display:flex; justify-content:space-between; margin-top:6px; color:var(--muted); font-size:.72rem; }
 </style>
 </head>
 <body>
@@ -145,6 +156,7 @@
     <!-- Past -->
     <div class="card">
       <h2>Past results</h2>
+      <div id="hourChart" class="hour-chart"></div>
       <div id="pastResults"><p class="sub">None yet.</p></div>
     </div>
 
@@ -292,6 +304,7 @@
       $("livePill").textContent = "none";
       $("liveResults").innerHTML = `<p class="sub">No active poll. Fill in the question above and Publish.</p>`;
     }
+    await renderHourChart();
     await renderPast();
     await renderLocations();
     await loadKioskPass();
@@ -413,6 +426,45 @@
       const results = await rpc("get_active_results");
       $("liveResults").innerHTML = resultsTable(activePoll.options, results);
     } catch (e) {}
+  }
+
+  function hourLabel(h) {
+    const ampm = h < 12 ? "a" : "p";
+    const hr = h % 12 === 0 ? 12 : h % 12;
+    return hr + ampm;
+  }
+
+  async function renderHourChart() {
+    const el = $("hourChart");
+    let data;
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+      data = await rpc("admin_votes_by_hour", { p_password: PW, p_tz: tz });
+    } catch (e) { el.innerHTML = ""; return; }
+    if (!data || !data.length) { el.innerHTML = ""; return; }
+    const total = data.reduce((s, d) => s + d.count, 0);
+    if (!total) {
+      el.innerHTML = `<div class="hour-head"><h3 style="margin:0;font-size:1rem">Votes by time of day</h3></div>
+        <p class="sub" style="margin:0">No votes recorded yet.</p>`;
+      return;
+    }
+    const max = Math.max(...data.map(d => d.count));
+    const bars = data.map(d => {
+      const pct = Math.round((d.count / max) * 100);
+      const cls = d.count === 0 ? "empty" : (d.count === max ? "peak" : "");
+      const ttl = `${hourLabel(d.hour)}–${hourLabel((d.hour + 1) % 24)}: ${d.count} vote${d.count === 1 ? "" : "s"}`;
+      return `<div class="hour-col" title="${esc(ttl)}">
+        <div class="hour-bar ${cls}" style="height:${d.count === 0 ? 0 : Math.max(pct, 3)}%"></div>
+      </div>`;
+    }).join("");
+    const ticks = [0, 6, 12, 18, 23].map(h => `<span>${hourLabel(h)}</span>`).join("");
+    el.innerHTML = `
+      <div class="hour-head">
+        <h3 style="margin:0;font-size:1rem">Votes by time of day</h3>
+        <span class="sub">${total} vote${total === 1 ? "" : "s"} across all questions</span>
+      </div>
+      <div class="hour-bars">${bars}</div>
+      <div class="hour-axis">${ticks}</div>`;
   }
 
   async function renderPast() {
