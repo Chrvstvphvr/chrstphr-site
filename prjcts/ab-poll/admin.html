@@ -198,7 +198,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="config.js"></script>
 <script>
   const { SUPABASE_URL, SUPABASE_KEY } = window.POLL_CONFIG;
@@ -428,6 +427,18 @@
     } catch (e) {}
   }
 
+  const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+  // Day the poll really "ran": the date most votes came in, falling back to
+  // the close timestamp for polls with no votes.
+  function pollDay(p) {
+    if (p.poll_date) {
+      const [y, m, d] = p.poll_date.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return p.closed_at ? new Date(p.closed_at) : null;
+  }
+
   function hourLabel(h) {
     const ampm = h < 12 ? "a" : "p";
     const hr = h % 12 === 0 ? 12 : h % 12;
@@ -438,8 +449,7 @@
     const el = $("hourChart");
     let data;
     try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-      data = await rpc("admin_votes_by_hour", { p_password: PW, p_tz: tz });
+      data = await rpc("admin_votes_by_hour", { p_password: PW, p_tz: TZ });
     } catch (e) { el.innerHTML = ""; return; }
     if (!data || !data.length) { el.innerHTML = ""; return; }
     const total = data.reduce((s, d) => s + d.count, 0);
@@ -468,13 +478,14 @@
   }
 
   async function renderPast() {
-    const past = await rpc("get_past_polls");
+    const past = await rpc("get_past_polls", { p_tz: TZ });
     if (!past || !past.length) { $("pastResults").innerHTML = `<p class="sub">None yet.</p>`; return; }
     $("pastResults").innerHTML = past.map(p => {
-      const d = p.closed_at ? new Date(p.closed_at).toLocaleString() : "";
+      const day = pollDay(p);
+      const d = day ? day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "";
       return `<div style="margin-bottom:22px">
         <div style="font-weight:700;margin-bottom:2px">${esc(p.question)}</div>
-        <div class="sub" style="margin:0 0 8px">Closed ${esc(d)}</div>
+        <div class="sub" style="margin:0 0 8px">${esc(d)}</div>
         ${resultsTable(p.options, p.results)}
       </div>`;
     }).join("");
@@ -544,67 +555,136 @@
     $("dash").classList.add("hidden"); $("gate").classList.remove("hidden"); $("pw").value = "";
   });
 
-  // ---------- PDF export ----------
+  // ---------- PDF export (Swiss grid) ----------
+  const PDF_INK = [17, 17, 17];
+  const PDF_ACCENT = [67, 56, 202];
+  const PDF_FAINT = [119, 119, 119];
+  const PDF_STUB = [226, 224, 216];
+
   $("exportPdf").addEventListener("click", async () => {
     try {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "pt", format: "a4" });
-      const M = 48;
+      const M = 48, W = doc.internal.pageSize.getWidth() - M * 2;
+      const BOTTOM = 780;
       let y = 56;
 
-      doc.setFont("helvetica", "bold"); doc.setFontSize(20);
-      doc.text("Poll Results Report", M, y); y += 22;
-      doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(120);
-      doc.text("Generated " + new Date().toLocaleString(), M, y);
-      doc.setTextColor(20); y += 26;
+      const [title, active, activeResults, past, hours, locs] = await Promise.all([
+        rpc("get_poll_title").catch(() => ""),
+        rpc("get_active_poll"),
+        rpc("get_active_results").catch(() => null),
+        rpc("get_past_polls", { p_tz: TZ }).catch(() => []),
+        rpc("admin_votes_by_hour", { p_password: PW, p_tz: TZ }).catch(() => null),
+        rpc("get_locations").catch(() => null),
+      ]);
 
-      function section(title) {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-        doc.text(title, M, y); y += 8;
+      const polls = [];
+      if (active) polls.push({ poll: active, results: activeResults, live: true });
+      (past || []).forEach(p => polls.push({ poll: p, results: p.results, live: false }));
+      const totalVotes = polls.reduce((s, p) => s + ((p.results && p.results.total) || 0), 0);
+      const longDate = d => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+      // Masthead
+      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(...PDF_INK);
+      doc.text(title || "Poll results report", M, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(longDate(new Date()), M + W, y, { align: "right" });
+      y += 10;
+      doc.setDrawColor(...PDF_INK); doc.setLineWidth(2.4);
+      doc.line(M, y, M + W, y);
+      y += 38;
+
+      doc.setFont("helvetica", "bold"); doc.setFontSize(34);
+      doc.text("Poll results.", M, y); y += 18;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...PDF_FAINT);
+      const metaBits = [totalVotes + " votes", polls.length + " question" + (polls.length === 1 ? "" : "s")];
+      if (locs && locs.length) metaBits.push(locs.length + " location" + (locs.length === 1 ? "" : "s"));
+      doc.text(metaBits.join("  —  "), M, y);
+      y += 30;
+
+      // Hourly distribution chart
+      if (hours && hours.length && hours.some(h => h.count > 0)) {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(...PDF_INK);
+        doc.text("Votes by time of day", M, y); y += 10;
+        const chartH = 56, gap = 2, barW = (W - gap * 23) / 24;
+        const maxC = Math.max(...hours.map(h => h.count));
+        const base = y + chartH;
+        hours.forEach((h, i) => {
+          const x = M + i * (barW + gap);
+          if (h.count === 0) {
+            doc.setFillColor(...PDF_STUB);
+            doc.rect(x, base - 1.5, barW, 1.5, "F");
+          } else {
+            const bh = Math.max(2, (h.count / maxC) * chartH);
+            doc.setFillColor(...(h.count === maxC ? PDF_ACCENT : PDF_INK));
+            doc.rect(x, base - bh, barW, bh, "F");
+          }
+        });
+        doc.setDrawColor(...PDF_INK); doc.setLineWidth(2.4);
+        doc.line(M, base + 1.2, M + W, base + 1.2);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(...PDF_FAINT);
+        doc.text("12a", M, base + 14);
+        [6, 12, 18].forEach(h => {
+          doc.text(hourLabel(h), M + h * (barW + gap) + barW / 2, base + 14, { align: "center" });
+        });
+        doc.text("11p", M + W, base + 14, { align: "right" });
+        y = base + 40;
       }
-      function pollBlock(poll, results, subtitle) {
-        if (y > 720) { doc.addPage(); y = 56; }
-        doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-        const qlines = doc.splitTextToSize(poll.question, 515);
-        doc.text(qlines, M, y); y += qlines.length * 16 + 2;
-        if (subtitle) {
-          doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(120);
-          doc.text(subtitle, M, y); doc.setTextColor(20); y += 6;
-        }
+
+      function pollBlock(idx, poll, results, live) {
+        if (y + 56 > BOTTOM) { doc.addPage(); y = 64; }
         const total = (results && results.total) || 0;
-        const body = poll.options.map((o, i) => {
-          const c = (results && results.counts && results.counts[i]) || 0;
-          return [o, String(c), pct(c, total) + "%"];
+        const qx = M + 26;
+        doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+        doc.setTextColor(...PDF_ACCENT);
+        doc.text(String(idx + 1).padStart(2, "0"), M, y);
+        doc.setTextColor(...PDF_INK);
+        const qlines = doc.splitTextToSize(poll.question, W - 26);
+        doc.text(qlines, qx, y);
+        y += (qlines.length - 1) * 15 + 12;
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...PDF_FAINT);
+        const day = pollDay(poll);
+        const sub = live
+          ? "Live — " + total + " vote" + (total === 1 ? "" : "s") + " so far"
+          : (day ? longDate(day) : "") + " — " + total + " votes";
+        doc.text(sub, qx, y);
+        y += 20;
+        const counts = poll.options.map((o, i) => (results && results.counts && results.counts[i]) || 0);
+        const maxC = Math.max(...counts, 1);
+        const labelW = 170, pctW = 44;
+        const barX = M + labelW + 10, barFull = W - labelW - 10 - pctW - 10;
+        poll.options.forEach((o, i) => {
+          if (y > BOTTOM) { doc.addPage(); y = 64; }
+          doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...PDF_INK);
+          let label = String(o);
+          if (doc.getTextWidth(label) > labelW) {
+            while (label.length > 1 && doc.getTextWidth(label + "…") > labelW) label = label.slice(0, -1);
+            label += "…";
+          }
+          doc.text(label, M, y);
+          const c = counts[i];
+          if (c === 0) {
+            doc.setFillColor(...PDF_STUB);
+            doc.rect(barX, y - 7, 1.5, 8, "F");
+          } else {
+            doc.setFillColor(...(c === maxC ? PDF_ACCENT : PDF_INK));
+            doc.rect(barX, y - 7, (c / maxC) * barFull, 8, "F");
+          }
+          doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+          doc.text(pct(c, total) + "%", M + W, y, { align: "right" });
+          y += 17;
         });
-        doc.autoTable({
-          startY: y + 6,
-          head: [["Answer", "Votes", "Share"]],
-          body,
-          foot: [["Total", String(total), "100%"]],
-          margin: { left: M, right: M },
-          styles: { fontSize: 11, cellPadding: 6 },
-          headStyles: { fillColor: [99, 102, 241] },
-          footStyles: { fillColor: [241, 245, 249], textColor: 20, fontStyle: "bold" },
-          columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
-        });
-        y = doc.lastAutoTable.finalY + 24;
+        y += 22;
       }
 
-      const active = await rpc("get_active_poll");
-      if (active) {
-        const results = await rpc("get_active_results");
-        section("Current poll"); y += 8;
-        pollBlock(active, results, "Status: live");
-      }
+      polls.forEach((p, i) => pollBlock(i, p.poll, p.results, p.live));
 
-      const past = await rpc("get_past_polls");
-      if (past && past.length) {
-        if (y > 700) { doc.addPage(); y = 56; }
-        section("Past polls"); y += 8;
-        past.forEach(p => {
-          const d = p.closed_at ? new Date(p.closed_at).toLocaleString() : "";
-          pollBlock(p, p.results, "Closed " + d);
-        });
+      const pages = doc.getNumberOfPages();
+      for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...PDF_FAINT);
+        doc.text("Generated " + new Date().toLocaleString(), M, 812);
+        doc.text(i + " / " + pages, M + W, 812, { align: "right" });
       }
 
       doc.save("poll-results-" + new Date().toISOString().slice(0, 10) + ".pdf");

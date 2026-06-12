@@ -86,6 +86,17 @@
 
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
     const pct = (c, t) => (!t ? 0 : Math.round((c / t) * 100));
+    const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+    // Day the poll really "ran": the date most votes came in, falling back to
+    // the close timestamp for polls with no votes.
+    function pollDay(p) {
+      if (p.poll_date) {
+        const [y, m, d] = p.poll_date.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      }
+      return p.closed_at ? new Date(p.closed_at) : null;
+    }
 
     async function rpc(fn, args) {
       const { data, error } = await sb.rpc(fn, args || {});
@@ -123,7 +134,7 @@
 
     async function loadPast() {
       try {
-        const past = await rpc("get_past_polls");
+        const past = await rpc("get_past_polls", { p_tz: TZ });
         if (!past || !past.length) { pastEl.innerHTML = `<div class="empty">No past polls yet.</div>`; return; }
         pastEl.innerHTML = past.map(p => {
           const r = p.results || { counts: [], total: 0 };
@@ -137,10 +148,11 @@
               <span class="mini-pct">${pp}%</span>
             </div>`;
           }).join("");
-          const d = p.closed_at ? new Date(p.closed_at).toLocaleDateString() : "";
+          const day = pollDay(p);
+          const d = day ? day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "";
           return `<div class="past-card">
             <div class="past-q">${esc(p.question)}</div>
-            <div class="past-date">Closed ${esc(d)} · ${total} votes</div>
+            <div class="past-date">${esc(d)} · ${total} votes</div>
             ${rows}
           </div>`;
         }).join("");
