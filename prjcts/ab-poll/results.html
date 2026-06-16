@@ -41,23 +41,37 @@
   .big-fill { height:100%; width:0; border-radius:999px; transition:width .6s cubic-bezier(.22,1,.36,1); }
   .hero-total { text-align:center; color:var(--muted); margin-top:clamp(10px,2vh,20px); font-size:clamp(1rem,2.4vmin,1.4rem); }
 
-  /* ---- Past (smaller, scrollable list) ---- */
+  /* ---- Past (grid, all visible) ---- */
   .past-head {
     font-size:clamp(1.1rem,2.6vmin,1.5rem); font-weight:700; color:var(--muted);
     text-transform:uppercase; letter-spacing:.06em; margin:0 0 14px; padding-bottom:10px;
     border-bottom:1px solid var(--bar-bg);
   }
-  .past-list { display:flex; flex-direction:column; gap:14px; max-height:55vh; overflow-y:auto; padding-right:6px; }
-  .past-list::-webkit-scrollbar { width:8px; }
-  .past-list::-webkit-scrollbar-thumb { background:#334155; border-radius:999px; }
+  .past-list { display:grid; grid-template-columns:repeat(auto-fill, minmax(440px, 1fr)); gap:14px; align-items:start; }
   .past-card { background:var(--card); border-radius:14px; padding:16px 18px; }
-  .past-q { font-weight:700; font-size:1.05rem; margin-bottom:2px; }
-  .past-date { color:var(--muted); font-size:.8rem; margin-bottom:12px; }
-  .mini-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:.95rem; }
-  .mini-label { flex:0 0 34%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .mini-bar { flex:1; height:9px; background:var(--bg); border-radius:999px; overflow:hidden; }
+  /* Title + rows are sized in em off a per-element base so the fit-to-width
+     pass can scale them down; nothing wraps or truncates. */
+  .past-q { font-weight:700; font-size:16.8px; margin-bottom:2px; white-space:nowrap; }
+  .past-date { color:var(--muted); font-size:.8rem; margin-bottom:12px; white-space:nowrap; }
+  /* One shared grid per card so bars and figures line up across rows: the
+     label is 40%, the bar stretches to fill, and the figures (percent + vote
+     count) auto-size to their content on the right. */
+  .mini-rows { font-size:15.2px; display:grid; grid-template-columns:40% 1fr auto; column-gap:12px; row-gap:8px; align-items:center; }
+  .mini-label { min-width:0; white-space:nowrap; text-align:left; }
+  .mini-bar { min-width:0; height:9px; background:var(--bg); border-radius:999px; overflow:hidden; }
   .mini-fill { display:block; height:100%; border-radius:999px; }
-  .mini-pct { flex:0 0 48px; text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+  .mini-figs { text-align:right; white-space:nowrap; }
+  .mini-figs .pct { font-weight:700; font-variant-numeric:tabular-nums; }
+  .mini-figs .votes { color:var(--muted); font-size:.85em; margin-left:7px; font-variant-numeric:tabular-nums; }
+
+  .pager { display:flex; justify-content:center; align-items:center; gap:18px; margin-top:24px; }
+  .pager button {
+    background:var(--card); color:var(--text); border:1px solid var(--bar-bg); border-radius:10px;
+    padding:9px 18px; font-size:.95rem; font-weight:600; cursor:pointer;
+  }
+  .pager button:hover:not(:disabled) { border-color:var(--accent); }
+  .pager button:disabled { opacity:.35; cursor:default; }
+  .pager .page-info { color:var(--muted); font-size:.9rem; font-variant-numeric:tabular-nums; }
 
   .empty { text-align:center; color:var(--muted); padding:32px 0; }
 </style>
@@ -71,6 +85,7 @@
     <section>
       <h2 class="past-head">Past results</h2>
       <div class="past-list" id="pastList"><div class="empty">Loading…</div></div>
+      <div class="pager" id="pastPager"></div>
     </section>
   </div>
 
@@ -132,34 +147,110 @@
       }
     }
 
+    const PAGE_SIZE = 25;
+    const pagerEl = document.getElementById("pastPager");
+    let pastData = [];
+    let pastPage = 0;
+
+    function pastCardHtml(p) {
+      const r = p.results || { counts: [], total: 0 };
+      const total = r.total || 0;
+      const rows = p.options.map((o, i) => {
+        const c = (r.counts && r.counts[i]) || 0;
+        const pp = pct(c, total);
+        return `<span class="mini-label">${esc(o)}</span>
+          <span class="mini-bar"><span class="mini-fill" style="width:${pp}%;background:${COLORS[i % COLORS.length]}"></span></span>
+          <span class="mini-figs"><span class="pct">${pp}%</span><span class="votes">${c.toLocaleString()} vote${c === 1 ? "" : "s"}</span></span>`;
+      }).join("");
+      const day = pollDay(p);
+      const d = day ? day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "";
+      return `<div class="past-card">
+        <div class="past-q">${esc(p.question)}</div>
+        <div class="past-date">${esc(d)} · ${total} votes</div>
+        <div class="mini-rows">${rows}</div>
+      </div>`;
+    }
+
+    // Shrink an element's font until its own single line of text fits its box.
+    function fitText(el, minPx) {
+      el.style.fontSize = "";
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      let guard = 0;
+      while (el.scrollWidth > el.clientWidth + 0.5 && size > minPx && guard < 60) {
+        size -= 0.5;
+        el.style.fontSize = size + "px";
+        guard++;
+      }
+    }
+
+    // Shrink the rows' shared font until every label fits its 40% cell. The
+    // labels overflow their grid cells silently, so we must measure each one
+    // (the container's scrollWidth doesn't reflect grid-item overflow).
+    function fitRows(rowsEl, minPx) {
+      rowsEl.style.fontSize = "";
+      const labels = [...rowsEl.querySelectorAll(".mini-label")];
+      const overflowing = () => labels.some(l => l.scrollWidth > l.clientWidth + 0.5);
+      let size = parseFloat(getComputedStyle(rowsEl).fontSize);
+      let guard = 0;
+      while (overflowing() && size > minPx && guard < 80) {
+        size -= 0.5;
+        rowsEl.style.fontSize = size + "px";
+        guard++;
+      }
+    }
+
+    // Scale each card's title and bar rows so nothing wraps or truncates,
+    // at any column width. Re-run whenever the layout could change.
+    function fitCards() {
+      document.querySelectorAll("#pastList .past-card").forEach(card => {
+        const q = card.querySelector(".past-q");
+        if (q) fitText(q, 11);
+        const rows = card.querySelector(".mini-rows");
+        if (rows) fitRows(rows, 9);
+      });
+    }
+
+    function renderPast() {
+      if (!pastData.length) {
+        pastEl.innerHTML = `<div class="empty">No past polls yet.</div>`;
+        pagerEl.innerHTML = "";
+        return;
+      }
+      const pages = Math.ceil(pastData.length / PAGE_SIZE);
+      pastPage = Math.min(Math.max(pastPage, 0), pages - 1);
+      const start = pastPage * PAGE_SIZE;
+      pastEl.innerHTML = pastData.slice(start, start + PAGE_SIZE).map(pastCardHtml).join("");
+      requestAnimationFrame(fitCards);
+      if (pages > 1) {
+        pagerEl.innerHTML = `
+          <button id="pgPrev" ${pastPage === 0 ? "disabled" : ""}>← Prev</button>
+          <span class="page-info">Page ${pastPage + 1} of ${pages}</span>
+          <button id="pgNext" ${pastPage >= pages - 1 ? "disabled" : ""}>Next →</button>`;
+        document.getElementById("pgPrev").onclick = () => { pastPage--; renderPast(); jumpToPast(); };
+        document.getElementById("pgNext").onclick = () => { pastPage++; renderPast(); jumpToPast(); };
+      } else {
+        pagerEl.innerHTML = "";
+      }
+    }
+
+    function jumpToPast() {
+      const head = document.querySelector(".past-head");
+      if (head) window.scrollTo({ top: head.offsetTop - 16, behavior: "smooth" });
+    }
+
     async function loadPast() {
       try {
         const past = await rpc("get_past_polls", { p_tz: TZ });
-        if (!past || !past.length) { pastEl.innerHTML = `<div class="empty">No past polls yet.</div>`; return; }
-        pastEl.innerHTML = past.map(p => {
-          const r = p.results || { counts: [], total: 0 };
-          const total = r.total || 0;
-          const rows = p.options.map((o, i) => {
-            const c = (r.counts && r.counts[i]) || 0;
-            const pp = pct(c, total);
-            return `<div class="mini-row">
-              <span class="mini-label">${esc(o)}</span>
-              <span class="mini-bar"><span class="mini-fill" style="width:${pp}%;background:${COLORS[i % COLORS.length]}"></span></span>
-              <span class="mini-pct">${pp}%</span>
-            </div>`;
-          }).join("");
-          const day = pollDay(p);
-          const d = day ? day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "";
-          return `<div class="past-card">
-            <div class="past-q">${esc(p.question)}</div>
-            <div class="past-date">${esc(d)} · ${total} votes</div>
-            ${rows}
-          </div>`;
-        }).join("");
+        pastData = past || [];
+        renderPast();
       } catch (e) {
         pastEl.innerHTML = `<div class="empty">Could not load past results.</div>`;
+        pagerEl.innerHTML = "";
       }
     }
+
+    let resizeT;
+    window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(fitCards, 150); });
 
     loadCurrent();
     loadPast();

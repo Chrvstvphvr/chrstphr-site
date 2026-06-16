@@ -230,7 +230,11 @@
         peekCard.innerHTML = `
           <h2>${esc(poll.question)}</h2>
           ${resultRows(poll.options, results)}
-          <p class="peek-meta">${total} vote${total === 1 ? "" : "s"} so far</p>`;
+          <p class="peek-meta">${total} vote${total === 1 ? "" : "s"} so far</p>
+          <div class="qr-block" id="peekQr">
+            <span class="qr-cap">See all the past results here:</span>
+          </div>`;
+        renderQR(document.getElementById("peekQr"), true);
         peekOverlay.classList.add("show");
         clearTimeout(peekTimer);
         peekTimer = setTimeout(hidePeek, 5000);
@@ -269,8 +273,8 @@
       peekBtn.style.display = "none";
     }
 
-    function renderQR() {
-      const block = document.getElementById("qrBlock");
+    function renderQR(block, captionFirst) {
+      block = block || document.getElementById("qrBlock");
       if (!block || typeof qrcode === "undefined") return;
       try {
         const qr = qrcode(0, "M");
@@ -279,7 +283,8 @@
         const img = document.createElement("img");
         img.src = qr.createDataURL(8);
         img.alt = "QR code to results page";
-        block.insertBefore(img, block.firstChild);
+        if (captionFirst) block.appendChild(img);
+        else block.insertBefore(img, block.firstChild);
       } catch (e) {}
     }
 
