@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Swipe Verdict</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F6F2; --ink:#15151A; --sub:#7A7A85; --line:#E4E2DB;
+    --keep:#1FB85A; --pass:#FF4747; --accent:#4B3BFF;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif}
+  .disp{font-family:'Space Grotesk',system-ui,sans-serif}
+  .wrap{max-width:480px;margin:0 auto;padding:0 16px 96px;min-height:100vh}
+  header{padding:22px 0 14px;display:flex;justify-content:space-between;align-items:flex-start}
+  .eyebrow{font-weight:700;font-size:13px;letter-spacing:2px;color:var(--accent)}
+  .title{font-weight:700;font-size:34px;line-height:1;margin-top:4px}
+  .refresh{border:none;background:none;color:var(--sub);cursor:pointer;padding:6px;margin-top:6px}
+  .banner{display:flex;gap:8px;align-items:flex-start;background:#FFF1F1;border:1px solid #F2C9C9;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:12.5px;color:#7a2b2b;line-height:1.4}
+  .hidden{display:none!important}
+
+  .drop{border:2px dashed var(--line);border-radius:18px;padding:34px 20px;text-align:center;cursor:pointer;background:#fff}
+  .drop h2{font-family:'Space Grotesk';font-weight:600;font-size:17px;margin:10px 0 0}
+  .drop p{color:var(--sub);font-size:13px;margin:4px 0 0}
+  .note{color:var(--sub);font-size:12.5px;margin-top:10px;text-align:center}
+  .sect{display:flex;justify-content:space-between;align-items:baseline;margin:26px 2px 12px}
+  .sect b{font-family:'Space Grotesk';font-weight:600;font-size:15px}
+  .sect span{color:var(--sub);font-size:13px}
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .cell{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;background:#eee}
+  .cell img{width:100%;height:100%;object-fit:cover}
+  .del{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:999px;border:none;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;cursor:pointer}
+  .muted{color:var(--sub);font-size:13px;padding:8px 2px}
+
+  .stage{position:relative;height:440px;user-select:none;touch-action:pan-y}
+  .card{position:absolute;inset:0;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 12px 36px rgba(0,0,0,.14);border:1px solid var(--line)}
+  .card img{width:100%;height:100%;object-fit:cover;pointer-events:none}
+  .card .cap{position:absolute;left:0;right:0;bottom:0;padding:30px 18px 16px;background:linear-gradient(to top,rgba(0,0,0,.62),transparent)}
+  .card .cap span{font-family:'Space Grotesk';color:#fff;font-weight:600;font-size:20px}
+  .stamp{position:absolute;top:24px;font-family:'Space Grotesk';font-weight:700;font-size:28px;letter-spacing:2px;padding:4px 12px;border-radius:10px;pointer-events:none;opacity:0}
+  .stamp.keep{left:20px;transform:rotate(-14deg);border:4px solid var(--keep);color:var(--keep)}
+  .stamp.pass{right:20px;transform:rotate(14deg);border:4px solid var(--pass);color:var(--pass)}
+  .controls{display:flex;justify-content:center;gap:22px;margin-top:22px}
+  .round{width:62px;height:62px;border-radius:999px;background:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+  .round.keep{border:2px solid var(--keep);color:var(--keep)}
+  .round.pass{border:2px solid var(--pass);color:var(--pass)}
+  .hint{text-align:center;color:var(--sub);font-size:12px;margin-top:12px}
+
+  .live{display:flex;align-items:center;gap:8px;margin:4px 2px 16px;color:var(--sub);font-size:12px}
+  .dot{width:7px;height:7px;border-radius:99px;background:var(--keep)}
+  .rows{display:flex;flex-direction:column;gap:12px}
+  .row{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px}
+  .rank{font-family:'Space Grotesk';font-weight:700;font-size:16px;width:22px;text-align:center;color:var(--sub)}
+  .rank.lead{color:var(--accent)}
+  .row img{width:54px;height:54px;border-radius:10px;object-fit:cover;flex-shrink:0}
+  .row .name{font-family:'Space Grotesk';font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar{height:8px;border-radius:99px;overflow:hidden;display:flex;background:var(--line);margin-top:6px}
+  .bar .k{background:var(--keep);transition:width .4s}.bar .p{background:var(--pass);transition:width .4s}
+  .tally{display:flex;justify-content:space-between;margin-top:5px;font-size:12px}
+  .tally .k{color:var(--keep);font-weight:600}.tally .p{color:var(--pass);font-weight:600}.tally .t{color:var(--sub)}
+
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px;min-height:360px;text-align:center}
+  .empty h3{font-family:'Space Grotesk';font-weight:600;font-size:19px;margin:10px 0 0}
+  .empty p{color:var(--sub);font-size:13px;margin:4px 0 0}
+
+  nav{position:fixed;left:0;right:0;bottom:0;background:rgba(247,246,242,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+  nav .inner{max-width:480px;margin:0 auto;display:flex}
+  nav button{flex:1;border:none;background:none;padding:11px 0 14px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--sub);cursor:pointer}
+  nav button.on{color:var(--accent)}
+  nav span{font-family:'Space Grotesk';font-size:11px;font-weight:600;letter-spacing:.3px}
+  .spin{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+  svg{width:1em;height:1em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow disp">THE VERDICT IS YOURS</div>
+      <div class="title disp">Swipe Verdict</div>
+    </div>
+    <button class="refresh" id="refreshBtn" title="Refresh">&#x21bb;</button>
+  </header>
+  <div id="banner" class="banner hidden"></div>
+
+  <!-- UPLOAD -->
+  <section id="view-upload">
+    <div class="drop" id="drop">
+      <div id="dropIcon" style="font-size:26px;color:var(--accent)">&#43;</div>
+      <h2 id="dropTitle">Add items</h2>
+      <p>Tap to pick photos, or drop them here</p>
+      <input id="file" type="file" accept="image/*" multiple style="display:none" />
+    </div>
+    <div id="note" class="note hidden"></div>
+    <div class="sect"><b>In the deck</b><span id="count">0 items</span></div>
+    <div id="deck"></div>
+  </section>
+
+  <!-- SWIPE -->
+  <section id="view-swipe" class="hidden"></section>
+
+  <!-- RESULTS -->
+  <section id="view-results" class="hidden"></section>
+</div>
+
+<nav><div class="inner">
+  <button data-tab="upload" class="on"><span>&#8593;</span><span>Upload</span></button>
+  <button data-tab="swipe"><span>&#8635;</span><span>Swipe</span></button>
+  <button data-tab="results"><span>&#9733;</span><span>Results</span></button>
+</div></nav>
+
+<script>
+/* ----------------------------- config ----------------------------- */
+const SUPABASE_URL = "https://cyfhjkocunynagxnlioi.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5Zmhqa29jdW55bmFneG5saW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2OTk2MDEsImV4cCI6MjA5NjI3NTYwMX0.2H0jYFsNRoC0u9hpqHf6SchmhuEsmyj_zaJ_STalm0Q";
+
+async function sb(path, opts={}){
+  const res = await fetch(SUPABASE_URL+"/rest/v1/"+path, {...opts, headers:{
+    apikey:SUPABASE_KEY, Authorization:"Bearer "+SUPABASE_KEY, "Content-Type":"application/json", ...(opts.headers||{})
+  }});
+  if(!res.ok) throw new Error(res.status+" "+(await res.text().catch(()=>"")).slice(0,140));
+  if(res.status===204) return null;
+  return res.json();
+}
+const api = {
+  listItems:()=>sb("swipe_items?select=id,label,image,created_at&order=created_at.desc"),
+  addItem:(label,image)=>sb("swipe_items",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({label,image})}),
+  delItem:(id)=>sb("swipe_items?id=eq."+id,{method:"DELETE"}),
+  addVote:(item_id,decision)=>sb("swipe_votes",{method:"POST",body:JSON.stringify({item_id,decision})}),
+  results:()=>sb("rpc/swipe_results",{method:"POST",body:"{}"}),
+};
+
+/* --------------------------- image resize ------------------------- */
+function resize(file,max=900,q=0.72){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(), url=URL.createObjectURL(file);
+    img.onload=()=>{let w=img.width,h=img.height; if(!w||!h){URL.revokeObjectURL(url);return reject();}
+      if(w>h&&w>max){h=Math.round(h*max/w);w=max;}else if(h>max){w=Math.round(w*max/h);h=max;}
+      const c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); try{resolve(c.toDataURL("image/jpeg",q));}catch(e){reject(e);}};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject();}; img.src=url;
+  });
+}
+const rawURL=(f)=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej();r.readAsDataURL(f);});
+async function toImage(f){try{return await resize(f);}catch{return await rawURL(f);}}
+
+/* ------------------------------ state ----------------------------- */
+let items=[];          // {id,label,image}
+const voted={};        // id -> decision (this session)
+let tab="upload";
+
+const $=(s)=>document.querySelector(s);
+function banner(msg){const b=$("#banner"); if(!msg){b.classList.add("hidden");return;} b.textContent="⚠ "+msg; b.classList.remove("hidden");}
+
+/* ------------------------------ load ------------------------------ */
+async function loadItems(){
+  try{ items = await api.listItems() || []; banner(""); }
+  catch(e){ banner("Can't reach the database: "+e.message); }
+  renderUpload(); if(tab==="swipe") renderSwipe();
+}
+
+/* ----------------------------- upload ----------------------------- */
+async function handleFiles(list){
+  const files=[...(list||[])].filter(f=>f.type.startsWith("image/")||/\.(heic|heif)$/i.test(f.name));
+  if(!files.length) return;
+  $("#dropTitle").textContent="Saving…"; $("#note").classList.add("hidden");
+  let added=0,failed=0;
+  for(const f of files){
+    try{ const image=await toImage(f); const label=(f.name.replace(/\.[^.]+$/,"")||"Item").slice(0,40);
+      const [row]=await api.addItem(label,image); if(row){items.unshift(row);added++;}else failed++;
+    }catch{failed++;}
+  }
+  $("#dropTitle").textContent="Add items";
+  const n=$("#note"); n.classList.remove("hidden");
+  n.textContent = added&&failed ? `Saved ${added}, couldn't read ${failed}.` : (!added&&failed? "Couldn't save those. Try JPG or PNG." : `Saved ${added}.`);
+  if(added) banner("");
+  renderUpload();
+}
+async function removeItem(id){
+  items=items.filter(x=>x.id!==id); renderUpload();
+  try{ await api.delItem(id); }catch(e){ banner("Delete failed: "+e.message); loadItems(); }
+}
+function renderUpload(){
+  $("#count").textContent = items.length+" item"+(items.length===1?"":"s");
+  const deck=$("#deck");
+  if(!items.length){ deck.innerHTML='<div class="muted">Nothing yet. Add a few photos to start.</div>'; return; }
+  deck.className="grid";
+  deck.innerHTML=items.map(it=>`<div class="cell"><img src="${it.image}" alt=""><button class="del" data-id="${it.id}">&#10005;</button></div>`).join("");
+  deck.querySelectorAll(".del").forEach(b=>b.onclick=()=>removeItem(b.dataset.id));
+}
+
+/* ----------------------------- swipe ------------------------------ */
+let queue=[], dragX=0, leaving=0, down=false, startX=0;
+function buildQueue(){ queue = items.filter(it=>!voted[it.id]).slice().reverse(); }
+function renderSwipe(){
+  const v=$("#view-swipe");
+  if(!items.length){ v.innerHTML=empty("&#43;","Nothing to judge","Add some items first."); return; }
+  if(!queue.length) buildQueue();
+  const top=queue[0];
+  if(!top){ v.innerHTML=empty("&#10003;","All caught up","You've judged everything. Check the results."); return; }
+  const next=queue[1];
+  v.innerHTML=`
+    <div class="muted" style="margin:4px 2px 14px">${queue.length} left to judge</div>
+    <div class="stage" id="stage">
+      ${next?`<div class="card" style="transform:scale(.95) translateY(10px);opacity:.7;z-index:1"><img src="${next.image}"><div class="cap"><span>${esc(next.label)}</span></div></div>`:""}
+      <div class="card" id="top" style="z-index:2">
+        <img src="${top.image}">
+        <div class="cap"><span>${esc(top.label)}</span></div>
+        <div class="stamp keep" id="sKeep">KEEP</div>
+        <div class="stamp pass" id="sPass">PASS</div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="round pass" id="btnPass">&#10005;</div>
+      <div class="round keep" id="btnKeep">&#10003;</div>
+    </div>
+    <div class="hint">Drag the card, tap a button, or use &larr; / &rarr;</div>`;
+  dragX=0; leaving=0; down=false;
+  const card=$("#top");
+  $("#btnKeep").onclick=()=>commit(1); $("#btnPass").onclick=()=>commit(-1);
+  const getX=e=>e.touches?e.touches[0].clientX:e.clientX;
+  const onDown=e=>{down=true;startX=getX(e);};
+  const onMove=e=>{if(!down||leaving)return;dragX=getX(e)-startX;paint();};
+  const onUp=()=>{if(!down)return;down=false; if(dragX>110)commit(1); else if(dragX<-110)commit(-1); else {dragX=0;paint();}};
+  card.addEventListener("mousedown",onDown); window.addEventListener("mousemove",onMove); window.addEventListener("mouseup",onUp);
+  card.addEventListener("touchstart",onDown,{passive:true}); card.addEventListener("touchmove",onMove,{passive:true}); card.addEventListener("touchend",onUp);
+  paint();
+}
+function paint(){
+  const card=$("#top"); if(!card)return;
+  const off = leaving?leaving*600:dragX;
+  card.style.transition = down?"none":"transform .22s ease";
+  card.style.transform = `translateX(${off}px) rotate(${off*0.05}deg)`;
+  const k=$("#sKeep"), p=$("#sPass");
+  if(k)k.style.opacity=Math.max(0,Math.min(1,off/110));
+  if(p)p.style.opacity=Math.max(0,Math.min(1,-off/110));
+}
+function commit(dir){
+  const top=queue[0]; if(!top||leaving)return;
+  leaving=dir; paint();
+  voted[top.id]=dir>0?"keep":"pass";
+  api.addVote(top.id, dir>0?"keep":"pass").catch(e=>banner("Vote didn't save: "+e.message));
+  setTimeout(()=>{ queue.shift(); leaving=0; dragX=0; renderSwipe(); },220);
+}
+
+/* ---------------------------- results ----------------------------- */
+let resultsTimer=null;
+async function loadResults(){
+  let counts={};
+  try{ const rows=await api.results()||[]; rows.forEach(r=>counts[r.item_id]={keep:+r.keep,pass:+r.pass}); $("#liveDot").style.background="var(--keep)"; $("#liveText").textContent="Live · everyone's votes, updates every couple seconds"; }
+  catch{ const d=$("#liveDot"); if(d){d.style.background="var(--sub)"; $("#liveText").textContent="Reconnecting…";} return; }
+  const rows=items.map(it=>{const c=counts[it.id]||{keep:0,pass:0};return{...it,keep:c.keep,pass:c.pass,total:c.keep+c.pass,net:c.keep-c.pass};})
+    .sort((a,b)=>b.net-a.net||b.total-a.total);
+  const body=$("#resultRows"); if(!body)return;
+  body.innerHTML=rows.map((r,i)=>{const pct=r.total?r.keep/r.total*100:50;return `
+    <div class="row">
+      <div class="rank ${i===0&&r.total?"lead":""}">${i+1}</div>
+      <img src="${r.image}" alt="">
+      <div style="flex:1;min-width:0">
+        <div class="name">${esc(r.label)}</div>
+        <div class="bar"><div class="k" style="width:${pct}%"></div><div class="p" style="width:${100-pct}%"></div></div>
+        <div class="tally"><span class="k">${r.keep} keep</span><span class="t">${r.total} vote${r.total===1?"":"s"}</span><span class="p">${r.pass} pass</span></div>
+      </div>
+    </div>`;}).join("");
+}
+function renderResults(){
+  const v=$("#view-results");
+  if(!items.length){ v.innerHTML=empty("&#9733;","No results yet","Add items and start swiping."); return; }
+  v.innerHTML=`<div class="live"><span class="dot" id="liveDot"></span><span id="liveText">Loading…</span></div><div class="rows" id="resultRows"></div>`;
+  loadResults();
+}
+
+/* ------------------------------ tabs ------------------------------ */
+function show(t){
+  tab=t;
+  ["upload","swipe","results"].forEach(x=>$("#view-"+x).classList.toggle("hidden",x!==t));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  if(resultsTimer){clearInterval(resultsTimer);resultsTimer=null;}
+  if(t==="swipe"){ buildQueue(); renderSwipe(); }
+  if(t==="results"){ renderResults(); resultsTimer=setInterval(loadResults,2500); }
+}
+
+/* ---------------------------- helpers ----------------------------- */
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function empty(icon,h,p){return `<div class="empty"><div style="font-size:30px;color:var(--sub)">${icon}</div><h3>${h}</h3><p>${p}</p></div>`;}
+
+/* ------------------------------ init ------------------------------ */
+$("#drop").onclick=()=>$("#file").click();
+$("#file").onchange=e=>{handleFiles(e.target.files);e.target.value="";};
+$("#drop").addEventListener("dragover",e=>e.preventDefault());
+$("#drop").addEventListener("drop",e=>{e.preventDefault();handleFiles(e.dataTransfer.files);});
+$("#refreshBtn").onclick=()=>{loadItems(); if(tab==="results")loadResults();};
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.tab));
+window.addEventListener("keydown",e=>{ if(tab!=="swipe")return; if(e.key==="ArrowRight")commit(1); if(e.key==="ArrowLeft")commit(-1); });
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&tab==="results")loadResults(); });
+loadItems();
+</script>
+</body>
+</html>
