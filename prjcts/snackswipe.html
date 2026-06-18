@@ -60,6 +60,10 @@
   .bar .k{background:var(--keep);transition:width .4s}.bar .p{background:var(--pass);transition:width .4s}
   .tally{display:flex;justify-content:space-between;margin-top:5px;font-size:12px}
   .tally .k{color:var(--keep);font-weight:600}.tally .p{color:var(--pass);font-weight:600}.tally .t{color:var(--sub)}
+  .verdict{font-family:'Space Grotesk';font-weight:700;font-size:15px;letter-spacing:1px;padding:6px 16px;border-radius:999px;flex-shrink:0}
+  .verdict.yes{background:rgba(31,184,90,.13);color:var(--keep)}
+  .verdict.no{background:rgba(255,71,71,.13);color:var(--pass)}
+  .verdict.none{background:#ececea;color:var(--sub);font-size:13px;letter-spacing:0}
 
   .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px;min-height:360px;text-align:center}
   .empty h3{font-family:'Space Grotesk';font-weight:600;font-size:19px;margin:10px 0 0}
