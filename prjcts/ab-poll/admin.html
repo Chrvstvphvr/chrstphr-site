@@ -82,6 +82,37 @@
   .hour-bar.peak { background:#818cf8; }
   .hour-bar.empty { background:var(--line); }
   .hour-axis { display:flex; justify-content:space-between; margin-top:6px; color:var(--muted); font-size:.72rem; }
+
+  /* Question queue */
+  .q-row { display:flex; align-items:center; gap:10px; padding:10px 8px; border:1px solid var(--line);
+           border-radius:10px; margin-bottom:8px; background:#0f172a; }
+  .q-row.dragging { opacity:.4; }
+  .q-row.drop-above { box-shadow:0 -3px 0 var(--accent); }
+  .q-row.drop-below { box-shadow:0 3px 0 var(--accent); }
+  .q-handle { cursor:grab; color:var(--muted); font-size:1.15rem; padding:0 2px; user-select:none; flex:0 0 auto; }
+  .q-handle:active { cursor:grabbing; }
+  .q-num { color:var(--muted); font-variant-numeric:tabular-nums; width:1.5em; text-align:right; font-size:.85rem; flex:0 0 auto; }
+  .q-body { flex:1; min-width:0; cursor:pointer; }
+  .q-text { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .q-meta { color:var(--muted); font-size:.8rem; margin-top:2px; }
+  .q-meta .warn { color:#fca5a5; }
+  .q-actions { display:flex; gap:6px; flex:0 0 auto; }
+  .q-actions .icon-btn { width:34px; height:34px; font-size:.95rem; }
+  .q-empty { color:var(--muted); font-size:.9rem; padding:6px 0; margin:0; }
+  .sched-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .sched-row input[type=time] { background:#0f172a; border:1px solid var(--line); color:var(--text);
+           border-radius:10px; padding:10px 12px; font-size:1rem; }
+  .switch { display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; color:var(--text); }
+  .switch input { width:18px; height:18px; }
+  .next-note { color:var(--muted); font-size:.85rem; margin-top:8px; }
+
+  /* Modal */
+  .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,.82); display:flex;
+           align-items:center; justify-content:center; padding:20px; z-index:100; }
+  .modal-overlay.hidden { display:none; }
+  .modal { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px;
+           width:min(560px,94vw); max-height:88vh; overflow-y:auto; }
+  .modal h3 { margin:0 0 16px; font-size:1.15rem; }
 </style>
 </head>
 <body>
@@ -125,6 +156,34 @@
         <strong>Save changes</strong> edits the live poll and keeps existing votes.
         <strong>Publish as new poll</strong> archives the current one into Past results and starts fresh at 0.
       </p>
+    </div>
+
+    <!-- Question queue -->
+    <div class="card">
+      <h2>Question queue</h2>
+      <p class="sub" style="margin-top:0">Line up upcoming questions. The next one is published automatically at your
+        scheduled time, or publish it immediately with Advance now. Drag to reorder; click a question to edit its answers.</p>
+
+      <div class="sched-row">
+        <label class="switch"><input type="checkbox" id="qEnabled" /> Auto-advance daily</label>
+        <span style="color:var(--muted)">at</span>
+        <input type="time" id="qTime" value="06:00" />
+        <button class="btn ghost" id="qSaveSched" style="white-space:nowrap">Save schedule</button>
+        <button class="btn primary" id="qAdvanceNow" style="white-space:nowrap">Advance now</button>
+      </div>
+      <div class="next-note" id="qNextNote"></div>
+      <div id="qSchedMsg" class="msg"></div>
+
+      <div id="queueList" style="margin-top:14px"><p class="q-empty">Loading…</p></div>
+
+      <label style="margin-top:14px">Add a question</label>
+      <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap">
+        <input type="text" id="qNew" placeholder="Type a question…" style="flex:1; min-width:200px; margin-bottom:0" />
+        <button class="btn ghost" id="qAddStart" style="white-space:nowrap">Add to start</button>
+        <button class="btn primary" id="qAddEnd" style="white-space:nowrap">Add to end</button>
+      </div>
+      <p class="sub" style="margin:8px 0 0">After adding, click the question to set its answer choices.</p>
+      <div id="qAddMsg" class="msg"></div>
     </div>
 
     <!-- Live results -->
@@ -193,6 +252,24 @@
       <button class="btn ghost" id="logout" style="float:right">Sign out</button>
       <div id="pwMsg" class="msg"></div>
     </div>
+  </div>
+</div>
+
+<!-- Queue item editor -->
+<div class="modal-overlay hidden" id="qModal">
+  <div class="modal">
+    <h3 id="qModalTitle">Edit question</h3>
+    <label>Question</label>
+    <input type="text" id="qmQuestion" placeholder="Type your question…" />
+    <label>Answer options</label>
+    <div id="qmOpts"></div>
+    <button class="add-link" id="qmAddOpt">+ Add option</button>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn green" id="qmSave">Save</button>
+      <button class="btn ghost" id="qmCancel">Cancel</button>
+      <button class="btn red" id="qmDelete" style="margin-left:auto">Delete</button>
+    </div>
+    <div id="qmMsg" class="msg"></div>
   </div>
 </div>
 
@@ -308,6 +385,8 @@
     await renderLocations();
     await loadKioskPass();
     await renderDevices();
+    await loadSchedule();
+    await renderQueue();
   }
 
   // ---------- Polling devices ----------
@@ -553,6 +632,202 @@
   $("logout").addEventListener("click", () => {
     sessionStorage.removeItem("poll_admin_pw"); PW = null;
     $("dash").classList.add("hidden"); $("gate").classList.remove("hidden"); $("pw").value = "";
+  });
+
+  // ---------- Question queue ----------
+  let queueData = [];
+  let qEditingId = null;
+
+  async function loadSchedule() {
+    try {
+      const s = await rpc("admin_get_queue_schedule", { p_password: PW });
+      $("qEnabled").checked = !!s.enabled;
+      if (s.time) $("qTime").value = String(s.time).slice(0, 5);
+    } catch (e) {}
+  }
+
+  function updateNextNote() {
+    const note = $("qNextNote");
+    const enabled = $("qEnabled").checked;
+    const t = $("qTime").value || "06:00";
+    const when = enabled ? `Auto-advances at ${t} each day.` : "Auto-advance is off.";
+    if (!queueData.length) { note.textContent = "Queue is empty. " + when; return; }
+    const next = queueData[0];
+    const nOpts = (next.options || []).filter(o => String(o).trim()).length;
+    const warn = nOpts < 2 ? " — needs at least 2 answers" : "";
+    note.textContent = `Next up: “${next.question}”${warn}. ${when}`;
+  }
+
+  async function renderQueue() {
+    const list = $("queueList");
+    try {
+      queueData = await rpc("admin_list_queue", { p_password: PW }) || [];
+    } catch (e) { list.innerHTML = `<p class="q-empty">Could not load the queue.</p>`; return; }
+    if (!queueData.length) {
+      list.innerHTML = `<p class="q-empty">No questions queued yet. Add one below.</p>`;
+      updateNextNote();
+      return;
+    }
+    list.innerHTML = queueData.map((q, i) => {
+      const nOpts = (q.options || []).filter(o => String(o).trim()).length;
+      const meta = nOpts >= 2
+        ? `${nOpts} answer${nOpts === 1 ? "" : "s"}`
+        : `<span class="warn">⚠ needs at least 2 answers</span>`;
+      return `<div class="q-row" draggable="true" data-id="${esc(q.id)}">
+        <span class="q-handle" title="Drag to reorder">⠿</span>
+        <span class="q-num">${i + 1}</span>
+        <div class="q-body" data-id="${esc(q.id)}">
+          <div class="q-text">${esc(q.question)}</div>
+          <div class="q-meta">${meta}</div>
+        </div>
+        <div class="q-actions">
+          <button class="icon-btn" data-act="edit" data-id="${esc(q.id)}" title="Edit">✎</button>
+          <button class="icon-btn" data-act="del" data-id="${esc(q.id)}" title="Remove">✕</button>
+        </div>
+      </div>`;
+    }).join("");
+    wireQueueRows();
+    updateNextNote();
+  }
+
+  function wireQueueRows() {
+    const list = $("queueList");
+    list.querySelectorAll(".q-body").forEach(el =>
+      el.addEventListener("click", () => openQueueModal(el.dataset.id)));
+    list.querySelectorAll("[data-act='edit']").forEach(btn =>
+      btn.addEventListener("click", e => { e.stopPropagation(); openQueueModal(btn.dataset.id); }));
+    list.querySelectorAll("[data-act='del']").forEach(btn =>
+      btn.addEventListener("click", async e => {
+        e.stopPropagation();
+        const q = queueData.find(x => x.id === btn.dataset.id);
+        if (!confirm(`Remove "${q ? q.question : "this question"}" from the queue?`)) return;
+        try { await rpc("admin_queue_delete", { p_password: PW, p_id: btn.dataset.id }); await renderQueue(); }
+        catch (err) { flash($("qAddMsg"), err.message, false); }
+      }));
+    enableDragReorder(list);
+  }
+
+  function enableDragReorder(list) {
+    let dragEl = null;
+    const clearMarks = () => list.querySelectorAll(".q-row").forEach(r => r.classList.remove("drop-above", "drop-below"));
+    list.querySelectorAll(".q-row").forEach(row => {
+      row.addEventListener("dragstart", e => { dragEl = row; row.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+      row.addEventListener("dragend", () => { row.classList.remove("dragging"); clearMarks(); });
+      row.addEventListener("dragover", e => {
+        e.preventDefault();
+        if (!dragEl || row === dragEl) return;
+        const rect = row.getBoundingClientRect();
+        const after = (e.clientY - rect.top) > rect.height / 2;
+        row.classList.toggle("drop-below", after);
+        row.classList.toggle("drop-above", !after);
+      });
+      row.addEventListener("dragleave", () => row.classList.remove("drop-above", "drop-below"));
+      row.addEventListener("drop", async e => {
+        e.preventDefault();
+        if (!dragEl || row === dragEl) return;
+        const rect = row.getBoundingClientRect();
+        const after = (e.clientY - rect.top) > rect.height / 2;
+        clearMarks();
+        if (after) row.after(dragEl); else row.before(dragEl);
+        const ids = [...list.querySelectorAll(".q-row")].map(r => r.dataset.id);
+        try { await rpc("admin_queue_reorder", { p_password: PW, p_ids: ids }); }
+        catch (err) { flash($("qAddMsg"), err.message, false); }
+        await renderQueue();
+      });
+    });
+  }
+
+  // ----- Queue modal (question + options) -----
+  function qmRecolor() {
+    [...$("qmOpts").children].forEach((row, i) => {
+      row.querySelector(".swatch").style.background = COLORS[i % COLORS.length];
+      row.querySelector("input").placeholder = "Option " + (i + 1);
+    });
+  }
+  function qmOptRow(value, i) {
+    const div = document.createElement("div");
+    div.className = "opt-row";
+    div.innerHTML = `
+      <span class="swatch" style="background:${COLORS[i % COLORS.length]}"></span>
+      <input type="text" value="${esc(value || "")}" placeholder="Option ${i + 1}" />
+      <button class="icon-btn" title="Remove">✕</button>`;
+    div.querySelector(".icon-btn").addEventListener("click", () => { div.remove(); qmRecolor(); });
+    return div;
+  }
+  function qmSetOptions(list) {
+    $("qmOpts").innerHTML = "";
+    (list && list.length ? list : ["", ""]).forEach((v, i) => $("qmOpts").appendChild(qmOptRow(v, i)));
+  }
+  function qmReadOptions() {
+    return [...$("qmOpts").querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean);
+  }
+  $("qmAddOpt").addEventListener("click", () => { $("qmOpts").appendChild(qmOptRow("", $("qmOpts").children.length)); qmRecolor(); });
+
+  function openQueueModal(id) {
+    const q = queueData.find(x => x.id === id);
+    if (!q) return;
+    qEditingId = id;
+    $("qmQuestion").value = q.question;
+    qmSetOptions(q.options || []);
+    $("qmMsg").textContent = "";
+    $("qModal").classList.remove("hidden");
+  }
+  function closeQueueModal() { $("qModal").classList.add("hidden"); qEditingId = null; }
+  $("qmCancel").addEventListener("click", closeQueueModal);
+  $("qModal").addEventListener("click", e => { if (e.target === $("qModal")) closeQueueModal(); });
+  $("qmSave").addEventListener("click", async () => {
+    const ques = $("qmQuestion").value.trim();
+    const opts = qmReadOptions();
+    if (!ques) return flash($("qmMsg"), "Question is required.", false);
+    if (opts.length < 2) return flash($("qmMsg"), "Add at least 2 answer options.", false);
+    try {
+      await rpc("admin_queue_update", { p_password: PW, p_id: qEditingId, p_question: ques, p_options: opts });
+      closeQueueModal(); await renderQueue();
+    } catch (e) { flash($("qmMsg"), e.message, false); }
+  });
+  $("qmDelete").addEventListener("click", async () => {
+    if (!confirm("Delete this question from the queue?")) return;
+    try { await rpc("admin_queue_delete", { p_password: PW, p_id: qEditingId }); closeQueueModal(); await renderQueue(); }
+    catch (e) { flash($("qmMsg"), e.message, false); }
+  });
+
+  // ----- Add to queue -----
+  async function addQueue(atStart) {
+    const ques = $("qNew").value.trim();
+    if (!ques) return flash($("qAddMsg"), "Type a question first.", false);
+    try {
+      const id = await rpc("admin_queue_add", { p_password: PW, p_question: ques, p_options: [], p_at_start: atStart });
+      $("qNew").value = "";
+      await renderQueue();
+      openQueueModal(id);
+    } catch (e) { flash($("qAddMsg"), e.message, false); }
+  }
+  $("qAddEnd").addEventListener("click", () => addQueue(false));
+  $("qAddStart").addEventListener("click", () => addQueue(true));
+  $("qNew").addEventListener("keydown", e => { if (e.key === "Enter") addQueue(false); });
+
+  // ----- Schedule -----
+  $("qSaveSched").addEventListener("click", async () => {
+    try {
+      await rpc("admin_set_queue_schedule", {
+        p_password: PW,
+        p_enabled: $("qEnabled").checked,
+        p_time: $("qTime").value || "06:00",
+        p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      });
+      flash($("qSchedMsg"), "Schedule saved.", true);
+      updateNextNote();
+    } catch (e) { flash($("qSchedMsg"), e.message, false); }
+  });
+  $("qEnabled").addEventListener("change", updateNextNote);
+  $("qTime").addEventListener("change", updateNextNote);
+  $("qAdvanceNow").addEventListener("click", async () => {
+    if (!confirm("Publish the next queued question now? This closes the current poll and starts the next one.")) return;
+    try {
+      await rpc("admin_queue_advance_now", { p_password: PW });
+      flash($("qSchedMsg"), "Advanced to the next question.", true);
+      await refreshAll();
+    } catch (e) { flash($("qSchedMsg"), e.message, false); }
   });
 
   // ---------- PDF export (Swiss grid) ----------
