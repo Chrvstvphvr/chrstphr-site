@@ -262,6 +262,19 @@
   </div>
 </div>
 
+<!-- Queue item preview (read-only) -->
+<div class="modal-overlay hidden" id="qPreview">
+  <div class="modal">
+    <h3 id="qpQuestion" style="margin-bottom:6px">Question</h3>
+    <p class="sub" id="qpSub" style="margin:0 0 16px">Preview</p>
+    <div id="qpOptions"></div>
+    <div class="btn-row" style="margin-top:18px">
+      <button class="btn ghost" id="qpClose">Close</button>
+      <button class="btn primary" id="qpEdit" style="margin-left:auto">Edit</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="config.js"></script>
@@ -352,6 +365,12 @@
       <div class="total">${total} total vote${total === 1 ? "" : "s"}</div>`;
   }
 
+  function renderLiveResults(poll, results) {
+    $("liveResults").innerHTML =
+      `<div style="font-weight:700; font-size:1.05rem; margin:0 0 14px">${esc(poll.question)}</div>` +
+      resultsTable(poll.options, results);
+  }
+
   let activePoll = null;
 
   async function refreshAll() {
@@ -363,7 +382,7 @@
       $("editorTitle").textContent = "Current poll";
       const results = await rpc("get_active_results");
       $("livePill").textContent = "live";
-      $("liveResults").innerHTML = resultsTable(activePoll.options, results);
+      renderLiveResults(activePoll, results);
     } else {
       $("editorTitle").textContent = "Create a poll";
       $("livePill").textContent = "none";
@@ -489,7 +508,7 @@
     if (!activePoll) return;
     try {
       const results = await rpc("get_active_results");
-      $("liveResults").innerHTML = resultsTable(activePoll.options, results);
+      renderLiveResults(activePoll, results);
     } catch (e) {}
   }
 
@@ -669,7 +688,7 @@
   function wireQueueRows() {
     const list = $("queueList");
     list.querySelectorAll(".q-body").forEach(el =>
-      el.addEventListener("click", () => openQueueModal(el.dataset.id)));
+      el.addEventListener("click", () => openQueuePreview(el.dataset.id)));
     list.querySelectorAll("[data-act='edit']").forEach(btn =>
       btn.addEventListener("click", e => { e.stopPropagation(); openQueueModal(btn.dataset.id); }));
     list.querySelectorAll("[data-act='del']").forEach(btn =>
@@ -738,6 +757,33 @@
     return [...$("qmOpts").querySelectorAll("input")].map(i => i.value.trim()).filter(Boolean);
   }
   $("qmAddOpt").addEventListener("click", () => { $("qmOpts").appendChild(qmOptRow("", $("qmOpts").children.length)); qmRecolor(); });
+
+  // ----- Queue preview (read-only) -----
+  let qPreviewId = null;
+  function openQueuePreview(id) {
+    const q = queueData.find(x => x.id === id);
+    if (!q) return;
+    qPreviewId = id;
+    $("qpQuestion").textContent = q.question;
+    const opts = (q.options || []).filter(o => String(o).trim());
+    $("qpSub").textContent = opts.length
+      ? `${opts.length} answer choice${opts.length === 1 ? "" : "s"}`
+      : "No answer choices yet";
+    if (!opts.length) {
+      $("qpOptions").innerHTML = `<p class="sub" style="margin:0;color:#fca5a5">Needs at least 2 answers before it can publish — tap Edit to add them.</p>`;
+    } else {
+      $("qpOptions").innerHTML = opts.map((o, i) =>
+        `<div style="display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line)">
+           <span style="width:14px; height:14px; border-radius:4px; flex:0 0 14px; background:${COLORS[i % COLORS.length]}"></span>
+           <span>${esc(o)}</span>
+         </div>`).join("");
+    }
+    $("qPreview").classList.remove("hidden");
+  }
+  function closeQueuePreview() { $("qPreview").classList.add("hidden"); qPreviewId = null; }
+  $("qpClose").addEventListener("click", closeQueuePreview);
+  $("qPreview").addEventListener("click", e => { if (e.target === $("qPreview")) closeQueuePreview(); });
+  $("qpEdit").addEventListener("click", () => { const id = qPreviewId; closeQueuePreview(); openQueueModal(id); });
 
   function openQueueModal(id) {
     const q = queueData.find(x => x.id === id);
