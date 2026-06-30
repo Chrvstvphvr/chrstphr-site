@@ -579,25 +579,59 @@
   // ---------- Question queue ----------
   let queueData = [];
   let qEditingId = null;
+  let scheduleInfo = null;
 
   async function loadSchedule() {
     try {
-      const s = await rpc("admin_get_queue_schedule", { p_password: PW });
-      $("qEnabled").checked = !!s.enabled;
-      if (s.time) $("qTime").value = String(s.time).slice(0, 5);
+      scheduleInfo = await rpc("admin_get_queue_schedule", { p_password: PW });
+      $("qEnabled").checked = !!scheduleInfo.enabled;
+      if (scheduleInfo.time) $("qTime").value = String(scheduleInfo.time).slice(0, 5);
+      updateNextNote();
     } catch (e) {}
+  }
+
+  function fmtTime(t) {
+    const [h, m] = (t || "06:00").split(":").map(Number);
+    const ap = h < 12 ? "AM" : "PM";
+    const hr = h % 12 === 0 ? 12 : h % 12;
+    return `${hr}:${String(m).padStart(2, "0")} ${ap}`;
+  }
+
+  // The next scheduled advance, as a friendly "today/tomorrow at 6:00 AM".
+  function nextAdvanceText() {
+    const t = $("qTime").value || "06:00";
+    const [hh, mm] = t.split(":").map(Number);
+    const now = new Date();
+    const next = new Date(now); next.setHours(hh, mm, 0, 0);
+    if (next <= now) next.setDate(next.getDate() + 1);
+    const tom = new Date(now); tom.setDate(now.getDate() + 1);
+    const label = next.toDateString() === now.toDateString() ? "today"
+                : next.toDateString() === tom.toDateString() ? "tomorrow"
+                : next.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    return `${label} at ${fmtTime(t)}`;
   }
 
   function updateNextNote() {
     const note = $("qNextNote");
-    const enabled = $("qEnabled").checked;
-    const t = $("qTime").value || "06:00";
-    const when = enabled ? `Auto-advances at ${t} each day.` : "Auto-advance is off.";
-    if (!queueData.length) { note.textContent = "Queue is empty. " + when; return; }
-    const next = queueData[0];
-    const nOpts = (next.options || []).filter(o => String(o).trim()).length;
-    const warn = nOpts < 2 ? " — needs at least 2 answers" : "";
-    note.textContent = `Next up: “${next.question}”${warn}. ${when}`;
+    const lines = [];
+    if (queueData.length) {
+      const next = queueData[0];
+      const nOpts = (next.options || []).filter(o => String(o).trim()).length;
+      const warn = nOpts < 2 ? ` <span style="color:#fca5a5">— needs at least 2 answers</span>` : "";
+      lines.push(`Next up: “${esc(next.question)}”${warn}`);
+    } else {
+      lines.push("Queue is empty.");
+    }
+    lines.push($("qEnabled").checked ? `Next advance: ${nextAdvanceText()}` : "Auto-advance is off.");
+    if (scheduleInfo && scheduleInfo.last_advanced_at) {
+      const la = new Date(scheduleInfo.last_advanced_at);
+      const when = `${la.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at ${la.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+      const q = scheduleInfo.last_advanced_q ? ` — “${esc(scheduleInfo.last_advanced_q)}”` : "";
+      lines.push(`Last advanced: ${when}${q}`);
+    } else {
+      lines.push("Last advanced: never");
+    }
+    note.innerHTML = lines.map(l => `<div>${l}</div>`).join("");
   }
 
   async function renderQueue() {
