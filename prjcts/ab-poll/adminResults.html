@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Past Results — Poll Admin</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --line:#334155; --text:#f8fafc; --muted:#94a3b8;
+    --accent:#6366f1;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); padding:32px 18px 80px;
+  }
+  .wrap { max-width:780px; margin:0 auto; }
+  h1 { font-size:1.6rem; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 28px; font-size:.95rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:22px; }
+  .card h2 { margin:0 0 16px; font-size:1.1rem; }
+  label { display:block; font-size:.85rem; color:var(--muted); margin:0 0 6px; }
+  input[type=password] {
+    width:100%; background:#0f172a; border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:12px 14px; font-size:1rem; margin-bottom:14px;
+  }
+  input:focus { outline:none; border-color:var(--accent); }
+  button.btn { border:none; border-radius:10px; padding:12px 18px; font-size:.95rem; font-weight:600; cursor:pointer; color:#fff; }
+  .btn.primary { background:var(--accent); }
+  .btn.ghost { background:transparent; border:1px solid var(--line); color:var(--text); }
+  a.link { color:var(--accent); text-decoration:none; }
+
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); font-size:.95rem; }
+  th { color:var(--muted); font-weight:600; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .barcell { width:40%; }
+  .minibar { height:10px; background:#0f172a; border-radius:999px; overflow:hidden; }
+  .minifill { height:100%; }
+  .swatch { display:inline-block; width:12px; height:12px; border-radius:4px; vertical-align:middle; }
+  .total { color:var(--muted); font-size:.9rem; margin-top:12px; }
+  .msg { min-height:1.2em; font-size:.9rem; margin-top:10px; }
+  .msg.ok { color:#86efac; } .msg.err { color:#fca5a5; }
+  .hidden { display:none !important; }
+  .gate { max-width:380px; margin:14vh auto 0; }
+
+  /* Votes-by-hour chart */
+  .hour-chart { margin:0 0 26px; }
+  .hour-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .hour-head .sub { margin:0; }
+  .hour-bars { display:flex; align-items:flex-end; gap:3px; height:120px; }
+  .hour-col { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; min-width:0; }
+  .hour-bar { width:100%; min-height:2px; background:var(--accent); border-radius:3px 3px 0 0; transition:height .3s ease; }
+  .hour-bar.peak { background:#818cf8; }
+  .hour-bar.empty { background:var(--line); }
+  .hour-axis { display:flex; justify-content:space-between; margin-top:6px; color:var(--muted); font-size:.72rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Login gate -->
+  <div id="gate" class="card gate hidden">
+    <h2>Admin sign in</h2>
+    <label>Password</label>
+    <input type="password" id="pw" placeholder="Enter admin password" />
+    <button class="btn primary" id="loginBtn" style="width:100%">Sign in</button>
+    <div id="gateMsg" class="msg err"></div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dash" class="hidden">
+    <h1>Past results</h1>
+    <p class="sub">Every closed question and the times of day people voted.
+      <a class="link" href="admin.html">← Back to admin</a></p>
+
+    <div class="card">
+      <h2>Past results</h2>
+      <div id="hourChart" class="hour-chart"></div>
+      <div id="pastResults"><p class="sub">Loading…</p></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+  const { SUPABASE_URL, SUPABASE_KEY } = window.POLL_CONFIG;
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const COLORS = ["#6366f1","#14b8a6","#f59e0b","#ec4899","#8b5cf6"];
+  let PW = sessionStorage.getItem("poll_admin_pw") || null;
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  const pct = (c, t) => (!t ? 0 : Math.round((c / t) * 100));
+  const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
+  async function rpc(fn, args) {
+    const { data, error } = await sb.rpc(fn, args || {});
+    if (error) throw error;
+    return data;
+  }
+  function flash(el, text, ok) {
+    el.textContent = text; el.className = "msg " + (ok ? "ok" : "err");
+  }
+
+  // ---------- Login ----------
+  async function doLogin(pw) {
+    const ok = await rpc("admin_login", { p_password: pw });
+    if (!ok) throw new Error("Wrong password");
+    PW = pw;
+    sessionStorage.setItem("poll_admin_pw", pw);
+    $("gate").classList.add("hidden");
+    $("dash").classList.remove("hidden");
+    await refreshAll();
+  }
+  $("loginBtn").addEventListener("click", async () => {
+    try { await doLogin($("pw").value); }
+    catch (e) { flash($("gateMsg"), e.message || "Login failed", false); }
+  });
+  $("pw").addEventListener("keydown", e => { if (e.key === "Enter") $("loginBtn").click(); });
+
+  // ---------- Results ----------
+  function resultsTable(options, results) {
+    const total = (results && results.total) || 0;
+    const rows = options.map((o, i) => {
+      const c = (results && results.counts && results.counts[i]) || 0;
+      const p = pct(c, total);
+      return `<tr>
+        <td><span class="swatch" style="background:${COLORS[i % COLORS.length]}"></span> ${esc(o)}</td>
+        <td class="barcell"><div class="minibar"><div class="minifill" style="width:${p}%;background:${COLORS[i % COLORS.length]}"></div></div></td>
+        <td class="num">${c}</td>
+        <td class="num"><strong>${p}%</strong></td>
+      </tr>`;
+    }).join("");
+    return `<table>
+      <thead><tr><th>Answer</th><th></th><th class="num">Votes</th><th class="num">Share</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <div class="total">${total} total vote${total === 1 ? "" : "s"}</div>`;
+  }
+
+  // Day the poll really "ran": the date most votes came in, falling back to
+  // the close timestamp for polls with no votes.
+  function pollDay(p) {
+    if (p.poll_date) {
+      const [y, m, d] = p.poll_date.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return p.closed_at ? new Date(p.closed_at) : null;
+  }
+
+  function hourLabel(h) {
+    const ampm = h < 12 ? "a" : "p";
+    const hr = h % 12 === 0 ? 12 : h % 12;
+    return hr + ampm;
+  }
+
+  async function renderHourChart() {
+    const el = $("hourChart");
+    let data;
+    try {
+      data = await rpc("admin_votes_by_hour", { p_password: PW, p_tz: TZ });
+    } catch (e) { el.innerHTML = ""; return; }
+    if (!data || !data.length) { el.innerHTML = ""; return; }
+    const total = data.reduce((s, d) => s + d.count, 0);
+    if (!total) {
+      el.innerHTML = `<div class="hour-head"><h3 style="margin:0;font-size:1rem">Votes by time of day</h3></div>
+        <p class="sub" style="margin:0">No votes recorded yet.</p>`;
+      return;
+    }
+    const max = Math.max(...data.map(d => d.count));
+    const bars = data.map(d => {
+      const p = Math.round((d.count / max) * 100);
+      const cls = d.count === 0 ? "empty" : (d.count === max ? "peak" : "");
+      const ttl = `${hourLabel(d.hour)}–${hourLabel((d.hour + 1) % 24)}: ${d.count} vote${d.count === 1 ? "" : "s"}`;
+      return `<div class="hour-col" title="${esc(ttl)}">
+        <div class="hour-bar ${cls}" style="height:${d.count === 0 ? 0 : Math.max(p, 3)}%"></div>
+      </div>`;
+    }).join("");
+    const ticks = [0, 6, 12, 18, 23].map(h => `<span>${hourLabel(h)}</span>`).join("");
+    el.innerHTML = `
+      <div class="hour-head">
+        <h3 style="margin:0;font-size:1rem">Votes by time of day</h3>
+        <span class="sub">${total} vote${total === 1 ? "" : "s"} across all questions</span>
+      </div>
+      <div class="hour-bars">${bars}</div>
+      <div class="hour-axis">${ticks}</div>`;
+  }
+
+  async function renderPast() {
+    const past = await rpc("get_past_polls", { p_tz: TZ });
+    if (!past || !past.length) { $("pastResults").innerHTML = `<p class="sub">None yet.</p>`; return; }
+    $("pastResults").innerHTML = past.map(p => {
+      const day = pollDay(p);
+      const d = day ? day.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "";
+      return `<div style="margin-bottom:22px">
+        <div style="font-weight:700;margin-bottom:2px">${esc(p.question)}</div>
+        <div class="sub" style="margin:0 0 8px">${esc(d)}</div>
+        ${resultsTable(p.options, p.results)}
+      </div>`;
+    }).join("");
+  }
+
+  async function refreshAll() {
+    await renderHourChart();
+    await renderPast();
+  }
+
+  // ---------- Boot ----------
+  if (PW) {
+    doLogin(PW).catch(() => {
+      sessionStorage.removeItem("poll_admin_pw"); PW = null;
+      $("gate").classList.remove("hidden");
+    });
+  } else {
+    $("gate").classList.remove("hidden");
+  }
+  setInterval(() => { if (PW && !$("dash").classList.contains("hidden")) refreshAll(); }, 20000);
+</script>
+</body>
+</html>
