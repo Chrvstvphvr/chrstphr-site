@@ -782,8 +782,8 @@
   $("qAddStart").addEventListener("click", () => addQueue(true));
   $("qNew").addEventListener("keydown", e => { if (e.key === "Enter") addQueue(false); });
 
-  // ----- Schedule -----
-  $("qSaveSched").addEventListener("click", async () => {
+  // ----- Schedule (auto-saves on any change so the UI always matches the server) -----
+  async function saveSchedule() {
     try {
       await rpc("admin_set_queue_schedule", {
         p_password: PW,
@@ -791,12 +791,13 @@
         p_time: $("qTime").value || "06:00",
         p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
       });
+      await loadSchedule();   // re-read server state (incl. recomputed run date) and refresh the note
       flash($("qSchedMsg"), "Schedule saved.", true);
-      updateNextNote();
     } catch (e) { flash($("qSchedMsg"), e.message, false); }
-  });
-  $("qEnabled").addEventListener("change", updateNextNote);
-  $("qTime").addEventListener("change", updateNextNote);
+  }
+  $("qSaveSched").addEventListener("click", saveSchedule);
+  $("qEnabled").addEventListener("change", saveSchedule);
+  $("qTime").addEventListener("change", saveSchedule);
   $("qAdvanceNow").addEventListener("click", async () => {
     if (!confirm("Publish the next queued question now? This closes the current poll and starts the next one.")) return;
     try {
