@@ -54,6 +54,19 @@
   .hour-bar.peak { background:#818cf8; }
   .hour-bar.empty { background:var(--line); }
   .hour-axis { display:flex; justify-content:space-between; margin-top:6px; color:var(--muted); font-size:.72rem; }
+
+  /* Popularity-by-day chart */
+  .day-chart { margin:0 0 26px; }
+  .day-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .day-head .sub { margin:0; }
+  .day-bars { display:flex; align-items:flex-end; gap:8px; height:120px; }
+  .day-col { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; min-width:0; }
+  .day-bar { width:100%; min-height:2px; background:var(--accent); border-radius:4px 4px 0 0; transition:height .3s ease; }
+  .day-bar.peak { background:#818cf8; }
+  .day-bar.empty { background:var(--line); }
+  .day-labels { display:flex; gap:8px; margin-top:8px; }
+  .day-labels span { flex:1; text-align:center; color:var(--muted); font-size:.75rem; line-height:1.35; }
+  .day-labels .cnt { display:block; color:var(--text); font-weight:600; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -77,6 +90,7 @@
     <div class="card">
       <h2>Past results</h2>
       <div id="hourChart" class="hour-chart"></div>
+      <div id="dayChart" class="day-chart"></div>
       <div id="pastResults"><p class="sub">Loading…</p></div>
     </div>
   </div>
@@ -201,8 +215,44 @@
     }).join("");
   }
 
+  const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  async function renderDayChart() {
+    const el = $("dayChart");
+    let data;
+    try {
+      data = await rpc("admin_votes_by_dow", { p_password: PW, p_tz: TZ });
+    } catch (e) { el.innerHTML = ""; return; }
+    if (!data || !data.length) { el.innerHTML = ""; return; }
+    const total = data.reduce((s, d) => s + d.count, 0);
+    if (!total) {
+      el.innerHTML = `<div class="day-head"><h3 style="margin:0;font-size:1rem">Popularity by day</h3></div>
+        <p class="sub" style="margin:0">No votes recorded yet.</p>`;
+      return;
+    }
+    const max = Math.max(...data.map(d => d.count));
+    const bars = data.map(d => {
+      const p = Math.round((d.count / max) * 100);
+      const cls = d.count === 0 ? "empty" : (d.count === max ? "peak" : "");
+      const ttl = `${DAY_NAMES[d.dow]}: ${d.count} vote${d.count === 1 ? "" : "s"}`;
+      return `<div class="day-col" title="${esc(ttl)}">
+        <div class="day-bar ${cls}" style="height:${d.count === 0 ? 0 : Math.max(p, 3)}%"></div>
+      </div>`;
+    }).join("");
+    const labels = data.map(d =>
+      `<span>${DAY_NAMES[d.dow]}<span class="cnt">${d.count.toLocaleString()}</span></span>`).join("");
+    el.innerHTML = `
+      <div class="day-head">
+        <h3 style="margin:0;font-size:1rem">Popularity by day</h3>
+        <span class="sub">${total.toLocaleString()} vote${total === 1 ? "" : "s"} across all questions</span>
+      </div>
+      <div class="day-bars">${bars}</div>
+      <div class="day-labels">${labels}</div>`;
+  }
+
   async function refreshAll() {
     await renderHourChart();
+    await renderDayChart();
     await renderPast();
   }
 
