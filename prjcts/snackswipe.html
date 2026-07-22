@@ -291,24 +291,21 @@ function ResultsView({ items }) {
         <span style={{ color: C.sub, fontSize: 12 }}>{live ? "Live · everyone's votes, updates every couple seconds" : "Reconnecting…"}</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {rows.map((r, i) => {
-          const keepPct = r.total ? (r.keep / r.total) * 100 : 50;
+        {rows.map((r) => {
+          let cls, txt;
+          if (!r.total) { cls = "none"; txt = "—"; }
+          else if (r.keep > r.pass) { cls = "yes"; txt = "YES"; }
+          else if (r.pass > r.keep) { cls = "no"; txt = "NO"; }
+          else { cls = "none"; txt = "TIE"; }
+          const bg = cls === "yes" ? "rgba(31,184,90,.13)" : cls === "no" ? "rgba(255,71,71,.13)" : "#ececea";
+          const fg = cls === "yes" ? C.keep : cls === "no" ? C.pass : C.sub;
           return (
             <div key={r.id} style={{ display: "flex", gap: 12, alignItems: "center", background: "#fff", border: `1px solid ${C.line}`, borderRadius: 16, padding: 10 }}>
-              <div className="sv-display" style={{ fontWeight: 700, fontSize: 16, width: 22, textAlign: "center", color: i === 0 && r.total ? C.accent : C.sub }}>{i + 1}</div>
               <img src={r.image} alt={r.label} style={{ width: 54, height: 54, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="sv-display" style={{ fontWeight: 600, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.label}</div>
-                <div style={{ height: 8, borderRadius: 99, overflow: "hidden", display: "flex", background: C.line, marginTop: 6 }}>
-                  <div style={{ width: `${keepPct}%`, background: C.keep, transition: "width .4s ease" }} />
-                  <div style={{ width: `${100 - keepPct}%`, background: C.pass, transition: "width .4s ease" }} />
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5, fontSize: 12 }}>
-                  <span style={{ color: C.keep, fontWeight: 600 }}>{r.keep} keep</span>
-                  <span style={{ color: C.sub }}>{r.total} vote{r.total === 1 ? "" : "s"}</span>
-                  <span style={{ color: C.pass, fontWeight: 600 }}>{r.pass} pass</span>
-                </div>
               </div>
+              <div className="sv-display" style={{ fontWeight: 700, fontSize: cls === "none" ? 13 : 15, letterSpacing: cls === "none" ? 0 : 1, padding: "6px 16px", borderRadius: 999, background: bg, color: fg, flexShrink: 0 }}>{txt}</div>
             </div>
           );
         })}
