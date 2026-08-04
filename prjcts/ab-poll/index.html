@@ -44,6 +44,8 @@
     flex-direction: column;
     padding: 0 clamp(16px, 3vw, 40px) clamp(80px, 11vh, 110px);
   }
+  /* On the results view the peek button is hidden, so reclaim its clearance. */
+  body.showing-results .wrap { padding-bottom: clamp(16px, 2.5vh, 32px); }
   /* The voting/results area fills the viewport and is vertically centered. */
   .stage {
     flex: 1 0 auto;
@@ -99,9 +101,16 @@
   }
   .pct { font-variant-numeric: tabular-nums; font-weight: 800; }
   .bar { height: clamp(18px, 2.8vmin, 30px); background: var(--bar-bg); border-radius: 999px; overflow: hidden; }
+  /* Bar colors are set inline from the COLORS array, cycling for 6+ answers. */
   .fill { height: 100%; width: 0; border-radius: 999px; transition: width .6s cubic-bezier(.22,1,.36,1); }
-  .fill0 { background: var(--c0);} .fill1 { background: var(--c1);} .fill2 { background: var(--c2);}
-  .fill3 { background: var(--c3);} .fill4 { background: var(--c4);}
+
+  /* Long answer lists: tighten rows so everything fits without scrolling. */
+  #app.compact .result-row { margin-bottom: clamp(8px, 1.2vh, 14px); }
+  #app.compact .result-top { font-size: clamp(1rem, 2.4vmin, 1.5rem); margin-bottom: clamp(4px, .7vh, 7px); }
+  #app.compact .bar { height: clamp(13px, 1.9vmin, 20px); }
+  #app.compact .question { font-size: calc(var(--title-size) * .55); }
+  #app.compact .thanks { font-size: clamp(1.1rem, 2.6vmin, 1.6rem); margin-bottom: clamp(8px, 1.4vh, 16px); }
+  #app.compact .nextbtn { margin-top: clamp(12px, 1.8vh, 22px); }
 
   .meta { text-align: center; color: var(--muted); margin-top: clamp(8px,1.5vh,16px); font-size: clamp(1rem, 2.4vmin, 1.4rem); }
   .thanks { text-align:center; font-size: clamp(1.4rem,3.6vmin,2.2rem); font-weight:700; margin: 0 0 clamp(16px,2.5vh,28px); }
@@ -139,6 +148,14 @@
     box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
   }
   .peek-card h2 { margin: 0 0 18px; font-size: clamp(1.4rem, 4vmin, 2.2rem); font-weight: 800; text-align: center; }
+  /* Long answer lists: keep the whole card (including the QR) on screen. */
+  .peek-card.compact h2 { margin-bottom: 12px; font-size: clamp(1.2rem, 3.2vmin, 1.8rem); }
+  .peek-card.compact .result-row { margin-bottom: clamp(6px, 1vh, 12px); }
+  .peek-card.compact .result-top { font-size: clamp(.95rem, 2.2vmin, 1.35rem); margin-bottom: clamp(3px, .6vh, 6px); }
+  .peek-card.compact .bar { height: clamp(11px, 1.7vmin, 18px); }
+  .peek-card.compact .peek-meta { margin-top: 8px; }
+  .peek-card.compact .qr-block { margin-top: clamp(10px, 1.6vh, 18px); }
+  .peek-card.compact .qr-block img { width: clamp(96px, 13vmin, 140px); }
   .peek-meta { text-align: center; color: var(--muted); margin-top: 14px; font-size: clamp(.95rem, 2.2vmin, 1.3rem); }
 </style>
 </head>
@@ -204,6 +221,8 @@
       appEl.querySelectorAll(".opt").forEach(b => {
         b.addEventListener("click", () => vote(parseInt(b.dataset.i, 10)));
       });
+      document.body.classList.remove("showing-results");
+      appEl.classList.remove("compact");
       peekBtn.style.display = "";
     }
 
@@ -215,7 +234,7 @@
         return `
           <div class="result-row">
             <div class="result-top"><span>${esc(o)}</span><span class="pct">${p}%</span></div>
-            <div class="bar"><div class="fill fill${i}" style="width:${p}%"></div></div>
+            <div class="bar"><div class="fill" style="width:${p}%;background:${COLORS[i % COLORS.length]}"></div></div>
           </div>`;
       }).join("");
     }
@@ -234,6 +253,7 @@
           <div class="qr-block" id="peekQr">
             <span class="qr-cap">See all the past results here:</span>
           </div>`;
+        peekCard.classList.toggle("compact", poll.options.length > 5);
         renderQR(document.getElementById("peekQr"), true);
         peekOverlay.classList.add("show");
         clearTimeout(peekTimer);
@@ -255,7 +275,7 @@
         return `
           <div class="result-row">
             <div class="result-top"><span>${esc(o)}</span><span class="pct">${p}%</span></div>
-            <div class="bar"><div class="fill fill${i}" style="width:${p}%"></div></div>
+            <div class="bar"><div class="fill" style="width:${p}%;background:${COLORS[i % COLORS.length]}"></div></div>
           </div>`;
       }).join("");
       appEl.innerHTML = `
@@ -263,12 +283,10 @@
         <p class="thanks">Thanks for voting!</p>
         ${rows}
         <p class="meta">${total} vote${total === 1 ? "" : "s"} so far</p>
-        <div class="qr-block" id="qrBlock">
-          <span class="qr-cap">Scan to see full results</span>
-        </div>
         <button class="nextbtn" id="next">Next person ›</button>`;
+      document.body.classList.add("showing-results");
+      appEl.classList.toggle("compact", poll.options.length > 5);
       document.getElementById("next").addEventListener("click", backToVote);
-      renderQR();
       hidePeek();
       peekBtn.style.display = "none";
     }
