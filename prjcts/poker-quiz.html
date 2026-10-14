@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hold 'em Hand Quiz</title>
+<style>
+  :root{
+    --felt:#0e5a3a; --felt-dark:#093d28; --gold:#e6c067; --ink:#14181f;
+    --red:#c8283a; --card:#fbfaf6; --good:#3ecf8e; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; color:#eef3ef;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(ellipse at 50% 0%,var(--felt) 0%,var(--felt-dark) 70%,#05221a 100%);
+    padding:16px;
+  }
+  .wrap{max-width:720px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  h1{margin:0;font-size:1.4rem;letter-spacing:.5px;color:var(--gold)}
+  .sub{font-size:.85rem;opacity:.75;margin-top:2px}
+  .score{font-variant-numeric:tabular-nums;font-size:.9rem;text-align:right;background:rgba(0,0,0,.28);padding:8px 12px;border-radius:10px}
+  .score b{color:var(--gold)}
+  .table{
+    background:rgba(0,0,0,.22);border:2px solid rgba(230,192,103,.35);
+    border-radius:20px;padding:18px 14px;
+  }
+  .label{font-size:.72rem;text-transform:uppercase;letter-spacing:2px;opacity:.7;margin:6px 0 8px;text-align:center}
+  .row{display:flex;gap:8px;justify-content:center;flex-wrap:nowrap}
+  .card{
+    width:clamp(48px,14vw,78px);aspect-ratio:5/7;border-radius:8px;background:var(--card);color:var(--ink);
+    display:flex;flex-direction:column;justify-content:space-between;padding:5px 6px;
+    font-weight:700;font-size:clamp(.95rem,3.6vw,1.35rem);line-height:1;
+    box-shadow:0 3px 8px rgba(0,0,0,.45);transition:transform .15s,opacity .25s,box-shadow .15s;
+    user-select:none;
+  }
+  .card.enter{animation:deal .35s ease-out}
+  .card.dim{opacity:.28;transform:scale(.95);box-shadow:none}
+  .card.red{color:var(--red)}
+  .card .corner{display:flex;flex-direction:column;align-items:flex-start}
+  .card .corner.bot{align-self:flex-end;transform:rotate(180deg)}
+  .card .mid{text-align:center;font-size:1.9em;line-height:1;margin:auto}
+  .slot{
+    width:clamp(48px,14vw,78px);aspect-ratio:5/7;border-radius:8px;
+    border:2px dashed rgba(255,255,255,.2);
+  }
+  .picking .card{cursor:pointer}
+  .picking .card:hover{transform:translateY(-3px)}
+  .card.sel{box-shadow:0 0 0 3px var(--gold),0 8px 16px rgba(0,0,0,.55);transform:translateY(-8px)}
+  .card.locked{cursor:default}
+  @keyframes deal{from{transform:translateY(-14px) rotate(-4deg);opacity:0}to{opacity:1}}
+  .street{text-align:center;margin:14px 0 4px;font-size:.95rem;color:var(--gold);min-height:1.3em}
+  .controls{display:flex;justify-content:center;margin-top:12px}
+  button{font:inherit;cursor:pointer;border:0}
+  .main{
+    background:var(--gold);color:#2a2105;font-weight:700;padding:12px 26px;border-radius:999px;
+    font-size:1rem;box-shadow:0 4px 0 #a88a38;transition:transform .08s,box-shadow .08s,opacity .2s;
+  }
+  .main:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #a88a38}
+  .main:disabled{opacity:.35;cursor:not-allowed}
+  .quiz{margin-top:18px;background:rgba(0,0,0,.3);border-radius:16px;padding:14px}
+  .quiz h2{margin:0 0 4px;font-size:1.05rem}
+  .quiz .hint{font-size:.82rem;opacity:.75;margin-bottom:10px}
+  .submitRow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .count{font-variant-numeric:tabular-nums;font-size:.9rem}
+  .count b{color:var(--gold)}
+  .clear{background:transparent;color:#eef3ef;opacity:.7;text-decoration:underline;font-size:.85rem;padding:4px}
+  .result{margin-top:14px;font-size:.95rem;line-height:1.45}
+  .verdict{font-weight:700;font-size:1.1rem;margin-bottom:6px}
+  .verdict.good{color:var(--good)} .verdict.bad{color:var(--bad)}
+  .block{margin-top:12px;padding:10px;border-radius:12px;background:rgba(255,255,255,.06)}
+  .block.better{background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.4)}
+  .block .cap{font-size:.72rem;text-transform:uppercase;letter-spacing:2px;opacity:.7}
+  .block .name{font-weight:700;font-size:1.05rem;margin:2px 0 8px}
+  .mini .card{width:clamp(44px,13vw,64px);font-size:clamp(.85rem,3.2vw,1.1rem);animation:none;box-shadow:0 2px 5px rgba(0,0,0,.4)}
+  .mini{justify-content:flex-start}
+  .ref{margin-top:18px;font-size:.8rem;opacity:.8}
+  .ref summary{cursor:pointer;color:var(--gold)}
+  .ref ol{margin:8px 0 0;padding-left:20px;line-height:1.55}
+  .refItem{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.1)}
+  .refItem .txt{flex:1;min-width:0;line-height:1.35}
+  .refItem .txt b{display:block;font-size:.92rem}
+  .refItem .txt span{opacity:.8}
+  .refItem .num{color:var(--gold);font-weight:700;width:1.4em;text-align:right}
+  .ref .mini{flex:0 0 auto;gap:4px}
+  .ref .mini .card{width:clamp(30px,8.5vw,42px);font-size:clamp(.65rem,2.4vw,.8rem);padding:3px 4px;border-radius:5px}
+  .toggle{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:14px;font-size:.85rem;opacity:.85}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>HOLD 'EM HAND QUIZ</h1>
+      <div class="sub">Deal it. Pick your five. Be right, or be corrected.</div>
+    </div>
+    <div class="score">Correct <b id="sCorrect">0</b> / <b id="sTotal">0</b> &nbsp;·&nbsp; Streak <b id="sStreak">0</b></div>
+  </header>
+
+  <div class="table" id="table">
+    <div class="label">Your hole cards</div>
+    <div class="row" id="hole"></div>
+
+    <div class="street" id="street"></div>
+
+    <div class="label">The board</div>
+    <div class="row" id="board"></div>
+
+    <div class="controls"><button class="main" id="mainBtn">Deal</button></div>
+
+    <label class="toggle"><input type="checkbox" id="everyStreet"> Quiz me on every street, not just the river</label>
+
+    <div class="quiz" id="quiz" hidden>
+      <h2 id="quizTitle">Build your best five-card hand</h2>
+      <div class="hint" id="quizHint">Tap exactly five cards above, from your hole cards and the board. Then submit.</div>
+      <div class="submitRow">
+        <div class="count"><b id="selCount">0</b> of 5 selected <button class="clear" id="clearBtn">clear</button></div>
+        <button class="main" id="submitBtn" disabled>Submit hand</button>
+      </div>
+      <div class="result" id="result"></div>
+    </div>
+  </div>
+
+  <details class="ref">
+    <summary>Cheat sheet (you'll want it)</summary>
+    <div id="refList"></div>
+  </details>
+</div>
+
+<script>
+(function(){
+  const SUITS = ['♠','♥','♦','♣'];
+  const RANK_LABEL = {11:'J',12:'Q',13:'K',14:'A'};
+  const RANK_NAME = {2:'Two',3:'Three',4:'Four',5:'Five',6:'Six',7:'Seven',8:'Eight',9:'Nine',10:'Ten',11:'Jack',12:'Queen',13:'King',14:'Ace'};
+  const RANK_PLURAL = {2:'Twos',3:'Threes',4:'Fours',5:'Fives',6:'Sixes',7:'Sevens',8:'Eights',9:'Nines',10:'Tens',11:'Jacks',12:'Queens',13:'Kings',14:'Aces'};
+  const HANDS = ['High Card','One Pair','Two Pair','Three of a Kind','Straight','Flush','Full House','Four of a Kind','Straight Flush','Royal Flush'];
+
+  const $ = id => document.getElementById(id);
+  const rl = r => RANK_LABEL[r] || String(r);
+  const key = c => c.r + '-' + c.s;
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+
+  // ---------- state ----------
+  let deck, hole, board, stage, quizOpen, submitted;
+  let shown = new Set(); // cards already on screen, so only new ones animate
+  let selected = new Set();
+  let correct = 0, total = 0, streak = 0;
+  try {
+    const saved = JSON.parse(localStorage.getItem('holdemQuiz2') || 'null');
+    if (saved) { correct = saved.correct|0; total = saved.total|0; streak = saved.streak|0; }
+  } catch(e){}
+  function saveScore(){ try { localStorage.setItem('holdemQuiz2', JSON.stringify({correct,total,streak})); } catch(e){} }
+  function renderScore(){ $('sCorrect').textContent = correct; $('sTotal').textContent = total; $('sStreak').textContent = streak; }
+
+  // ---------- deck ----------
+  function newDeck(){
+    const d = [];
+    for (let s = 0; s < 4; s++) for (let r = 2; r <= 14; r++) d.push({r, s});
+    for (let i = d.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [d[i], d[j]] = [d[j], d[i]];
+    }
+    return d;
+  }
+
+  // ---------- evaluation ----------
+  function eval5(c){
+    const r = c.map(x => x.r).sort((a,b) => b - a);
+    const flush = c.every(x => x.s === c[0].s);
+    const cnt = {};
+    r.forEach(v => cnt[v] = (cnt[v] || 0) + 1);
+    const groups = Object.entries(cnt).map(([v,n]) => [+v, n]).sort((a,b) => b[1] - a[1] || b[0] - a[0]);
+    const uniq = [...new Set(r)];
+    let sHigh = 0;
+    if (uniq.length === 5) {
+      if (uniq[0] - uniq[4] === 4) sHigh = uniq[0];
+      else if (uniq[0] === 14 && uniq[1] === 5) sHigh = 5; // wheel
+    }
+    let cat, tb;
+    if (sHigh && flush) { cat = sHigh === 14 ? 9 : 8; tb = [sHigh]; }
+    else if (groups[0][1] === 4) { cat = 7; tb = groups.map(g => g[0]); }
+    else if (groups[0][1] === 3 && groups[1] && groups[1][1] === 2) { cat = 6; tb = groups.map(g => g[0]); }
+    else if (flush) { cat = 5; tb = r; }
+    else if (sHigh) { cat = 4; tb = [sHigh]; }
+    else if (groups[0][1] === 3) { cat = 3; tb = groups.map(g => g[0]); }
+    else if (groups[0][1] === 2 && groups[1][1] === 2) { cat = 2; tb = groups.map(g => g[0]); }
+    else if (groups[0][1] === 2) { cat = 1; tb = groups.map(g => g[0]); }
+    else { cat = 0; tb = r; }
+    return {cat, tb, cards: c, wheel: sHigh === 5};
+  }
+
+  function cmp(a, b){
+    if (a.cat !== b.cat) return a.cat - b.cat;
+    for (let i = 0; i < Math.max(a.tb.length, b.tb.length); i++) {
+      const d = (a.tb[i] || 0) - (b.tb[i] || 0);
+      if (d) return d;
+    }
+    return 0;
+  }
+
+  function bestHand(cards){
+    let best = null;
+    const n = cards.length;
+    for (let a = 0; a < n - 4; a++)
+    for (let b = a + 1; b < n - 3; b++)
+    for (let c = b + 1; c < n - 2; c++)
+    for (let d = c + 1; d < n - 1; d++)
+    for (let e = d + 1; e < n; e++) {
+      const ev = eval5([cards[a], cards[b], cards[c], cards[d], cards[e]]);
+      if (!best || cmp(ev, best) > 0) best = ev;
+    }
+    return best;
+  }
+
+  function describe(h){
+    const t = h.tb;
+    switch (h.cat) {
+      case 0: return `${RANK_NAME[t[0]]}-high`;
+      case 1: return `a pair of ${RANK_PLURAL[t[0]]}`;
+      case 2: return `two pair, ${RANK_PLURAL[t[0]]} and ${RANK_PLURAL[t[1]]}`;
+      case 3: return `three ${RANK_PLURAL[t[0]]}`;
+      case 4: return `a ${RANK_NAME[t[0]]}-high straight`;
+      case 5: return `a ${RANK_NAME[t[0]]}-high flush`;
+      case 6: return `${RANK_PLURAL[t[0]]} full of ${RANK_PLURAL[t[1]]}`;
+      case 7: return `four ${RANK_PLURAL[t[0]]}`;
+      case 8: return `a ${RANK_NAME[t[0]]}-high straight flush`;
+      case 9: return `a royal flush`;
+    }
+  }
+
+  // order five cards for display: made-hand cards first, kickers after
+  function orderFive(h){
+    const cnt = {};
+    h.cards.forEach(c => cnt[c.r] = (cnt[c.r] || 0) + 1);
+    const out = h.cards.slice().sort((a,b) => cnt[b.r] - cnt[a.r] || b.r - a.r);
+    if (h.wheel) { // A-2-3-4-5 reads 5 4 3 2 A
+      return out.sort((a,b) => (a.r === 14 ? 1 : 0) - (b.r === 14 ? 1 : 0) || b.r - a.r)
+                .sort((a,b) => (a.r === 14 ? 1 : 0) - (b.r === 14 ? 1 : 0));
+    }
+    return out;
+  }
+
+  const WIN = [
+    'Correct. Congratulations. Try not to let it go to your head.',
+    'That is the best hand on the table. Congratulations, I suppose.',
+    'Right on the money. Congratulations. Frame it.',
+    'Flawless. Congratulations. The bar was on the floor, but you cleared it.'
+  ];
+  const LOSE = [
+    'Not the best hand. Bold attempt, though.',
+    'Close, in the way a near miss is close.',
+    'There was a better hand sitting right there.',
+    'Incorrect. The cards were being very clear about it.'
+  ];
+
+  // ---------- rendering ----------
+  function cardEl(c){
+    const el = document.createElement('div');
+    el.className = 'card' + (c.s === 1 || c.s === 2 ? ' red' : '');
+    el.dataset.k = key(c);
+    el.innerHTML =
+      `<div class="corner"><span>${rl(c.r)}</span><span>${SUITS[c.s]}</span></div>` +
+      `<div class="mid">${SUITS[c.s]}</div>` +
+      `<div class="corner bot"><span>${rl(c.r)}</span><span>${SUITS[c.s]}</span></div>`;
+    if (selected.has(key(c))) el.classList.add('sel');
+    if (submitted) el.classList.add('locked');
+    return el;
+  }
+  function dealtEl(c){
+    const e = cardEl(c);
+    if (!shown.has(key(c))) { e.classList.add('enter'); shown.add(key(c)); }
+    return e;
+  }
+  function slotEl(){ const d = document.createElement('div'); d.className = 'slot'; return d; }
+
+  function renderTable(){
+    const h = $('hole'); h.innerHTML = '';
+    hole.forEach(c => h.appendChild(dealtEl(c)));
+    const b = $('board'); b.innerHTML = '';
+    for (let i = 0; i < 5; i++) b.appendChild(board[i] ? dealtEl(board[i]) : slotEl());
+
+    $('street').textContent = [
+      'Pre-flop. Two cards. Nothing to brag about yet.',
+      'The flop.',
+      'The turn.',
+      'The river. No more excuses.'
+    ][stage];
+    $('mainBtn').textContent = ['Deal the Flop','Deal the Turn','Deal the River','New Hand'][stage];
+    $('table').classList.toggle('picking', quizOpen && !submitted);
+  }
+
+  function rowHtml(h){
+    const wrap = document.createElement('div');
+    wrap.className = 'row mini';
+    orderFive(h).forEach(c => { const e = cardEl(c); e.classList.remove('sel','locked'); wrap.appendChild(e); });
+    return wrap;
+  }
+
+  function block(cap, h, cls){
+    const d = document.createElement('div');
+    d.className = 'block ' + (cls || '');
+    d.innerHTML = `<div class="cap">${cap}</div><div class="name">${HANDS[h.cat]}: ${describe(h)}</div>`;
+    d.appendChild(rowHtml(h));
+    return d;
+  }
+
+  function updateSelUI(){
+    $('selCount').textContent = selected.size;
+    $('submitBtn').disabled = submitted || selected.size !== 5;
+    document.querySelectorAll('#hole .card, #board .card').forEach(el => {
+      el.classList.toggle('sel', selected.has(el.dataset.k));
+    });
+  }
+
+  // ---------- flow ----------
+  function newHand(){
+    deck = newDeck();
+    hole = [deck.pop(), deck.pop()];
+    shown = new Set();
+    board = [];
+    stage = 0;
+    quizOpen = false; submitted = false;
+    selected = new Set();
+    $('quiz').hidden = true;
+    $('mainBtn').disabled = false;
+    renderTable();
+  }
+
+  function advance(){
+    if (stage === 0) { board.push(deck.pop(), deck.pop(), deck.pop()); stage = 1; }
+    else if (stage === 1) { board.push(deck.pop()); stage = 2; }
+    else if (stage === 2) { board.push(deck.pop()); stage = 3; }
+    $('quiz').hidden = true;
+    quizOpen = false; submitted = false; selected = new Set();
+    if (stage === 3 || $('everyStreet').checked) openQuiz();
+    renderTable();
+  }
+
+  function openQuiz(){
+    quizOpen = true; submitted = false; selected = new Set();
+    $('mainBtn').disabled = true;
+    const names = ['','the flop','the turn','the river'];
+    $('quizTitle').textContent = `Build your best five-card hand after ${names[stage]}`;
+    $('quizHint').textContent = stage < 3
+      ? 'Tap exactly five cards from what you can see. Future cards are not your problem yet.'
+      : 'Tap exactly five of your seven cards, hole cards and board both. Then submit.';
+    $('result').innerHTML = '';
+    $('quiz').hidden = false;
+    updateSelUI();
+    $('quiz').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  function toggleCard(el){
+    if (!quizOpen || submitted) return;
+    const k = el.dataset.k;
+    if (selected.has(k)) selected.delete(k);
+    else if (selected.size < 5) selected.add(k);
+    updateSelUI();
+  }
+
+  function submit(){
+    if (!quizOpen || submitted || selected.size !== 5) return;
+    const all = hole.concat(board);
+    const mine = eval5(all.filter(c => selected.has(key(c))));
+    const best = bestHand(all);
+    const ok = cmp(mine, best) === 0;
+
+    submitted = true; quizOpen = false;
+    total++;
+    if (ok) { correct++; streak++; } else { streak = 0; }
+    saveScore(); renderScore();
+
+    // dim table cards that count toward neither your hand nor the better one
+    const counted = new Set(mine.cards.concat(ok ? [] : best.cards).map(key));
+    document.querySelectorAll('#hole .card, #board .card').forEach(el => {
+      el.classList.add('locked');
+      el.classList.toggle('dim', !counted.has(el.dataset.k));
+    });
+    $('table').classList.remove('picking');
+    $('submitBtn').disabled = true;
+
+    const res = $('result'); res.innerHTML = '';
+    const v = document.createElement('div');
+    v.className = 'verdict ' + (ok ? 'good' : 'bad');
+    v.textContent = ok ? pick(WIN) : pick(LOSE);
+    res.appendChild(v);
+
+    res.appendChild(block('Your hand', mine));
+
+    if (ok) {
+      if (best.cards.map(key).sort().join() !== mine.cards.map(key).sort().join()) {
+        const n = document.createElement('div');
+        n.style.cssText = 'margin-top:8px;opacity:.8;font-size:.85rem';
+        n.textContent = 'You picked a different five than I would have, but it ties for best. Fine.';
+        res.appendChild(n);
+      }
+    } else {
+      const same = mine.cat === best.cat;
+      const note = document.createElement('div');
+      note.style.cssText = 'margin-top:10px;opacity:.9';
+      note.textContent = same
+        ? `Right ranking, wrong cards. Same category, but the kickers or high cards on this one beat yours.`
+        : `You had ${HANDS[mine.cat]}. The best available was ${HANDS[best.cat]}.`;
+      res.appendChild(note);
+      res.appendChild(block('The better hand', best, 'better'));
+    }
+
+    $('mainBtn').disabled = false;
+    $('mainBtn').textContent = stage === 3 ? 'New Hand' : ['Deal the Flop','Deal the Turn','Deal the River'][stage];
+    res.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  // ---------- events ----------
+  ['hole','board'].forEach(id => $(id).addEventListener('click', e => {
+    const el = e.target.closest('.card');
+    if (el) toggleCard(el);
+  }));
+  $('submitBtn').addEventListener('click', submit);
+  $('clearBtn').addEventListener('click', () => { if (!submitted) { selected = new Set(); updateSelUI(); } });
+  $('mainBtn').addEventListener('click', () => {
+    if (quizOpen && !submitted) return;
+    if (stage === 3) newHand(); else advance();
+  });
+
+  // ---------- cheat sheet ----------
+  // suit codes: s=♠ h=♥ d=♦ c=♣
+  const SUIT_CODE = {s:0, h:1, d:2, c:3};
+  const REF = [
+    ['Royal Flush',     'A-K-Q-J-10, all one suit',                    ['As','Ks','Qs','Js','10s']],
+    ['Straight Flush',  'Five in a row, all one suit',                 ['9h','8h','7h','6h','5h']],
+    ['Four of a Kind',  'Four cards of the same rank',                 ['8s','8h','8d','8c','Ks']],
+    ['Full House',      'Three of a kind plus a pair',                 ['Qs','Qh','Qd','4c','4s']],
+    ['Flush',           'Five of one suit, any order',                 ['Kd','Jd','9d','6d','2d']],
+    ['Straight',        'Five in a row, mixed suits (ace plays high or low)', ['9c','8d','7s','6h','5c']],
+    ['Three of a Kind', 'Three cards of the same rank',                ['7s','7h','7d','Kc','2s']],
+    ['Two Pair',        'Two different pairs',                         ['Js','Jd','5h','5c','As']],
+    ['One Pair',        'Two cards of the same rank',                  ['10h','10c','Ad','8s','3h']],
+    ['High Card',       'Nothing above. Highest card plays',           ['As','Jd','8c','6h','3d']]
+  ];
+  function refCard(code){
+    const suit = SUIT_CODE[code.slice(-1)];
+    const rs = code.slice(0, -1);
+    const r = ({A:14,K:13,Q:12,J:11})[rs] || +rs;
+    const e = cardEl({r, s: suit});
+    e.classList.remove('sel','locked','enter');
+    return e;
+  }
+  (function buildRef(){
+    const list = $('refList');
+    REF.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'refItem';
+      row.innerHTML = `<div class="num">${i + 1}</div><div class="txt"><b>${item[0]}</b><span>${item[1]}</span></div>`;
+      const cards = document.createElement('div');
+      cards.className = 'row mini';
+      item[2].forEach(c => cards.appendChild(refCard(c)));
+      row.appendChild(cards);
+      list.appendChild(row);
+    });
+  })();
+
+  renderScore();
+  newHand();
+})();
+</script>
+</body>
+</html>
